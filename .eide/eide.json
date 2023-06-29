@@ -61,7 +61,9 @@
           "CubeMX/Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F",
           "CubeMX/Drivers/CMSIS/Device/ST/STM32F4xx/Include",
           "CubeMX/Drivers/CMSIS/Include",
-          "CubeMX/Core/ThreadSafe"
+          "CubeMX/Core/ThreadSafe",
+          "UserCode/Lib",
+          "UserCode/Lib/System"
         ],
         "libList": [],
         "sourceDirList": [],
