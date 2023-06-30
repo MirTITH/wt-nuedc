@@ -5,16 +5,15 @@
 #include "usart.h"
 #include <string>
 #include "control_system/z_tf.hpp"
-#include <sstream>
 #include "HighPrecisionTime/high_precision_time.h"
 #include "assert.h"
-#include "freertos_io/uart_io.hpp"
+#include "freertos_io/uart_device.hpp"
+#include <cstring>
+#include <stdio.h>
 
 using namespace std;
 
-freertos_io::Uart Uart1(huart1);
-
-void ZtfTest()
+/* void ZtfTest()
 {
     stringstream sstr;
     // ztf
@@ -38,15 +37,30 @@ void ZtfTest()
 
     HAL_UART_Transmit(&huart1, (const uint8_t *)sstr.str().c_str(), sstr.str().size(), HAL_MAX_DELAY);
 }
+ */
+
+// char str[] = "Hello!This is a long buff that need a long time to transmit!!! 太长了😈\n";
+char read_buff[128] = {};
 
 void StartDefaultTask(void const *argument)
 {
     (void)argument;
-    char str[] = "Hello!\n";
+
+    int a, b, c;
+
+    printf("请输入三个数字：\n");
+    scanf("%d, %d, %d", &a, &b, &c);
+    printf("这三个数字是：%d, %d, %d\n", a, b, c);
+
     while (true) {
         HAL_GPIO_TogglePin(Led2_GPIO_Port, Led2_Pin);
-        Uart1.WriteNonBlock(str, sizeof(str) - 1);
+        uint32_t start_time = HPT_GetUs();
 
-        vTaskDelay(500);
+        Uart1.WriteNonBlock(read_buff, strlen(read_buff));
+        Uart1.WaitForWriteCplt();
+
+        float duration = (HPT_GetUs() - start_time) / 1000.0f;
+        printf("花费了：%g ms\n", duration);
+        vTaskDelay(100);
     }
 }

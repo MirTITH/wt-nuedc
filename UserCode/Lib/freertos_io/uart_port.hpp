@@ -7,10 +7,17 @@ namespace freertos_io
 
 namespace port
 {
+
+using huart_handle_t = UART_HandleTypeDef;
+
 class uart_port
 {
-private:
-    UART_HandleTypeDef &huart_;
+public:
+    uart_port(huart_handle_t &huart)
+        : huart_(huart){};
+
+protected:
+    huart_handle_t &huart_;
 
     bool IsAddressValidForDma(const void *pData)
     {
@@ -20,63 +27,51 @@ private:
         return true;
     }
 
-public:
-    uart_port(UART_HandleTypeDef &huart)
-        : huart_(huart){};
-
-    template <typename T>
-    HAL_StatusTypeDef Write(const T *pData, uint16_t Size, uint32_t Timeout = HAL_MAX_DELAY)
+    bool UseDmaRx()
     {
-        return HAL_UART_Transmit(&huart_, (const uint8_t *)pData, Size, Timeout);
+        return huart_.hdmarx != nullptr;
     }
 
-    template <typename T>
-    HAL_StatusTypeDef Read(T *pData, uint16_t Size, uint32_t Timeout = HAL_MAX_DELAY)
+    bool UseDmaTx()
+    {
+        return huart_.hdmatx != nullptr;
+    }
+
+    void EnableIdleInterrupt()
+    {
+        // __HAL_UART_CLEAR_IDLEFLAG(&huart_);          // 清除IDLE标志
+        // __HAL_UART_ENABLE_IT(&huart_, UART_IT_IDLE); // 使能 IDLE中断
+    }
+
+    HAL_StatusTypeDef Write(const uint8_t *pData, uint16_t Size, uint32_t Timeout = HAL_MAX_DELAY)
+    {
+        return HAL_UART_Transmit(&huart_, pData, Size, Timeout);
+    }
+
+    HAL_StatusTypeDef Read(uint8_t *pData, uint16_t Size, uint32_t Timeout = HAL_MAX_DELAY)
     {
         return HAL_UART_Receive(&huart_, pData, Size, Timeout);
     }
-
-    template <typename T>
-    HAL_StatusTypeDef WriteDma(const T *pData, uint16_t Size)
+    HAL_StatusTypeDef WriteDma(const uint8_t *pData, uint16_t Size)
     {
         return HAL_UART_Transmit_DMA(&huart_, (const uint8_t *)pData, Size);
     }
 
-    template <typename T>
-    HAL_StatusTypeDef ReadDma(T *pData, uint16_t Size)
+    HAL_StatusTypeDef ReadDma(uint8_t *pData, uint16_t Size)
     {
         return HAL_UART_Receive_DMA(&huart_, pData, Size);
     }
 
-    template <typename T>
-    HAL_StatusTypeDef WriteIt(const T *pData, uint16_t Size)
+    HAL_StatusTypeDef WriteIt(const uint8_t *pData, uint16_t Size)
     {
         return HAL_UART_Transmit_IT(&huart_, (const uint8_t *)pData, Size);
     }
 
-    template <typename T>
-    HAL_StatusTypeDef ReadIt(T *pData, uint16_t Size)
+    HAL_StatusTypeDef ReadIt(uint8_t *pData, uint16_t Size)
     {
-        return HAL_UART_Receive_DMA(&huart_, pData, Size);
-    }
-
-    template <typename T>
-    HAL_StatusTypeDef WriteNonBlock(const T *pData, uint16_t Size)
-    {
-        if (huart_.hdmatx != nullptr && IsAddressValidForDma(pData)) {
-            return WriteDma(pData, Size);
-        }
-
-        return WriteIt(pData, Size);
-    }
-    template <typename T>
-    HAL_StatusTypeDef ReadNonBlock(T *pData, uint16_t Size)
-    {
-        if (huart_.hdmatx != nullptr && IsAddressValidForDma(pData)) {
-            return ReadDma(pData, Size);
-        }
-
-        return ReadIt(pData, Size);
+        auto result = HAL_UART_Receive_IT(&huart_, pData, Size);
+        EnableIdleInterrupt();
+        return result;
     }
 };
 
