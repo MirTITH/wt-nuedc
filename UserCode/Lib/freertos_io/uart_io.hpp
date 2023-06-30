@@ -64,7 +64,22 @@ public:
     auto Write(const T *pData, uint16_t Size, uint32_t Timeout = HAL_MAX_DELAY)
     {
         lk_guard lock(write_mutex_);
-        return uart_port::Write(pData, Size, Timeout);
+        return uart_port::Write((const uint8_t *)pData, Size, Timeout);
+    }
+
+    /**
+     * @brief 不使用锁保护的写入
+     * 
+     * @tparam T 
+     * @param pData 要写入的数据
+     * @param Size 数据大小 (byte)
+     * @param Timeout 超时时长 (ms)
+     * @return auto 
+     */
+    template <typename T>
+    auto WriteDirectly(const T *pData, uint16_t Size, uint32_t Timeout = HAL_MAX_DELAY)
+    {
+        return uart_port::Write((const uint8_t *)pData, Size, Timeout);
     }
 
     template <typename T>

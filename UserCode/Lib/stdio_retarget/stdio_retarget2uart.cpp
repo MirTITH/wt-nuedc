@@ -10,16 +10,10 @@ static Uart &stdout_uart = Uart1;
 static Uart &stderr_uart = Uart1;
 static Uart &stdin_uart  = Uart1;
 
-#ifdef __cplusplus
 extern "C" {
-#endif
-
 int _read(int file, char *ptr, int len);
 int _write(int file, char *ptr, int len);
-
-#ifdef __cplusplus
 }
-#endif
 
 int _read(int file, char *ptr, int len)
 {
@@ -36,8 +30,7 @@ int _write(int file, char *ptr, int len)
             stdout_uart.WaitForWriteCplt();
             break;
         case STDERR_FILENO: // 标准错误流
-            stderr_uart.WriteNonBlock(ptr, len);
-            stdout_uart.WaitForWriteCplt();
+            stderr_uart.WriteDirectly(ptr, len);
             break;
         default:
             // EBADF, which means the file descriptor is invalid or the file isn't opened for writing;
