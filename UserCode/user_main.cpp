@@ -8,15 +8,15 @@
 #include <sstream>
 #include "HighPrecisionTime/high_precision_time.h"
 #include "assert.h"
+#include "freertos_io/uart_io.hpp"
 
 using namespace std;
 
-stringstream sstr;
+freertos_io::Uart Uart1(huart1);
 
-void StartDefaultTask(void const *argument)
+void ZtfTest()
 {
-    (void)argument;
-
+    stringstream sstr;
     // ztf
     ZTf<float> ztf({66.2117333333333, -124.136000000000, 58.1856000000000},
                    {1, -0.333333333333333, -0.666666666666667});
@@ -37,9 +37,15 @@ void StartDefaultTask(void const *argument)
     }
 
     HAL_UART_Transmit(&huart1, (const uint8_t *)sstr.str().c_str(), sstr.str().size(), HAL_MAX_DELAY);
+}
 
+void StartDefaultTask(void const *argument)
+{
+    (void)argument;
+    char str[] = "Hello!\n";
     while (true) {
         HAL_GPIO_TogglePin(Led2_GPIO_Port, Led2_Pin);
+        Uart1.WriteNonBlock(str, sizeof(str) - 1);
 
         vTaskDelay(500);
     }
