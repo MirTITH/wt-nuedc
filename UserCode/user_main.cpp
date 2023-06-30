@@ -40,27 +40,44 @@ using namespace std;
  */
 
 // char str[] = "Hello!This is a long buff that need a long time to transmit!!! 太长了😈\n";
-char read_buff[128] = {};
+
+void TestThread(void *argument)
+{
+    (void)argument;
+
+    while (1) {
+        HAL_GPIO_TogglePin(Led2_GPIO_Port, Led2_Pin);
+        vTaskDelay(100);
+    }
+}
 
 void StartDefaultTask(void const *argument)
 {
     (void)argument;
 
-    int a, b, c;
+    xTaskCreate(TestThread, "test_thread", 256, nullptr, 1, nullptr);
 
-    printf("请输入三个数字：\n");
-    scanf("%d, %d, %d", &a, &b, &c);
-    printf("这三个数字是：%d, %d, %d\n", a, b, c);
+    float a, b, c;
 
     while (true) {
-        HAL_GPIO_TogglePin(Led2_GPIO_Port, Led2_Pin);
-        uint32_t start_time = HPT_GetUs();
-
-        Uart1.WriteNonBlock(read_buff, strlen(read_buff));
-        Uart1.WaitForWriteCplt();
-
-        float duration = (HPT_GetUs() - start_time) / 1000.0f;
-        printf("花费了：%g ms\n", duration);
-        vTaskDelay(100);
+        printf("请输入三个数字：\n");
+        fflush(stdin);
+        auto num = scanf("%f, %f, %f", &a, &b, &c);
+        printf("接收到了 %d 个数字\n", num);
+        printf("这三个数字是：%g, %g, %g\n", a, b, c);
     }
+
+    // while (true) {
+    //     HAL_GPIO_TogglePin(Led2_GPIO_Port, Led2_Pin);
+    //     uint32_t start_time = HPT_GetUs();
+
+    //     Uart1.WriteNonBlock(read_buff, strlen(read_buff));
+    //     Uart1.WaitForWriteCplt();
+
+    //     float duration = (HPT_GetUs() - start_time) / 1000.0f;
+    //     printf("花费了：%g ms\n", duration);
+    //     vTaskDelay(100);
+    // }
+
+    vTaskDelete(nullptr);
 }

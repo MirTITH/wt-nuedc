@@ -37,12 +37,6 @@ protected:
         return huart_.hdmatx != nullptr;
     }
 
-    void EnableIdleInterrupt()
-    {
-        // __HAL_UART_CLEAR_IDLEFLAG(&huart_);          // 清除IDLE标志
-        // __HAL_UART_ENABLE_IT(&huart_, UART_IT_IDLE); // 使能 IDLE中断
-    }
-
     HAL_StatusTypeDef Write(const uint8_t *pData, uint16_t Size, uint32_t Timeout = HAL_MAX_DELAY)
     {
         return HAL_UART_Transmit(&huart_, pData, Size, Timeout);
@@ -62,6 +56,16 @@ protected:
         return HAL_UART_Receive_DMA(&huart_, pData, Size);
     }
 
+    HAL_StatusTypeDef ReadToIdleDma(uint8_t *pData, uint16_t Size)
+    {
+        return HAL_UARTEx_ReceiveToIdle_DMA(&huart_, pData, Size);
+    }
+
+    HAL_StatusTypeDef ReadToIdleIt(uint8_t *pData, uint16_t Size)
+    {
+        return HAL_UARTEx_ReceiveToIdle_IT(&huart_, pData, Size);
+    }
+
     HAL_StatusTypeDef WriteIt(const uint8_t *pData, uint16_t Size)
     {
         return HAL_UART_Transmit_IT(&huart_, (const uint8_t *)pData, Size);
@@ -70,7 +74,6 @@ protected:
     HAL_StatusTypeDef ReadIt(uint8_t *pData, uint16_t Size)
     {
         auto result = HAL_UART_Receive_IT(&huart_, pData, Size);
-        EnableIdleInterrupt();
         return result;
     }
 };

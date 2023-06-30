@@ -24,11 +24,8 @@ int _write(int file, char *ptr, int len);
 int _read(int file, char *ptr, int len)
 {
     (void)file;
-    (void)len;
 
-    stdin_uart.Read(ptr, 1);
-
-    return 1;
+    return stdin_uart.ReadToIdle(ptr, len);
 }
 
 int _write(int file, char *ptr, int len)
