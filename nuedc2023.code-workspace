@@ -73,13 +73,16 @@
             "ctime": "cpp",
             "ratio": "cpp",
             "stop_token": "cpp",
-            "thread": "cpp"
+            "thread": "cpp",
+            "numbers": "cpp",
+            "semaphore": "cpp"
         },
         "[yaml]": {
             "editor.insertSpaces": true,
             "editor.tabSize": 4,
             "editor.autoIndent": "advanced"
-        }
+        },
+        "cortex-debug.variableUseNaturalFormat": true
     },
     "extensions": {
         "recommendations": [

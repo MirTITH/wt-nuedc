@@ -9,6 +9,7 @@ extern "C" {
 void HAL_UART_TxCpltCallback(UART_HandleTypeDef *huart);
 void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart);
 void HAL_UARTEx_RxEventCallback(UART_HandleTypeDef *huart, uint16_t Size);
+void MY_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim);
 
 #ifdef __cplusplus
 }
@@ -40,4 +41,9 @@ void HAL_UARTEx_RxEventCallback(UART_HandleTypeDef *huart, uint16_t Size)
     if (huart->Instance == USART1) {
         Uart1.RxEventCallback(Size);
     }
+}
+
+void MY_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
+{
+    printf("TIM Callback. Cnt:%lu\n", htim->Instance->CNT);
 }

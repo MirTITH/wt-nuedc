@@ -31,7 +31,7 @@ public:
     }
 
     /**
-     * @brief 上锁，如果已上锁，则会等待直到被别人解锁，然后再上锁
+     * @brief 上锁，如果已上锁，则会等待直到被别人解锁，然后再上锁。但是，在中断中，如果已上锁，则直接返回上锁失败而不会等待
      *
      * @return true 成功上锁
      * @return false 上锁失败
@@ -44,10 +44,7 @@ public:
             BaseType_t xHigherPriorityTaskWoken = pdFALSE;
             xHigherPriorityTaskWoken            = pdFALSE;
 
-            do {
-                result = xSemaphoreTakeFromISR(sem_, nullptr);
-            } while (result != pdTRUE);
-
+            result = xSemaphoreTakeFromISR(sem_, &xHigherPriorityTaskWoken);
             portYIELD_FROM_ISR(xHigherPriorityTaskWoken);
         } else {
             result = xSemaphoreTake(sem_, portMAX_DELAY);

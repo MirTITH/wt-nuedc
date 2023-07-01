@@ -3,13 +3,15 @@
 #include "FreeRTOS.h"
 #include "task.h"
 #include <cstdio>
-#include <vector>
+#include "freertos_io/uart_device.hpp"
+#include "control_system/z_tf.hpp"
+#include "HighPrecisionTime/high_precision_time.h"
+#include "tim.h"
 
 using namespace std;
 
-/* void ZtfTest()
+void ZtfTest()
 {
-    stringstream sstr;
     // ztf
     ZTf<float> ztf({66.2117333333333, -124.136000000000, 58.1856000000000},
                    {1, -0.333333333333333, -0.666666666666667});
@@ -24,24 +26,49 @@ using namespace std;
     auto next_step_result = ztf.Step(1);
 
     ztf.ResetState();
-    sstr << "ztf.Step(1):" << next_step_result << "\n  duration: " << duration << "\n  speed: " << speed << " kps\n";
+    printf("ztf.Step(1): %g\n duration: %lu us\n speed: %g kps\n", next_step_result, duration, speed);
+    // sstr << "ztf.Step(1):" << next_step_result << "\n  duration: " << duration << "\n  speed: " << speed << " kps\n";
     for (size_t i = 0; i < 10; i++) {
-        sstr << ztf.Step(1) << endl;
+        printf("%g\n", ztf.Step(1));
     }
-
-    HAL_UART_Transmit(&huart1, (const uint8_t *)sstr.str().c_str(), sstr.str().size(), HAL_MAX_DELAY);
 }
- */
 
-// char str[] = "Hello!This is a long buff that need a long time to transmit!!! 太长了😈\n";
+// size_t tim_counter;
+
+char test_str[] = "Test str\n";
 
 void TestThread(void *argument)
 {
     (void)argument;
 
-    while (1) {
-        HAL_GPIO_TogglePin(Led2_GPIO_Port, Led2_Pin);
+    HAL_TIM_Base_Start_IT(&htim3);
+    HAL_TIM_PWM_Start(&htim3, TIM_CHANNEL_1);
+    HAL_TIM_PWM_Start(&htim3, TIM_CHANNEL_2);
+
+    // float a, b, c;
+
+    while (true) {
+        printf("%lu\n", htim3.Instance->CNT);
+        assert(HAL_GetTick() < 2000);
+        // Uart1.WriteNonBlock(test_str, sizeof(test_str) - 1);
         vTaskDelay(100);
+        // printf("请输入三个数字：\n");
+        // fflush(stdin);
+        // auto num = scanf("%f, %f, %f", &a, &b, &c);
+        // printf("接收到了 %d 个数字\n", num);
+        // printf("这三个数字是：%g, %g, %g\n", a, b, c);
+    }
+}
+
+void BlinkLedEntry(void *argument)
+{
+    (void)argument;
+
+    ZtfTest();
+
+    while (true) {
+        // HAL_GPIO_TogglePin(Led3_GPIO_Port, Led3_Pin);
+        vTaskDelay(500);
     }
 }
 
@@ -49,22 +76,8 @@ void StartDefaultTask(void const *argument)
 {
     (void)argument;
 
-    xTaskCreate(TestThread, "test_thread", 256, nullptr, 1, nullptr);
-
-    vector<int> vec;
-
-    vec.push_back(12);
-    vec.push_back(23);
-
-    float a, b, c;
-
-    while (true) {
-        printf("请输入三个数字：\n");
-        fflush(stdin);
-        auto num = scanf("%f, %f, %f", &a, &b, &c);
-        printf("接收到了 %d 个数字\n", num);
-        printf("这三个数字是：%g, %g, %g\n", a, b, c);
-    }
+    xTaskCreate(TestThread, "test_thread", 512, nullptr, 1, nullptr);
+    // xTaskCreate(BlinkLedEntry, "blink_led", 512, nullptr, 1, nullptr);
 
     vTaskDelete(nullptr);
 }
