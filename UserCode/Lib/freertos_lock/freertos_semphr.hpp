@@ -42,7 +42,6 @@ public:
 
         if (InHandlerMode()) {
             BaseType_t xHigherPriorityTaskWoken = pdFALSE;
-            xHigherPriorityTaskWoken            = pdFALSE;
 
             result = xSemaphoreTakeFromISR(sem_, &xHigherPriorityTaskWoken);
             portYIELD_FROM_ISR(xHigherPriorityTaskWoken);

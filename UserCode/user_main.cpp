@@ -7,6 +7,11 @@
 #include "control_system/z_tf.hpp"
 #include "HighPrecisionTime/high_precision_time.h"
 #include "tim.h"
+#include "thread_priority_def.h"
+#include "freertos_io/uart_thread.hpp"
+#include <string>
+
+UartThread Uart1Thread(Uart1, "Uart1");
 
 using namespace std;
 
@@ -41,15 +46,24 @@ void TestThread(void *argument)
 {
     (void)argument;
 
-    HAL_TIM_Base_Start_IT(&htim3);
-    HAL_TIM_PWM_Start(&htim3, TIM_CHANNEL_1);
-    HAL_TIM_PWM_Start(&htim3, TIM_CHANNEL_2);
+    // HAL_TIM_Base_Start_IT(&htim3);
+    // HAL_TIM_PWM_Start(&htim3, TIM_CHANNEL_1);
+    // HAL_TIM_PWM_Start(&htim3, TIM_CHANNEL_2);
 
     // float a, b, c;
 
+    uint32_t start_time, duration;
+    string str;
+
     while (true) {
-        printf("%lu\n", htim3.Instance->CNT);
-        assert(HAL_GetTick() < 2000);
+        start_time = HPT_GetUs();
+        Uart1Thread.Write(str.c_str(), str.size());
+        // Uart1.Write(str);
+        // Uart1.WaitForWriteCplt();
+        duration = HPT_GetUs() - start_time;
+        str      = string("用时：") + to_string(duration).append("\n");
+        // printf("%lu\n", htim3.Instance->CNT);
+        // assert(HAL_GetTick() < 2000);
         // Uart1.WriteNonBlock(test_str, sizeof(test_str) - 1);
         vTaskDelay(100);
         // printf("请输入三个数字：\n");
@@ -76,8 +90,8 @@ void StartDefaultTask(void const *argument)
 {
     (void)argument;
 
-    xTaskCreate(TestThread, "test_thread", 512, nullptr, 1, nullptr);
-    // xTaskCreate(BlinkLedEntry, "blink_led", 512, nullptr, 1, nullptr);
+    xTaskCreate(TestThread, "test_thread", 512, nullptr, PriorityBelowNormal, nullptr);
+    // xTaskCreate(BlinkLedEntry, "blink_led", 512, nullptr, PriorityBelowNormal, nullptr);
 
     vTaskDelete(nullptr);
 }
