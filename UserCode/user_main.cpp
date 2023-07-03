@@ -11,8 +11,6 @@
 #include "freertos_io/uart_thread.hpp"
 #include <string>
 
-UartThread Uart1Thread(Uart1, "Uart1");
-
 using namespace std;
 
 void ZtfTest()
@@ -38,39 +36,24 @@ void ZtfTest()
     }
 }
 
-// size_t tim_counter;
-
-char test_str[] = "Test str\n";
-
 void TestThread(void *argument)
 {
     (void)argument;
 
-    // HAL_TIM_Base_Start_IT(&htim3);
-    // HAL_TIM_PWM_Start(&htim3, TIM_CHANNEL_1);
-    // HAL_TIM_PWM_Start(&htim3, TIM_CHANNEL_2);
+    HAL_TIM_Base_Start_IT(&htim3);
+    HAL_TIM_PWM_Start(&htim3, TIM_CHANNEL_1);
+    HAL_TIM_PWM_Start(&htim3, TIM_CHANNEL_2);
 
-    // float a, b, c;
+    float a, b, c;
 
-    uint32_t start_time, duration;
     string str;
 
     while (true) {
-        start_time = HPT_GetUs();
-        Uart1Thread.Write(str.c_str(), str.size());
-        // Uart1.Write(str);
-        // Uart1.WaitForWriteCplt();
-        duration = HPT_GetUs() - start_time;
-        str      = string("用时：") + to_string(duration).append("\n");
-        // printf("%lu\n", htim3.Instance->CNT);
-        // assert(HAL_GetTick() < 2000);
-        // Uart1.WriteNonBlock(test_str, sizeof(test_str) - 1);
-        vTaskDelay(100);
-        // printf("请输入三个数字：\n");
-        // fflush(stdin);
-        // auto num = scanf("%f, %f, %f", &a, &b, &c);
-        // printf("接收到了 %d 个数字\n", num);
-        // printf("这三个数字是：%g, %g, %g\n", a, b, c);
+        printf("请输入三个数字：\n");
+        fflush(stdin);
+        auto num = scanf("%f, %f, %f", &a, &b, &c);
+        printf("接收到了 %d 个数字\n", num);
+        printf("这三个数字是：%g, %g, %g\n", a, b, c);
     }
 }
 
@@ -81,7 +64,6 @@ void BlinkLedEntry(void *argument)
     ZtfTest();
 
     while (true) {
-        // HAL_GPIO_TogglePin(Led3_GPIO_Port, Led3_Pin);
         vTaskDelay(500);
     }
 }
@@ -90,8 +72,8 @@ void StartDefaultTask(void const *argument)
 {
     (void)argument;
 
-    xTaskCreate(TestThread, "test_thread", 512, nullptr, PriorityBelowNormal, nullptr);
-    // xTaskCreate(BlinkLedEntry, "blink_led", 512, nullptr, PriorityBelowNormal, nullptr);
+    xTaskCreate(TestThread, "test_thread", 512, nullptr, PriorityNormal, nullptr);
+    xTaskCreate(BlinkLedEntry, "blink_led", 512, nullptr, PriorityNormal, nullptr);
 
     vTaskDelete(nullptr);
 }

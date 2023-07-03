@@ -1,5 +1,6 @@
 #pragma once
 
 #include "uart_io.hpp"
+#include "uart_thread.hpp"
 
-extern freertos_io::Uart Uart1;
+extern UartThread Uart1;

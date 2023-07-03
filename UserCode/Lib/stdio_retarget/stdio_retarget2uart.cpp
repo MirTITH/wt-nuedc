@@ -6,9 +6,9 @@
 using namespace freertos_io;
 
 // 串口号配置
-static Uart &stdout_uart = Uart1;
-static Uart &stderr_uart = Uart1;
-static Uart &stdin_uart  = Uart1;
+static UartThread &stdout_uart = Uart1;
+static UartThread &stderr_uart = Uart1;
+static UartThread &stdin_uart  = Uart1;
 
 extern "C" {
 int _read(int file, char *ptr, int len);
@@ -26,11 +26,10 @@ int _write(int file, char *ptr, int len)
 {
     switch (file) {
         case STDOUT_FILENO: // 标准输出流
-            stdout_uart.WriteNonBlock(ptr, len);
-            stdout_uart.WaitForWriteCplt();
+            stdout_uart.Write(ptr, len);;
             break;
         case STDERR_FILENO: // 标准错误流
-            stderr_uart.WriteDirectly(ptr, len);
+            stderr_uart.Write(ptr, len);
             break;
         default:
             // EBADF, which means the file descriptor is invalid or the file isn't opened for writing;

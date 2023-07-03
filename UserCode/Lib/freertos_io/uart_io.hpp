@@ -54,7 +54,7 @@ public:
         read_mutex_.unlock();
     }
 
-    auto Write(const std::string &str, uint32_t Timeout = HAL_MAX_DELAY)
+    auto Write(const std::string str, uint32_t Timeout = HAL_MAX_DELAY)
     {
         lk_guard lock(write_mutex_);
         return uart_port::Write((const uint8_t *)str.c_str(), str.size(), Timeout);
@@ -69,12 +69,12 @@ public:
 
     /**
      * @brief 不使用锁保护的写入
-     * 
-     * @tparam T 
+     *
+     * @tparam T
      * @param pData 要写入的数据
      * @param Size 数据大小 (byte)
      * @param Timeout 超时时长 (ms)
-     * @return auto 
+     * @return auto
      */
     template <typename T>
     auto WriteDirectly(const T *pData, uint16_t Size, uint32_t Timeout = HAL_MAX_DELAY)
@@ -105,7 +105,7 @@ public:
         return WriteIt((const uint8_t *)pData, Size);
     }
 
-    auto WriteNonBlock(const std::string &str)
+    auto WriteNonBlock(const std::string str)
     {
         if (str.size() == 0) {
             return HAL_OK;
