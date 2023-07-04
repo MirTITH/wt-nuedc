@@ -2,6 +2,7 @@
 
 #include "freertos_io/uart_device.hpp"
 #include "HighPrecisionTime/high_precision_time.h"
+#include "freertos_io/os_printf.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -52,7 +53,7 @@ void MY_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
 {
     if (htim->Instance == TIM3) {
         start_us = HPT_GetUs();
-        printf("TIM3 Callback. Last print duration: %lu Count:%lu\n", duration, ++kTimCounter);
+        os_printf("TIM3 Callback. Last print duration: %lu Count:%lu\n", duration, ++kTimCounter);
         duration = HPT_GetUs() - start_us;
     }
 }

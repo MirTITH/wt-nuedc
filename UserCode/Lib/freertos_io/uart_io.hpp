@@ -54,7 +54,7 @@ public:
         read_lock_.unlock();
     }
 
-    auto Write(const std::string str, uint32_t Timeout = HAL_MAX_DELAY)
+    auto Write(const std::string &str, uint32_t Timeout = HAL_MAX_DELAY)
     {
         lk_guard lock(write_lock_);
         return uart_port::Write((const uint8_t *)str.c_str(), str.size(), Timeout);
@@ -105,7 +105,7 @@ public:
         return WriteIt((const uint8_t *)pData, Size);
     }
 
-    auto WriteNonBlock(const std::string str)
+    auto WriteNonBlock(const std::string &str)
     {
         if (str.size() == 0) {
             return HAL_OK;

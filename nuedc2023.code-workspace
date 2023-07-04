@@ -75,7 +75,11 @@
             "stop_token": "cpp",
             "thread": "cpp",
             "numbers": "cpp",
-            "semaphore": "cpp"
+            "semaphore": "cpp",
+            "codecvt": "cpp",
+            "fstream": "cpp",
+            "iomanip": "cpp",
+            "variant": "cpp"
         },
         "[yaml]": {
             "editor.insertSpaces": true,

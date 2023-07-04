@@ -1,7 +1,6 @@
 #include "uart_thread.hpp"
 #include "thread_priority_def.h"
 #include "in_handle_mode.h"
-#include <mutex>
 
 void UartDaemonEntry(void *argument)
 {
@@ -48,7 +47,8 @@ void UartDaemonEntry(void *argument)
 UartThread::UartThread(freertos_io::Uart &uart, const char *thread_name)
     : uart_device(uart)
 {
-    xTaskCreate(UartDaemonEntry, thread_name, 256, this, PriorityHigh, &task_handle_);
+    // 优先级高于或等于 UartThread 的线程，由于在调用 Write 时不会发生线程切换（除非缓冲区不够），可以获得最快的 Write 速度
+    xTaskCreate(UartDaemonEntry, thread_name, 256, this, PriorityBelowNormal, &task_handle_);
 }
 
 void UartThread::Write(const char *data, size_t size)
@@ -65,7 +65,7 @@ void UartThread::Write(const char *data, size_t size)
         portYIELD_FROM_ISR(xHigherPriorityTaskWoken);
     } else {
         // 在线程中。如果缓冲区剩余大小不足 size，则分多次传输
-        std::lock_guard lock(lock_); // 上锁，防止其他线程操作
+        lock_.lock_from_thread(); // 上锁，防止其他线程操作
 
         size_t written_size; // 已写入缓冲区的数据大小
         while (true) {
@@ -88,10 +88,7 @@ void UartThread::Write(const char *data, size_t size)
                 break;                         // 退出循环。由于所有数据都已在缓冲区，不用等待
             }
         }
-    }
-}
 
-void UartThread::Write(const std::string str)
-{
-    Write(str.c_str(), str.size());
+        lock_.unlock_from_thread();
+    }
 }
