@@ -69,9 +69,9 @@ void UartThread::Write(const char *data, size_t size)
 
         size_t written_size; // 已写入缓冲区的数据大小
         while (true) {
-        taskENTER_CRITICAL();
+            taskENTER_CRITICAL();
             written_size = ring_buffer_.push_data_back((const uint8_t *)data, size); // 写入缓冲区
-        taskEXIT_CRITICAL();
+            taskEXIT_CRITICAL();
 
             if (written_size < size) {
                 size -= written_size; // 剩余传输大小

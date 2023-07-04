@@ -30,7 +30,7 @@ void ZtfTest()
 
     ztf.ResetState();
     printf("ztf.Step(1): %g\n duration: %lu us\n speed: %g kps\n", next_step_result, duration, speed);
-    // sstr << "ztf.Step(1):" << next_step_result << "\n  duration: " << duration << "\n  speed: " << speed << " kps\n";
+
     for (size_t i = 0; i < 10; i++) {
         printf("%g\n", ztf.Step(1));
     }
@@ -45,8 +45,6 @@ void TestThread(void *argument)
     HAL_TIM_PWM_Start(&htim3, TIM_CHANNEL_2);
 
     float a, b, c;
-
-    string str;
 
     while (true) {
         printf("请输入三个数字：\n");
@@ -66,13 +64,23 @@ void BlinkLedEntry(void *argument)
     vTaskDelete(nullptr);
 }
 
+freertos_lock::Mutex print_mux;
+
 void PrintTestTask(void *argument)
 {
     uint32_t counter = 0;
 
+    uint32_t start_us, duration = 0;
+
     while (1) {
-        printf("The argument is: %s. %lu\n", (const char *)argument, ++counter);
-        // vTaskDelay(100);
+        {
+            start_us = HPT_GetUs();
+            std::lock_guard lock(print_mux);
+            printf("The argument is: %s. Last print duration:%lu. Count: %lu\n", (const char *)argument, duration, ++counter);
+            duration = HPT_GetUs() - start_us;
+        }
+
+        vTaskDelay(500);
     }
 }
 
@@ -83,9 +91,9 @@ void StartDefaultTask(void const *argument)
     xTaskCreate(TestThread, "test_thread", 512, nullptr, PriorityNormal, nullptr);
     xTaskCreate(BlinkLedEntry, "blink_led", 512, nullptr, PriorityNormal, nullptr);
 
-    // xTaskCreate(PrintTestTask, "PrintTestTask1", 512, (char *)"PrintTestTask1", PriorityNormal, nullptr);
-    // xTaskCreate(PrintTestTask, "PrintTestTask2", 512, (char *)"PrintTestTask2", PriorityNormal, nullptr);
-    // xTaskCreate(PrintTestTask, "PrintTestTask3", 512, (char *)"PrintTestTask3", PriorityNormal, nullptr);
+    xTaskCreate(PrintTestTask, "PrintTestTask1", 512, (char *)"-1- PrintTestTask1", PriorityNormal, nullptr);
+    xTaskCreate(PrintTestTask, "PrintTestTask2", 512, (char *)"-2- PrintTestTask2", PriorityNormal, nullptr);
+    xTaskCreate(PrintTestTask, "PrintTestTask3", 512, (char *)"-3- PrintTestTask3", PriorityNormal, nullptr);
 
     while (true) {
         HAL_GPIO_TogglePin(Led2_GPIO_Port, Led2_Pin);

@@ -1,6 +1,7 @@
 #include "main.h"
 
 #include "freertos_io/uart_device.hpp"
+#include "HighPrecisionTime/high_precision_time.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -43,8 +44,15 @@ void HAL_UARTEx_RxEventCallback(UART_HandleTypeDef *huart, uint16_t Size)
     }
 }
 
+static uint32_t kTimCounter;
+
+static uint32_t start_us, duration;
+
 void MY_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
 {
     if (htim->Instance == TIM3) {
+        start_us = HPT_GetUs();
+        printf("TIM3 Callback. Last print duration: %lu Count:%lu\n", duration, ++kTimCounter);
+        duration = HPT_GetUs() - start_us;
     }
 }
