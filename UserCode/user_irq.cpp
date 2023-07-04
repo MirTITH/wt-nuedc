@@ -46,6 +46,5 @@ void HAL_UARTEx_RxEventCallback(UART_HandleTypeDef *huart, uint16_t Size)
 void MY_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
 {
     if (htim->Instance == TIM3) {
-        printf("TIM Callback. Cnt:%lu\n", htim->Instance->CNT);
     }
 }

@@ -2,7 +2,7 @@
 
 #include "uart_port.hpp"
 #include "FreeRTOS.h"
-#include "freertos_lock/freertos_semphr.hpp"
+#include "freertos_lock/freertos_lock.hpp"
 #include <string>
 #include <mutex>
 
@@ -11,9 +11,9 @@ namespace freertos_io
 class Uart : public port::uart_port
 {
 private:
-    BinarySemphr write_mutex_;
-    BinarySemphr read_mutex_;
-    using lk_guard             = std::lock_guard<BinarySemphr>;
+    freertos_lock::BinarySemphr write_lock_{true};
+    freertos_lock::BinarySemphr read_lock_{true};
+    using lk_guard             = std::lock_guard<freertos_lock::BinarySemphr>;
     uint16_t read_to_idle_size = 0;
 
 public:
@@ -27,7 +27,7 @@ public:
      */
     void TxCpltCallback()
     {
-        write_mutex_.unlock();
+        write_lock_.unlock();
     }
 
     /**
@@ -38,7 +38,7 @@ public:
      */
     void RxCpltCallback()
     {
-        read_mutex_.unlock();
+        read_lock_.unlock();
     }
 
     /**
@@ -51,19 +51,19 @@ public:
     void RxEventCallback(uint16_t size)
     {
         read_to_idle_size = size;
-        read_mutex_.unlock();
+        read_lock_.unlock();
     }
 
     auto Write(const std::string str, uint32_t Timeout = HAL_MAX_DELAY)
     {
-        lk_guard lock(write_mutex_);
+        lk_guard lock(write_lock_);
         return uart_port::Write((const uint8_t *)str.c_str(), str.size(), Timeout);
     }
 
     template <typename T>
     auto Write(const T *pData, uint16_t Size, uint32_t Timeout = HAL_MAX_DELAY)
     {
-        lk_guard lock(write_mutex_);
+        lk_guard lock(write_lock_);
         return uart_port::Write((const uint8_t *)pData, Size, Timeout);
     }
 
@@ -85,7 +85,7 @@ public:
     template <typename T>
     auto Read(T *pData, uint16_t Size, uint32_t Timeout = HAL_MAX_DELAY)
     {
-        lk_guard lock(read_mutex_);
+        lk_guard lock(read_lock_);
         return uart_port::Read((uint8_t *)pData, Size, Timeout);
     }
 
@@ -96,7 +96,7 @@ public:
             return HAL_OK;
         }
 
-        write_mutex_.lock();
+        write_lock_.lock();
 
         if (UseDmaTx() && IsAddressValidForDma(pData)) {
             return WriteDma((const uint8_t *)pData, Size);
@@ -111,7 +111,7 @@ public:
             return HAL_OK;
         }
 
-        write_mutex_.lock();
+        write_lock_.lock();
 
         if (UseDmaTx() && IsAddressValidForDma(str.c_str())) {
             return WriteDma((const uint8_t *)str.c_str(), str.size());
@@ -127,7 +127,7 @@ public:
             return HAL_OK;
         }
 
-        read_mutex_.lock();
+        read_lock_.lock();
 
         if (UseDmaRx() && IsAddressValidForDma(pData)) {
             return ReadDma((uint8_t *)pData, Size);
@@ -143,7 +143,7 @@ public:
             return HAL_OK;
         }
 
-        read_mutex_.lock();
+        read_lock_.lock();
 
         HAL_StatusTypeDef result;
 
@@ -158,19 +158,19 @@ public:
         }
 
         {
-            lk_guard lock(read_mutex_);
+            lk_guard lock(read_lock_);
             return read_to_idle_size;
         }
     }
 
     void WaitForWriteCplt()
     {
-        lk_guard lock(write_mutex_);
+        lk_guard lock(write_lock_);
     }
 
     void WaitForReadCplt()
     {
-        lk_guard lock(read_mutex_);
+        lk_guard lock(read_lock_);
     }
 };
 
