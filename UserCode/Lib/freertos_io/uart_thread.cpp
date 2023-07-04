@@ -48,7 +48,7 @@ void UartDaemonEntry(void *argument)
 UartThread::UartThread(freertos_io::Uart &uart, const char *thread_name)
     : uart_device(uart)
 {
-    xTaskCreate(UartDaemonEntry, thread_name, 256, this, PriorityHigh, &task_handle_);
+    xTaskCreate(UartDaemonEntry, thread_name, 256, this, PriorityBelowNormal, &task_handle_);
 }
 
 void UartThread::Write(const char *data, size_t size)

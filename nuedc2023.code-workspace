@@ -75,7 +75,8 @@
             "stop_token": "cpp",
             "thread": "cpp",
             "numbers": "cpp",
-            "semaphore": "cpp"
+            "semaphore": "cpp",
+            "locale": "cpp"
         },
         "[yaml]": {
             "editor.insertSpaces": true,

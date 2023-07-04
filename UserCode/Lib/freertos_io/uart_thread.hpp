@@ -11,7 +11,7 @@ class UartThread
 private:
     TaskHandle_t task_handle_;
     TaskHandle_t task_to_notify_ = nullptr;
-    RingBuffer<128> ring_buffer_;
+    RingBuffer<512> ring_buffer_;
     freertos_lock::RecursiveMutex lock_;
 
 public:
