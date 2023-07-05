@@ -15,6 +15,9 @@
 #include <vector>
 #include <cassert>
 
+namespace control_system
+{
+
 /**
  * @brief Z传递函数
  *
@@ -138,3 +141,5 @@ public:
         index_ = 0;
     }
 };
+
+} // namespace control_system

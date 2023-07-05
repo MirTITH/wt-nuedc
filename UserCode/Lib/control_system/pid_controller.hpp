@@ -37,15 +37,18 @@
  *         output_data = controller.Step(input_data);
  *         sleep_ms(10); // 因为 Ts = 0.01, 等待 10 ms
  *     }
- * 
+ *
  */
 
 #pragma once
 
 #include "discrete_tf.hpp"
 #include "z_tf.hpp"
+#include "saturation.hpp"
 #include <array>
-#include <cmath>
+
+namespace control_system
+{
 
 namespace pid
 {
@@ -100,6 +103,7 @@ private:
     T input_coefficient_;
     T last_input_;
     T last_output_;
+    Saturation<T, T> saturation; // 限幅器
 
     void UpdateCoefficient()
     {
@@ -107,10 +111,18 @@ private:
     }
 
 public:
+    /**
+     * @brief 积分器
+     *
+     * @param Ki 积分器系数
+     * @param Ts 采样周期
+     *
+     */
     I(T Ki, T Ts)
     {
         ResetState();
         SetParam(Ki, Ts);
+        saturation.SetEnable(false); // 默认不使用限幅器
     }
 
     /**
@@ -121,7 +133,7 @@ public:
      */
     T Step(T input) override
     {
-        last_output_ = input_coefficient_ * (input + last_input_) + last_output_;
+        last_output_ = saturation(input_coefficient_ * (input + last_input_) + last_output_);
         last_input_  = input;
         return last_output_;
     }
@@ -147,6 +159,22 @@ public:
     T GetTs() const
     {
         return Ts;
+    }
+
+    void SetOutputMinMax(T min, T max)
+    {
+        saturation.SetEnable(true); // 使能限幅器
+        saturation.SetMinMax(min, max);
+    }
+
+    auto GetOutputMin() const
+    {
+        return saturation.GetMin();
+    }
+
+    auto GetOutputMax() const
+    {
+        return saturation.GetMax();
     }
 
     /**
@@ -352,6 +380,6 @@ public:
     }
 };
 
-
-
 } // namespace pid
+
+} // namespace control_system

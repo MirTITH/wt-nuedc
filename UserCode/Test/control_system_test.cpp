@@ -3,8 +3,11 @@
 #include "freertos_io/os_printf.h"
 #include "HighPrecisionTime/high_precision_time.h"
 #include "control_system/pid_controller.hpp"
+#include "control_system/saturation.hpp"
 
 using namespace std;
+
+using namespace control_system;
 
 void ZtfTest()
 {
@@ -32,6 +35,8 @@ void ZtfTest()
 template <typename T>
 void PidStepTest(DiscreteTf<T> &controller, const uint32_t loop_time = 200000)
 {
+    // Saturation sat{-5, 5};
+
     uint32_t start_time = HPT_GetUs();
     for (size_t i = 0; i < loop_time; i++) {
         controller.Step(1);
@@ -48,7 +53,7 @@ void PidStepTest(DiscreteTf<T> &controller, const uint32_t loop_time = 200000)
     os_printf("\n\nStep(1) from 1 to 10 times:\n");
     controller.ResetState();
     for (size_t i = 0; i < 10; i++) {
-        os_printf("%g\t", controller.Step(1));
+        os_printf("%g\t", Saturation{1.3f, 5}(controller.Step(1)));
     }
     os_printf("\n");
 }
@@ -73,20 +78,25 @@ void PidTest()
     // pid::D<double> d_controller{1, 100, 0.01};
     // PidStepTest(d_controller);
 
-    os_printf("\npid_controller_I:\n");
-    pid::PID<float> pid_controller{1.23, 0.54, 0, 100, 0.01};
+    // os_printf("\npid_controller_I:\n");
+    // pid::PID<float> pid_controller{1.23, 0.54, 0, 100, 0.01};
+    // PidStepTest(pid_controller);
+
+    // os_printf("\npid_controller_D:\n");
+    // pid_controller.SetParam(1.23, 0, 0.76, 100);
+    // pid_controller.ResetState();
+    // PidStepTest(pid_controller);
+
+    // os_printf("\npi_controller:\n");
+    // pid::PI<float> pi_controller{1.23, 0.54, 0.01};
+    // PidStepTest(pi_controller);
+
+    // os_printf("\npd_controller:\n");
+    // pid::PD<float> pd_controller{1.23, 0.76, 100, 0.01};
+    // PidStepTest(pd_controller);
+
+    os_printf("\npid_controller:\n");
+    pid::PID<float> pid_controller{1.23, 2.3, 0.53, 100, 0.01};
+    pid_controller.i_controller_.SetOutputMinMax(-5, 5);
     PidStepTest(pid_controller);
-
-    os_printf("\npid_controller_D:\n");
-    pid_controller.SetParam(1.23, 0, 0.76, 100);
-    pid_controller.ResetState();
-    PidStepTest(pid_controller);
-
-    os_printf("\npi_controller:\n");
-    pid::PI<float> pi_controller{1.23, 0.54, 0.01};
-    PidStepTest(pi_controller);
-
-    os_printf("\npd_controller:\n");
-    pid::PD<float> pd_controller{1.23, 0.76, 100, 0.01};
-    PidStepTest(pd_controller);
 }
