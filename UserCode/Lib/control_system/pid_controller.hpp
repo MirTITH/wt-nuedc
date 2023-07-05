@@ -1,3 +1,45 @@
+/**
+ * @file pid_controller.hpp
+ * @author X. Y.
+ * @brief PID 控制器
+ * @version 0.2
+ * @date 2023-07-05
+ *
+ * @copyright Copyright (c) 2023
+ *
+ * 这些控制器按照 Simulink 中的 Discrete PID Controller 模块设计，其中积分器方法和滤波器方法均为梯形（也就是双线性变换）
+ * 你可以直接把 Discrete PID Controller 中的参数填入这些控制器中
+ *
+ * PID 控制器采用的公式为：
+ *   Kp + Ki/s + Kd * Kn / (1 + Kn/s)
+ *
+ *   其中,
+ *   s = 2/Ts * (z-1)/(z+1)
+ *   Kp 为比例系数
+ *   Ki 为积分系数
+ *   Kd 为微分系数
+ *   Kn 为滤波器系数
+ *   Ts 为采样周期
+ *
+ * 参数说明：
+ *   Kn 可以减弱微分器对高频噪声的敏感性。Kn 越小减弱效果越好，但微分器的响应更慢
+ *   Kn 的值超过 2/Ts 时，微分器的阶跃响应会震荡
+ *
+ *   Ts 为采样周期，单位为秒。如 1000 Hz 的采样率，对应的 Ts 为 0.001.
+ *   请使得调用控制器 Step() 的周期为 Ts
+ *
+ * 使用示例:
+ *   定义 PID 控制器:
+ *     pid::PID<float> pid_controller{1.23, 0.54, 0, 1000, 0.01};
+ *
+ *   使用 PID 控制器:
+ *     while(1) {
+ *         output_data = controller.Step(input_data);
+ *         sleep_ms(10); // 因为 Ts = 0.01, 等待 10 ms
+ *     }
+ * 
+ */
+
 #pragma once
 
 #include "discrete_tf.hpp"
@@ -5,178 +47,311 @@
 #include <array>
 #include <cmath>
 
-template <typename T>
-class Pidn : public DiscreteTf<T>
+namespace pid
 {
-protected:
-    T Kp, Ki, Kd, Kn, Ts;
-    std::array<T, 3> input_coefficient_;
-    std::array<T, 2> output_coefficient_;
 
-    std::array<T, 3> inputs_, outputs_;
-
-    void UpdateCoefficient()
-    {
-        // z 反变换并化简后的系数
-        input_coefficient_.at(0)  = Kp + (Ki * Ts) / 2 + (2 * Kd * Kn) / (2 + Kn * Ts);
-        input_coefficient_.at(1)  = (-4 * (Kd * Kn + Kp) + Ki * Kn * Ts * Ts) / (2 + Kn * Ts);
-        input_coefficient_.at(2)  = (4 * Kd * Kn - (2 * Kp - Ki * Ts) * (-2 + Kn * Ts)) / (4 + 2 * Kn * Ts);
-        output_coefficient_.at(0) = 4 / (2 + Kn * Ts);
-        output_coefficient_.at(1) = 1 - 4 / (2 + Kn * Ts);
-    }
+template <typename T>
+class P : public DiscreteTf<T>
+{
+private:
+    T Kp = 0;
 
 public:
-    /**
-     * @brief 基于双线性变换的离散 PID 控制器，Simulink 中离散 pid 模块实现
-     *
-     * @param Kp 比例项
-     * @param Ki 积分项
-     * @param Kd 微分项
-     * @param Kn 滤波器系数
-     * @param Ts 采样时间
-     */
-    Pidn(T Kp, T Ki, T Kd, T Kn, T Ts)
-        : Kp(Kp), Ki(Ki), Kd(Kd), Kn(Kn), Ts(Ts)
+    P(T Kp)
     {
-        UpdateCoefficient();
         ResetState();
-    }
-    /**
-     * @param Kp 比例项
-     * @param Ki 积分项
-     * @param Kd 微分项
-     * @param Kn 滤波器系数
-     * @param Ts 采样时间
-     */
-    void SetParam(T Kp, T Ki, T Kd, T Kn, T Ts)
-    {
-        this->Kp = Kp;
-        this->Ki = Ki;
-        this->Kd = Kd;
-        this->Kn = Kn;
-        this->Ts = Ts;
-        UpdateCoefficient();
+        SetParam(Kp);
     }
 
     /**
-     * @brief 重置内部状态，如积分值等
+     * @brief 走一个采样周期
      *
-     */
-    void ResetState() override
-    {
-        std::fill(inputs_.begin(), inputs_.end(), 0);
-        std::fill(outputs_.begin(), outputs_.end(), 0);
-    }
-
-    /**
-     * @brief 走一个周期
-     *
-     * @param input 输入（误差）
+     * @param input 输入
      * @return T 输出
      */
     T Step(T input) override
     {
-        inputs_[2]  = inputs_[1];
-        inputs_[1]  = inputs_[0];
-        inputs_[0]  = input;
-        outputs_[2] = outputs_[1];
-        outputs_[1] = outputs_[0];
-
-        outputs_[0] = input_coefficient_[0] * inputs_[0] + input_coefficient_[1] * inputs_[1] + input_coefficient_[2] * inputs_[2] + output_coefficient_[0] * outputs_[1] + output_coefficient_[1] * outputs_[2];
-        return outputs_[0];
+        return Kp * input;
     }
+
+    /**
+     * @brief 设置参数
+     *
+     * @param Kp 比例项
+     */
+    void SetParam(T Kp)
+    {
+        this->Kp = Kp;
+    }
+
+    T GetKp() const
+    {
+        return Kp;
+    }
+
+    void ResetState(){};
 };
 
 template <typename T>
-class PidnAntiWindup : public Pidn<T>
+class I : public DiscreteTf<T>
 {
 private:
-    T max_output, min_output;
-
-    T Saturation(T input)
-    {
-        if (input > max_output) {
-            return max_output;
-        }
-
-        if (input < min_output) {
-            return min_output;
-        }
-
-        return input;
-    }
-
-public:
-    PidnAntiWindup(T Kp, T Ki, T Kd, T Kn, T Ts, T max_output, T min_output)
-        : Pidn<T>(Kp, Ki, Kd, Kn, Ts), max_output(max_output), min_output(min_output){};
-
-    void SetParam(T Kp, T Ki, T Kd, T Kn, T Ts, T max_output, T min_output)
-    {
-        this->Kp         = Kp;
-        this->Ki         = Ki;
-        this->Kd         = Kd;
-        this->Kn         = Kn;
-        this->Ts         = Ts;
-        this->max_output = max_output;
-        this->min_output = min_output;
-        Pidn<T>::UpdateCoefficient();
-    }
-
-    T Step(T input) override
-    {
-        Pidn<T>::Step(input);
-        this->outputs_[0] = Saturation(this->outputs_[0]);
-        return this->outputs_[0];
-    }
-};
-
-template <typename T>
-class Pdn : public DiscreteTf<T>
-{
-protected:
-    T Kp, Kd, Kn, Ts;
-    std::array<T, 2> input_coefficient_;
-    T output_coefficient_;
-
-    std::array<T, 2> inputs_;
-    T output_;
+    T Ki, Ts;
+    T input_coefficient_;
+    T last_input_;
+    T last_output_;
 
     void UpdateCoefficient()
     {
-        input_coefficient_.at(0) = (2 * Kd * Kn + 2 * Kp + Kn * Kp * Ts) / (2 + Kn * Ts);
-        input_coefficient_.at(1) = (-2 * Kd * Kn + Kp * (-2 + Kn * Ts)) / (2 + Kn * Ts);
-        output_coefficient_      = (2 - Kn * Ts) / (2 + Kn * Ts);
+        input_coefficient_ = Ki * Ts / 2;
     }
 
 public:
-    Pdn(T Kp, T Kd, T Kn, T Ts)
-        : Kp(Kp), Kd(Kd), Kn(Kn), Ts(Ts)
+    I(T Ki, T Ts)
     {
-        UpdateCoefficient();
         ResetState();
+        SetParam(Ki, Ts);
     }
 
-    void SetParam(T Kp, T Ki, T Kd, T Kn, T Ts)
+    /**
+     * @brief 走一个采样周期
+     *
+     * @param input 输入
+     * @return T 输出
+     */
+    T Step(T input) override
     {
-        this->Kp = Kp;
+        last_output_ = input_coefficient_ * (input + last_input_) + last_output_;
+        last_input_  = input;
+        return last_output_;
+    }
+
+    void SetParam(T Ki, T Ts)
+    {
+        this->Ki = Ki;
+        this->Ts = Ts;
+        UpdateCoefficient();
+    }
+
+    void SetParam(T Ki)
+    {
+        this->Ki = Ki;
+        UpdateCoefficient();
+    }
+
+    T GetKi() const
+    {
+        return Ki;
+    }
+
+    T GetTs() const
+    {
+        return Ts;
+    }
+
+    /**
+     * @brief 重置控制器状态
+     *
+     */
+    void ResetState()
+    {
+        last_input_  = 0;
+        last_output_ = 0;
+    }
+};
+
+template <typename T>
+class D : public DiscreteTf<T>
+{
+private:
+    T Kd, Kn, Ts;
+    T input_coefficient_;
+    T output_coefficient_;
+    T last_input_;
+    T last_output_;
+
+    void UpdateCoefficient()
+    {
+        auto den            = 2 + Kn * Ts;
+        input_coefficient_  = (2 * Kd * Kn) / den;
+        output_coefficient_ = (2 - Kn * Ts) / den;
+    }
+
+public:
+    D(T Kd, T Kn, T Ts)
+    {
+        ResetState();
+        SetParam(Kd, Kn, Ts);
+    }
+
+    /**
+     * @brief 走一个采样周期
+     *
+     * @param input 输入
+     * @return T 输出
+     */
+    T Step(T input) override
+    {
+        last_output_ = input_coefficient_ * (input - last_input_) + output_coefficient_ * last_output_;
+        last_input_  = input;
+        return last_output_;
+    }
+
+    void SetParam(T Kd, T Kn, T Ts)
+    {
         this->Kd = Kd;
         this->Kn = Kn;
         this->Ts = Ts;
         UpdateCoefficient();
     }
 
-    void ResetState() override
+    void SetParam(T Kd, T Kn)
     {
-        std::fill(inputs_.begin(), inputs_.end(), 0);
-        output_ = 0;
+        this->Kd = Kd;
+        this->Kn = Kn;
+        UpdateCoefficient();
     }
 
-    T Step(T input) override
+    T GetKd() const
     {
-        inputs_[1] = inputs_[0];
-        inputs_[0] = input;
+        return Kd;
+    }
 
-        output_ = input_coefficient_[0] * inputs_[0] + input_coefficient_[1] * inputs_[1] + output_coefficient_ * output_;
-        return output_;
+    T GetKn() const
+    {
+        return Kn;
+    }
+
+    T GetTs() const
+    {
+        return Ts;
+    }
+
+    /**
+     * @brief 重置控制器状态
+     *
+     */
+    void ResetState()
+    {
+        last_input_  = 0;
+        last_output_ = 0;
     }
 };
+
+template <typename T>
+class PID : public DiscreteTf<T>
+{
+public:
+    P<T> p_controller_;
+    I<T> i_controller_;
+    D<T> d_controller_;
+
+    PID(T Kp, T Ki, T Kd, T Kn, T Ts)
+        : p_controller_{Kp}, i_controller_{Ki, Ts}, d_controller_{Kd, Kn, Ts} {};
+
+    /**
+     * @brief 走一个采样周期
+     *
+     * @param input 输入
+     * @return T 输出
+     */
+    T Step(T input) override
+    {
+        return p_controller_.Step(input) + i_controller_.Step(input) + d_controller_.Step(input);
+    }
+
+    void SetParam(T Kp, T Ki, T Kd, T Kn, T Ts)
+    {
+        p_controller_.SetParam(Kp);
+        i_controller_.SetParam(Ki, Ts);
+        d_controller_.SetParam(Kd, Kn, Ts);
+    }
+
+    void SetParam(T Kp, T Ki, T Kd, T Kn)
+    {
+        p_controller_.SetParam(Kp);
+        i_controller_.SetParam(Ki);
+        d_controller_.SetParam(Kd, Kn);
+    }
+
+    /**
+     * @brief 重置控制器状态
+     *
+     */
+    void ResetState()
+    {
+        p_controller_.ResetState();
+        i_controller_.ResetState();
+        d_controller_.ResetState();
+    }
+};
+
+template <typename T>
+class PI : public DiscreteTf<T>
+{
+private:
+    P<T> p_controller_;
+    I<T> i_controller_;
+
+public:
+    PI(T Kp, T Ki, T Ts)
+        : p_controller_{Kp}, i_controller_{Ki, Ts} {};
+
+    /**
+     * @brief 走一个采样周期
+     *
+     * @param input 输入
+     * @return T 输出
+     */
+    T Step(T input) override
+    {
+        return p_controller_.Step(input) + i_controller_.Step(input);
+    }
+
+    /**
+     * @brief 重置控制器状态
+     *
+     */
+    void ResetState()
+    {
+        p_controller_.ResetState();
+        i_controller_.ResetState();
+    }
+};
+
+template <typename T>
+class PD : public DiscreteTf<T>
+{
+private:
+    P<T> p_controller_;
+    D<T> d_controller_;
+
+public:
+    PD(T Kp, T Kd, T Kn, T Ts)
+        : p_controller_{Kp}, d_controller_{Kd, Kn, Ts} {};
+
+    /**
+     * @brief 走一个采样周期
+     *
+     * @param input 输入
+     * @return T 输出
+     */
+    T Step(T input) override
+    {
+        return p_controller_.Step(input) + d_controller_.Step(input);
+    }
+
+    /**
+     * @brief 重置控制器状态
+     *
+     */
+    void ResetState()
+    {
+        p_controller_.ResetState();
+        d_controller_.ResetState();
+    }
+};
+
+
+
+} // namespace pid

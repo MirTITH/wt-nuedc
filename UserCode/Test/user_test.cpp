@@ -20,6 +20,9 @@ void TestThread(void *argument)
 {
     (void)argument;
 
+    extern void PidTest();
+    PidTest();
+
     BlinkLedEntry(nullptr);
 
     vTaskDelete(nullptr);

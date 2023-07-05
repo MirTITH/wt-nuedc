@@ -48,7 +48,7 @@ UartThread::UartThread(freertos_io::Uart &uart, const char *thread_name)
     : uart_device(uart)
 {
     // 优先级高于或等于 UartThread 的线程，由于在调用 Write 时不会发生线程切换（除非缓冲区不够），可以获得最快的 Write 速度
-    xTaskCreate(UartDaemonEntry, thread_name, 256, this, PriorityBelowNormal, &task_handle_);
+    xTaskCreate(UartDaemonEntry, thread_name, 256, this, PriorityHigh, &task_handle_);
 }
 
 void UartThread::Write(const char *data, size_t size)
