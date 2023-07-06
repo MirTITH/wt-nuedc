@@ -44,6 +44,7 @@
 
 #include "discrete_tf.hpp"
 #include "z_tf.hpp"
+#include "discrete_integrator.hpp"
 #include "saturation.hpp"
 #include <array>
 
@@ -62,7 +63,6 @@ private:
 public:
     P(T Kp)
     {
-        ResetState();
         SetParam(Kp);
     }
 
@@ -95,98 +95,13 @@ public:
     void ResetState(){};
 };
 
+/**
+ * @brief 积分控制器
+ * @note 直接使用了 DiscreteIntegratorSaturation
+ *
+ */
 template <typename T>
-class I : public DiscreteTf<T>
-{
-private:
-    T Ki, Ts;
-    T input_coefficient_;
-    T last_input_;
-    T last_output_;
-    Saturation<T, T> saturation; // 限幅器
-
-    void UpdateCoefficient()
-    {
-        input_coefficient_ = Ki * Ts / 2;
-    }
-
-public:
-    /**
-     * @brief 积分器
-     *
-     * @param Ki 积分器系数
-     * @param Ts 采样周期
-     *
-     */
-    I(T Ki, T Ts)
-    {
-        ResetState();
-        SetParam(Ki, Ts);
-        saturation.SetEnable(false); // 默认不使用限幅器
-    }
-
-    /**
-     * @brief 走一个采样周期
-     *
-     * @param input 输入
-     * @return T 输出
-     */
-    T Step(T input) override
-    {
-        last_output_ = saturation(input_coefficient_ * (input + last_input_) + last_output_);
-        last_input_  = input;
-        return last_output_;
-    }
-
-    void SetParam(T Ki, T Ts)
-    {
-        this->Ki = Ki;
-        this->Ts = Ts;
-        UpdateCoefficient();
-    }
-
-    void SetParam(T Ki)
-    {
-        this->Ki = Ki;
-        UpdateCoefficient();
-    }
-
-    T GetKi() const
-    {
-        return Ki;
-    }
-
-    T GetTs() const
-    {
-        return Ts;
-    }
-
-    void SetOutputMinMax(T min, T max)
-    {
-        saturation.SetEnable(true); // 使能限幅器
-        saturation.SetMinMax(min, max);
-    }
-
-    auto GetOutputMin() const
-    {
-        return saturation.GetMin();
-    }
-
-    auto GetOutputMax() const
-    {
-        return saturation.GetMax();
-    }
-
-    /**
-     * @brief 重置控制器状态
-     *
-     */
-    void ResetState()
-    {
-        last_input_  = 0;
-        last_output_ = 0;
-    }
-};
+using I = DiscreteIntegratorSaturation<T>;
 
 template <typename T>
 class D : public DiscreteTf<T>
@@ -270,12 +185,12 @@ template <typename T>
 class PID : public DiscreteTf<T>
 {
 public:
-    P<T> p_controller_;
-    I<T> i_controller_;
-    D<T> d_controller_;
+    P<T> p_controller;
+    I<T> i_controller;
+    D<T> d_controller;
 
     PID(T Kp, T Ki, T Kd, T Kn, T Ts)
-        : p_controller_{Kp}, i_controller_{Ki, Ts}, d_controller_{Kd, Kn, Ts} {};
+        : p_controller{Kp}, i_controller{Ki, Ts}, d_controller{Kd, Kn, Ts} {};
 
     /**
      * @brief 走一个采样周期
@@ -285,21 +200,21 @@ public:
      */
     T Step(T input) override
     {
-        return p_controller_.Step(input) + i_controller_.Step(input) + d_controller_.Step(input);
+        return p_controller.Step(input) + i_controller.Step(input) + d_controller.Step(input);
     }
 
     void SetParam(T Kp, T Ki, T Kd, T Kn, T Ts)
     {
-        p_controller_.SetParam(Kp);
-        i_controller_.SetParam(Ki, Ts);
-        d_controller_.SetParam(Kd, Kn, Ts);
+        p_controller.SetParam(Kp);
+        i_controller.SetParam(Ki, Ts);
+        d_controller.SetParam(Kd, Kn, Ts);
     }
 
     void SetParam(T Kp, T Ki, T Kd, T Kn)
     {
-        p_controller_.SetParam(Kp);
-        i_controller_.SetParam(Ki);
-        d_controller_.SetParam(Kd, Kn);
+        p_controller.SetParam(Kp);
+        i_controller.SetParam(Ki);
+        d_controller.SetParam(Kd, Kn);
     }
 
     /**
@@ -308,22 +223,21 @@ public:
      */
     void ResetState()
     {
-        p_controller_.ResetState();
-        i_controller_.ResetState();
-        d_controller_.ResetState();
+        p_controller.ResetState();
+        i_controller.ResetState();
+        d_controller.ResetState();
     }
 };
 
 template <typename T>
 class PI : public DiscreteTf<T>
 {
-private:
-    P<T> p_controller_;
-    I<T> i_controller_;
-
 public:
+    P<T> p_controller;
+    I<T> i_controller;
+
     PI(T Kp, T Ki, T Ts)
-        : p_controller_{Kp}, i_controller_{Ki, Ts} {};
+        : p_controller{Kp}, i_controller{Ki, Ts} {};
 
     /**
      * @brief 走一个采样周期
@@ -333,7 +247,7 @@ public:
      */
     T Step(T input) override
     {
-        return p_controller_.Step(input) + i_controller_.Step(input);
+        return p_controller.Step(input) + i_controller.Step(input);
     }
 
     /**
@@ -342,21 +256,20 @@ public:
      */
     void ResetState()
     {
-        p_controller_.ResetState();
-        i_controller_.ResetState();
+        p_controller.ResetState();
+        i_controller.ResetState();
     }
 };
 
 template <typename T>
 class PD : public DiscreteTf<T>
 {
-private:
-    P<T> p_controller_;
-    D<T> d_controller_;
-
 public:
+    P<T> p_controller;
+    D<T> d_controller;
+
     PD(T Kp, T Kd, T Kn, T Ts)
-        : p_controller_{Kp}, d_controller_{Kd, Kn, Ts} {};
+        : p_controller{Kp}, d_controller{Kd, Kn, Ts} {};
 
     /**
      * @brief 走一个采样周期
@@ -366,7 +279,7 @@ public:
      */
     T Step(T input) override
     {
-        return p_controller_.Step(input) + d_controller_.Step(input);
+        return p_controller.Step(input) + d_controller.Step(input);
     }
 
     /**
@@ -375,8 +288,120 @@ public:
      */
     void ResetState()
     {
-        p_controller_.ResetState();
-        d_controller_.ResetState();
+        p_controller.ResetState();
+        d_controller.ResetState();
+    }
+};
+
+template <typename T>
+class PID_AntiWindup : public DiscreteTf<T>
+{
+private:
+    T Kp, Kb, Ki;
+
+    D<T> d_controller;
+    DiscreteIntegrator<T> i_controller;
+
+public:
+    Saturation<T, T> output_saturation; // 输出限幅
+
+    /**
+     * @brief 带有抗饱和的 PID 控制器
+     *
+     * @param Kp 比例系数
+     * @param Ki 积分系数
+     * @param Kd 微分系数
+     * @param Kn 滤波器系数
+     * @param Ts 采样周期（秒）
+     * @param Kb 反算系数
+     * @param output_min 输出饱和下限
+     * @param output_max 输出饱和上限
+     */
+    PID_AntiWindup(T Kp, T Ki, T Kd, T Kn, T Ts, T Kb, T output_min, T output_max)
+        : Kp{Kp}, Kb{Kb}, Ki{Ki}, d_controller{Kd, Kn, Ts}, i_controller{1, Ts}, output_saturation{output_min, output_max}
+    {
+        ResetState();
+    }
+
+    /**
+     * @brief 走一个采样周期
+     *
+     * @param input 输入
+     * @return T 输出
+     */
+    T Step(T input) override
+    {
+        auto p = Kp * input;
+        auto d = d_controller.Step(input);
+
+        auto preSat  = i_controller.GetStateOutput() + p + d;
+        auto postSat = output_saturation(preSat);
+
+        auto i_output = i_controller.Step(input * Ki + (postSat - preSat) * Kb);
+        return output_saturation(i_output + p + d);
+    }
+
+    /**
+     * @brief 重置控制器状态
+     *
+     */
+    void ResetState()
+    {
+        i_controller.ResetState();
+        d_controller.ResetState();
+    }
+};
+
+template <typename T>
+class PI_AntiWindup : public DiscreteTf<T>
+{
+private:
+    T Kp, Kb, Ki;
+    DiscreteIntegrator<T> i_controller;
+
+public:
+    Saturation<T, T> output_saturation; // 输出限幅
+
+    /**
+     * @brief 带有抗饱和的 PI 控制器
+     *
+     * @param Kp 比例系数
+     * @param Ki 积分系数
+     * @param Ts 采样周期（秒）
+     * @param Kb 反算系数
+     * @param output_min 输出饱和下限
+     * @param output_max 输出饱和上限
+     */
+    PI_AntiWindup(T Kp, T Ki, T Ts, T Kb, T output_min, T output_max)
+        : Kp{Kp}, Kb{Kb}, Ki{Ki}, i_controller{1, Ts}, output_saturation{output_min, output_max}
+    {
+        ResetState();
+    }
+
+    /**
+     * @brief 走一个采样周期
+     *
+     * @param input 输入
+     * @return T 输出
+     */
+    T Step(T input) override
+    {
+        auto p = Kp * input;
+
+        auto preSat  = i_controller.GetStateOutput() + p;
+        auto postSat = output_saturation(preSat);
+
+        auto i_output = i_controller.Step(input * Ki + (postSat - preSat) * Kb);
+        return output_saturation(i_output + p);
+    }
+
+    /**
+     * @brief 重置控制器状态
+     *
+     */
+    void ResetState()
+    {
+        i_controller.ResetState();
     }
 };
 

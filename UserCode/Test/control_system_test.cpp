@@ -35,8 +35,6 @@ void ZtfTest()
 template <typename T>
 void PidStepTest(DiscreteTf<T> &controller, const uint32_t loop_time = 200000)
 {
-    // Saturation sat{-5, 5};
-
     uint32_t start_time = HPT_GetUs();
     for (size_t i = 0; i < loop_time; i++) {
         controller.Step(1);
@@ -50,10 +48,15 @@ void PidStepTest(DiscreteTf<T> &controller, const uint32_t loop_time = 200000)
         os_printf("%g\t", controller.Step(1));
     }
 
-    os_printf("\n\nStep(1) from 1 to 10 times:\n");
+    os_printf("\n\nStep(1) from tick 1 to 10:\n");
     controller.ResetState();
     for (size_t i = 0; i < 10; i++) {
-        os_printf("%g\t", Saturation{1.3f, 5}(controller.Step(1)));
+        os_printf("%g\t", controller.Step(1));
+    }
+
+    os_printf("\nThen Step(-1) from tick 11 to 20:\n");
+    for (size_t i = 0; i < 10; i++) {
+        os_printf("%g\t", controller.Step(-1));
     }
     os_printf("\n");
 }
@@ -71,8 +74,12 @@ void PidTest()
     // PidStepTest(p_controller);
 
     // os_printf("\ni_controller:\n");
-    // pid::I<float> i_controller{2, 0.01};
+    // control_system::DiscreteIntegratorSaturation<float> i_controller{{2, 0.01}, {-10, 10}};
     // PidStepTest(i_controller);
+
+    // os_printf("\nDiscreteIntegrator:\n");
+    // control_system::DiscreteIntegrator<float> integrator{2, 0.01};
+    // PidStepTest(integrator);
 
     // os_printf("\nd_controller:\n");
     // pid::D<double> d_controller{1, 100, 0.01};
@@ -95,8 +102,16 @@ void PidTest()
     // pid::PD<float> pd_controller{1.23, 0.76, 100, 0.01};
     // PidStepTest(pd_controller);
 
-    os_printf("\npid_controller:\n");
-    pid::PID<float> pid_controller{1.23, 2.3, 0.53, 100, 0.01};
-    pid_controller.i_controller_.SetOutputMinMax(-5, 5);
+    os_printf("PID_AntiWindup:\n");
+    pid::PID_AntiWindup<float> pid_controller{2, 100, 0, 100, 0.01, 50, -5, 5};
+    // pid_controller.i_controller.SetOutputMinMax(-5, 5);
     PidStepTest(pid_controller);
+    os_printf("\n");
+
+    os_printf("PI_AntiWindup:\n");
+    pid::PI_AntiWindup<float> pi_controller{2, 100, 0.01, 50, -5, 5};
+
+    // pid_controller.i_controller.SetOutputMinMax(-5, 5);
+    PidStepTest(pi_controller);
+    os_printf("\n");
 }
