@@ -10,7 +10,7 @@ void vApplicationStackOverflowHook(xTaskHandle xTask, signed char *pcTaskName)
 
     fprintf(stderr, "Stack overflow! TaskHandle: 0x%x TaskName: %s\n", (unsigned int)xTask, pcTaskName);
 
-    __disable_irq();
+    __disable_irq(); // 关闭所有中断
 
     while (1) {
         /* code */
