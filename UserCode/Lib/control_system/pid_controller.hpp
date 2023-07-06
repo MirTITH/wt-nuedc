@@ -2,7 +2,7 @@
  * @file pid_controller.hpp
  * @author X. Y.
  * @brief PID 控制器
- * @version 0.4
+ * @version 0.5
  * @date 2023-07-05
  *
  * @copyright Copyright (c) 2023
@@ -97,8 +97,7 @@ public:
 
 /**
  * @brief 积分控制器
- * @note 直接使用了 DiscreteIntegratorSaturation
- *
+ * @note 直接使用 DiscreteIntegratorSaturation
  */
 template <typename T>
 using I = DiscreteIntegratorSaturation<T>;
@@ -304,6 +303,12 @@ public:
     }
 };
 
+/**
+ * @brief 抗饱和 PID 控制器
+ * @note 目前只实现了反算抗饱和法
+ * @note 详细用法可以参考 Matlab 文档 https://ww2.mathworks.cn/help/simulink/slref/anti-windup-control-using-a-pid-controller.html
+ * @tparam T 运算数据类型
+ */
 template <typename T>
 class PID_AntiWindup : public DiscreteControllerBase<T>
 {
@@ -365,6 +370,12 @@ public:
     }
 };
 
+/**
+ * @brief 抗饱和 PI 控制器
+ * @note 目前只实现了反算抗饱和法
+ * @note 详细用法可以参考 Matlab 文档 https://ww2.mathworks.cn/help/simulink/slref/anti-windup-control-using-a-pid-controller.html
+ * @tparam T 运算数据类型
+ */
 template <typename T>
 class PI_AntiWindup : public DiscreteControllerBase<T>
 {
