@@ -2,7 +2,7 @@
  * @file discrete_integrator.hpp
  * @author X. Y.
  * @brief 离散时间积分器
- * @version 0.1
+ * @version 0.2
  * @date 2023-07-06
  *
  * @copyright Copyright (c) 2023
@@ -16,14 +16,14 @@
  */
 
 #pragma once
-#include "discrete_tf.hpp"
+#include "discrete_controller_base.hpp"
 #include "saturation.hpp"
 
 namespace control_system
 {
 
 template <typename T>
-class DiscreteIntegrator : public DiscreteTf<T>
+class DiscreteIntegrator : public DiscreteControllerBase<T>
 {
 protected:
     T Ki, Ts;

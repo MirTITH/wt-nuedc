@@ -2,7 +2,7 @@
  * @file pid_controller.hpp
  * @author X. Y.
  * @brief PID 控制器
- * @version 0.2
+ * @version 0.4
  * @date 2023-07-05
  *
  * @copyright Copyright (c) 2023
@@ -42,7 +42,7 @@
 
 #pragma once
 
-#include "discrete_tf.hpp"
+#include "discrete_controller_base.hpp"
 #include "z_tf.hpp"
 #include "discrete_integrator.hpp"
 #include "saturation.hpp"
@@ -55,7 +55,7 @@ namespace pid
 {
 
 template <typename T>
-class P : public DiscreteTf<T>
+class P : public DiscreteControllerBase<T>
 {
 private:
     T Kp = 0;
@@ -104,7 +104,7 @@ template <typename T>
 using I = DiscreteIntegratorSaturation<T>;
 
 template <typename T>
-class D : public DiscreteTf<T>
+class D : public DiscreteControllerBase<T>
 {
 private:
     T Kd, Kn, Ts;
@@ -181,16 +181,23 @@ public:
     }
 };
 
-template <typename T>
-class PID : public DiscreteTf<T>
+/**
+ * @brief PID 控制器
+ *
+ * @tparam T 运算数据类型
+ * @tparam IntegratorType 积分器类型，默认为带限幅的 DiscreteIntegratorSaturation<T>. 如果不需要限幅，可以指定为 DiscreteIntegrator<T>
+ * @note   例如：pid::PID<float, DiscreteIntegrator<float>> pid_controller{1.23, 0.54, 0.5, 100, 0.01};
+ */
+template <typename T, typename IntegratorType = I<T>>
+class PID : public DiscreteControllerBase<T>
 {
 public:
-    P<T> p_controller;
-    I<T> i_controller;
+    T Kp; // 比例系数，可以直接修改
+    IntegratorType i_controller;
     D<T> d_controller;
 
     PID(T Kp, T Ki, T Kd, T Kn, T Ts)
-        : p_controller{Kp}, i_controller{Ki, Ts}, d_controller{Kd, Kn, Ts} {};
+        : Kp{Kp}, i_controller{Ki, Ts}, d_controller{Kd, Kn, Ts} {};
 
     /**
      * @brief 走一个采样周期
@@ -200,19 +207,19 @@ public:
      */
     T Step(T input) override
     {
-        return p_controller.Step(input) + i_controller.Step(input) + d_controller.Step(input);
+        return Kp * input + i_controller.Step(input) + d_controller.Step(input);
     }
 
     void SetParam(T Kp, T Ki, T Kd, T Kn, T Ts)
     {
-        p_controller.SetParam(Kp);
+        this->Kp = Kp;
         i_controller.SetParam(Ki, Ts);
         d_controller.SetParam(Kd, Kn, Ts);
     }
 
     void SetParam(T Kp, T Ki, T Kd, T Kn)
     {
-        p_controller.SetParam(Kp);
+        this->Kp = Kp;
         i_controller.SetParam(Ki);
         d_controller.SetParam(Kd, Kn);
     }
@@ -223,21 +230,27 @@ public:
      */
     void ResetState()
     {
-        p_controller.ResetState();
         i_controller.ResetState();
         d_controller.ResetState();
     }
 };
 
-template <typename T>
-class PI : public DiscreteTf<T>
+/**
+ * @brief PI 控制器
+ *
+ * @tparam T 运算数据类型
+ * @tparam IntegratorType 积分器类型，默认为带限幅的 DiscreteIntegratorSaturation<T>. 如果不需要限幅，可以指定为 DiscreteIntegrator<T>
+ * @note   例如：pid::PI<float, DiscreteIntegrator<float>> pi_controller{1.23, 0.54, 0.01};
+ */
+template <typename T, typename IntegratorType = I<T>>
+class PI : public DiscreteControllerBase<T>
 {
 public:
-    P<T> p_controller;
-    I<T> i_controller;
+    T Kp; // 比例系数，可以直接修改
+    IntegratorType i_controller;
 
     PI(T Kp, T Ki, T Ts)
-        : p_controller{Kp}, i_controller{Ki, Ts} {};
+        : Kp{Kp}, i_controller{Ki, Ts} {};
 
     /**
      * @brief 走一个采样周期
@@ -247,7 +260,7 @@ public:
      */
     T Step(T input) override
     {
-        return p_controller.Step(input) + i_controller.Step(input);
+        return Kp * input + i_controller.Step(input);
     }
 
     /**
@@ -256,20 +269,19 @@ public:
      */
     void ResetState()
     {
-        p_controller.ResetState();
         i_controller.ResetState();
     }
 };
 
 template <typename T>
-class PD : public DiscreteTf<T>
+class PD : public DiscreteControllerBase<T>
 {
 public:
-    P<T> p_controller;
+    T Kp; // 比例系数，可以直接修改
     D<T> d_controller;
 
     PD(T Kp, T Kd, T Kn, T Ts)
-        : p_controller{Kp}, d_controller{Kd, Kn, Ts} {};
+        : Kp{Kp}, d_controller{Kd, Kn, Ts} {};
 
     /**
      * @brief 走一个采样周期
@@ -279,7 +291,7 @@ public:
      */
     T Step(T input) override
     {
-        return p_controller.Step(input) + d_controller.Step(input);
+        return Kp * input + d_controller.Step(input);
     }
 
     /**
@@ -288,23 +300,24 @@ public:
      */
     void ResetState()
     {
-        p_controller.ResetState();
         d_controller.ResetState();
     }
 };
 
 template <typename T>
-class PID_AntiWindup : public DiscreteTf<T>
+class PID_AntiWindup : public DiscreteControllerBase<T>
 {
-private:
-    T Kp, Kb, Ki;
-
-    D<T> d_controller;
-    DiscreteIntegrator<T> i_controller;
-
 public:
+    T Kp; // 比例系数，可以直接修改
+    T Ki; // 积分系数，可以直接修改
+    T Kb; // 反算系数，可以直接修改
+    D<T> d_controller;
     Saturation<T, T> output_saturation; // 输出限幅
 
+private:
+    DiscreteIntegrator<T> integrator;
+
+public:
     /**
      * @brief 带有抗饱和的 PID 控制器
      *
@@ -318,7 +331,7 @@ public:
      * @param output_max 输出饱和上限
      */
     PID_AntiWindup(T Kp, T Ki, T Kd, T Kn, T Ts, T Kb, T output_min, T output_max)
-        : Kp{Kp}, Kb{Kb}, Ki{Ki}, d_controller{Kd, Kn, Ts}, i_controller{1, Ts}, output_saturation{output_min, output_max}
+        : Kp{Kp}, Ki{Ki}, Kb{Kb}, d_controller{Kd, Kn, Ts}, output_saturation{output_min, output_max}, integrator{1, Ts}
     {
         ResetState();
     }
@@ -334,10 +347,10 @@ public:
         auto p = Kp * input;
         auto d = d_controller.Step(input);
 
-        auto preSat  = i_controller.GetStateOutput() + p + d;
+        auto preSat  = integrator.GetStateOutput() + p + d;
         auto postSat = output_saturation(preSat);
 
-        auto i_output = i_controller.Step(input * Ki + (postSat - preSat) * Kb);
+        auto i_output = integrator.Step(input * Ki + (postSat - preSat) * Kb);
         return output_saturation(i_output + p + d);
     }
 
@@ -347,21 +360,24 @@ public:
      */
     void ResetState()
     {
-        i_controller.ResetState();
+        integrator.ResetState();
         d_controller.ResetState();
     }
 };
 
 template <typename T>
-class PI_AntiWindup : public DiscreteTf<T>
+class PI_AntiWindup : public DiscreteControllerBase<T>
 {
-private:
-    T Kp, Kb, Ki;
-    DiscreteIntegrator<T> i_controller;
-
 public:
+    T Kp;                               // 比例系数，可以直接修改
+    T Ki;                               // 积分系数，可以直接修改
+    T Kb;                               // 反算系数，可以直接修改
     Saturation<T, T> output_saturation; // 输出限幅
 
+private:
+    DiscreteIntegrator<T> integrator;
+
+public:
     /**
      * @brief 带有抗饱和的 PI 控制器
      *
@@ -373,7 +389,7 @@ public:
      * @param output_max 输出饱和上限
      */
     PI_AntiWindup(T Kp, T Ki, T Ts, T Kb, T output_min, T output_max)
-        : Kp{Kp}, Kb{Kb}, Ki{Ki}, i_controller{1, Ts}, output_saturation{output_min, output_max}
+        : Kp{Kp}, Ki{Ki}, Kb{Kb}, output_saturation{output_min, output_max}, integrator{1, Ts}
     {
         ResetState();
     }
@@ -388,10 +404,10 @@ public:
     {
         auto p = Kp * input;
 
-        auto preSat  = i_controller.GetStateOutput() + p;
+        auto preSat  = integrator.GetStateOutput() + p;
         auto postSat = output_saturation(preSat);
 
-        auto i_output = i_controller.Step(input * Ki + (postSat - preSat) * Kb);
+        auto i_output = integrator.Step(input * Ki + (postSat - preSat) * Kb);
         return output_saturation(i_output + p);
     }
 
@@ -401,7 +417,7 @@ public:
      */
     void ResetState()
     {
-        i_controller.ResetState();
+        integrator.ResetState();
     }
 };
 
