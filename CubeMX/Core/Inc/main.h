@@ -59,6 +59,7 @@ void Error_Handler(void);
 /* Private defines -----------------------------------------------------------*/
 #define ADS_NDRDY_Pin GPIO_PIN_4
 #define ADS_NDRDY_GPIO_Port GPIOA
+#define ADS_NDRDY_EXTI_IRQn EXTI4_IRQn
 #define ADS_NRESET_Pin GPIO_PIN_2
 #define ADS_NRESET_GPIO_Port GPIOB
 #define Led7_Pin GPIO_PIN_1

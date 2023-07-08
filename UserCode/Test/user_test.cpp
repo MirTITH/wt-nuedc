@@ -9,6 +9,7 @@
 // Test includes
 #include "test_template.cpp.hpp"
 #include "control_system_test.cpp.hpp"
+#include "ads1256_test.cpp.hpp"
 
 using namespace user_test;
 
@@ -16,13 +17,14 @@ void TestThread(void *argument)
 {
     (void)argument;
 
-    os_printf("TestThread start\n");
+    os_printf("Start %s\n", __func__);
 
-    PidTest();
+    // PidTest();
+    Ads1256Test();
 
     BlinkLedEntry(nullptr);
 
-    os_printf("TestThread exit\n");
+    os_printf("Exit %s\n", __func__);
     vTaskDelete(nullptr);
 }
 
