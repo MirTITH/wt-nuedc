@@ -1,3 +1,5 @@
+#pragma once
+
 #include "main.h"
 #include "control_system/z_tf.hpp"
 #include "freertos_io/os_printf.h"
@@ -6,9 +8,10 @@
 #include "control_system/saturation.hpp"
 
 using namespace std;
-
 using namespace control_system;
 
+namespace user_test
+{
 void ZtfTest()
 {
     // ztf
@@ -114,3 +117,5 @@ void PidTest()
     // PidStepTest(pi_controller);
     os_printf("\n");
 }
+
+} // namespace user_test

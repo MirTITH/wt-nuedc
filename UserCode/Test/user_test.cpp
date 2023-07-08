@@ -6,22 +6,14 @@
 #include <cstdio>
 #include "freertos_io/os_printf.h"
 
-void BlinkLedEntry(void *argument)
-{
-    (void)argument;
+// Test includes
+#include "test_template.cpp.hpp"
 
-    while (true) {
-        HAL_GPIO_TogglePin(Led2_GPIO_Port, Led2_Pin);
-        vTaskDelay(250);
-    }
-}
+using namespace user_test;
 
 void TestThread(void *argument)
 {
     (void)argument;
-
-    extern void PidTest();
-    PidTest();
 
     BlinkLedEntry(nullptr);
 

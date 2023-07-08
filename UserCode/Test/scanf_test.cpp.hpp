@@ -1,5 +1,12 @@
+#pragma once
+#include "main.h"
+#include "FreeRTOS.h"
+#include "task.h"
 #include "freertos_io/os_printf.h"
 #include <stdio.h>
+
+namespace user_test
+{
 
 void ScanfTest()
 {
@@ -13,3 +20,5 @@ void ScanfTest()
         os_printf("这三个数字是：%g, %g, %g\n", a, b, c);
     }
 }
+
+} // namespace user_test
