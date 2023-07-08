@@ -8,6 +8,7 @@
 
 // Test includes
 #include "test_template.cpp.hpp"
+#include "control_system_test.cpp.hpp"
 
 using namespace user_test;
 
@@ -15,8 +16,13 @@ void TestThread(void *argument)
 {
     (void)argument;
 
+    os_printf("TestThread start\n");
+
+    PidTest();
+
     BlinkLedEntry(nullptr);
 
+    os_printf("TestThread exit\n");
     vTaskDelete(nullptr);
 }
 

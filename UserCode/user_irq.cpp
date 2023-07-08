@@ -1,12 +1,12 @@
 /**
  * @file user_irq.cpp
- * @author X. Y.  
+ * @author X. Y.
  * @brief 所有的中断回调函数放在这个文件中
  * @version 0.1
  * @date 2023-07-06
- * 
+ *
  * @copyright Copyright (c) 2023
- * 
+ *
  */
 
 #include "main.h"
@@ -29,15 +29,15 @@ void MY_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim);
 
 void HAL_UART_TxCpltCallback(UART_HandleTypeDef *huart)
 {
-    if (huart->Instance == USART1) {
-        Uart1.uart_device.TxCpltCallback();
+    if (huart->Instance == MainUart.uart_device.huart_.Instance) {
+        MainUart.uart_device.TxCpltCallback();
     }
 }
 
 void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
 {
-    if (huart->Instance == USART1) {
-        Uart1.uart_device.RxCpltCallback();
+    if (huart->Instance == MainUart.uart_device.huart_.Instance) {
+        MainUart.uart_device.RxCpltCallback();
     }
 }
 
@@ -50,8 +50,8 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
  */
 void HAL_UARTEx_RxEventCallback(UART_HandleTypeDef *huart, uint16_t Size)
 {
-    if (huart->Instance == USART1) {
-        Uart1.uart_device.RxEventCallback(Size);
+    if (huart->Instance == MainUart.uart_device.huart_.Instance) {
+        MainUart.uart_device.RxEventCallback(Size);
     }
 }
 

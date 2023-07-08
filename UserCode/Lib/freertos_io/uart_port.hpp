@@ -16,9 +16,9 @@ public:
     uart_port(huart_handle_t &huart)
         : huart_(huart){};
 
-protected:
     huart_handle_t &huart_;
 
+protected:
     bool IsAddressValidForDma(const void *pData)
     {
         if ((size_t)pData < (0x10000000 + 64 * 1024) && (size_t)pData >= 0x10000000) {

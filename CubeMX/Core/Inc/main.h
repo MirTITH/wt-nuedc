@@ -61,6 +61,10 @@ void Error_Handler(void);
 #define ADS_NDRDY_GPIO_Port GPIOA
 #define ADS_NRESET_Pin GPIO_PIN_2
 #define ADS_NRESET_GPIO_Port GPIOB
+#define Led7_Pin GPIO_PIN_1
+#define Led7_GPIO_Port GPIOD
+#define Led6_Pin GPIO_PIN_2
+#define Led6_GPIO_Port GPIOD
 
 /* USER CODE BEGIN Private defines */
 
