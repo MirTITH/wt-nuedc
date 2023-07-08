@@ -7,7 +7,7 @@
     "settings": {
         "files.autoGuessEncoding": true,
         "C_Cpp.default.configurationProvider": "cl.eide",
-        // "C_Cpp.errorSquiggles": "disabled",
+        "C_Cpp.errorSquiggles": "disabled",
         "files.associations": {
             "*.m": "matlab",
             ".eideignore": "ignore",

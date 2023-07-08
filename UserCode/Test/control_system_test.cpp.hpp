@@ -12,31 +12,9 @@ using namespace control_system;
 
 namespace user_test
 {
-void ZtfTest()
-{
-    // ztf
-    ZTf<float> ztf({66.2117333333333, -124.136000000000, 58.1856000000000},
-                   {1, -0.333333333333333, -0.666666666666667});
-
-    ztf.ResetState();
-    uint32_t start_time = HPT_GetUs();
-    for (size_t i = 0; i < 1000000; i++) {
-        ztf.Step(1);
-    }
-    auto duration         = HPT_GetUs() - start_time;
-    auto speed            = 1000000.0f / duration * 1000.0f;
-    auto next_step_result = ztf.Step(1);
-
-    ztf.ResetState();
-    os_printf("ztf.Step(1): %g\n duration: %lu us\n speed: %g kps\n", next_step_result, duration, speed);
-
-    for (size_t i = 0; i < 10; i++) {
-        os_printf("%g\n", ztf.Step(1));
-    }
-}
 
 template <typename T>
-void PidStepTest(DiscreteControllerBase<T> &controller, const uint32_t loop_time = 200000)
+void DiscreteControllerTest(DiscreteControllerBase<T> &controller, const uint32_t loop_time = 500000)
 {
     uint32_t start_time = HPT_GetUs();
     for (size_t i = 0; i < loop_time; i++) {
@@ -64,57 +42,87 @@ void PidStepTest(DiscreteControllerBase<T> &controller, const uint32_t loop_time
     os_printf("\n");
 }
 
+void ZtfTest()
+{
+    // ztf
+    ZTf<float> ztf1({66.2117333333333, -124.136000000000, 58.1856000000000},
+                    {1, -0.333333333333333, -0.666666666666667});
+    os_printf("==== ZtfTest: ztf1 ====\n");
+    DiscreteControllerTest(ztf1);
+
+    ZTf<float> ztf2({1, 2}, {1, 2, 3, 4, 5});
+    os_printf("==== ZtfTest: ztf2 ====\n");
+    DiscreteControllerTest(ztf2);
+
+    ZTf<float> ztf3({5}, {1});
+    os_printf("==== ZtfTest: ztf3 ====\n");
+    DiscreteControllerTest(ztf3);
+
+    ZTf<float> ztf4({2.5}, {1, 3, 4});
+    os_printf("==== ZtfTest: ztf4 ====\n");
+    DiscreteControllerTest(ztf4);
+
+    ZTf<float> ztf5({}, {1, 4, 4});
+    os_printf("==== ZtfTest: ztf5 ====\n");
+    DiscreteControllerTest(ztf5);
+
+    ZTf<float> ztf6({1, 2, 3, 4, 5, 6, 7, 8, 9, 10}, {1, 2, 3, 4, 5, 6, 7, 8, 9, 10});
+    os_printf("==== ZtfTest: ztf6 ====\n");
+    DiscreteControllerTest(ztf6);
+    vTaskDelay(1000);
+}
+
 void PidTest()
 {
     os_printf("\n==============Start PidTest=============\n");
 
     // os_printf("\np_controller:\n");
     // pid::P<float> p_controller{2};
-    // PidStepTest(p_controller);
+    // DiscreteControllerTest(p_controller);
 
     // os_printf("\ni_controller:\n");
     // control_system::DiscreteIntegratorSaturation<float> i_controller{{2, 0.01}, {-10, 10}};
-    // PidStepTest(i_controller);
+    // DiscreteControllerTest(i_controller);
 
     // os_printf("\nDiscreteIntegrator:\n");
     // control_system::DiscreteIntegrator<float> integrator{2, 0.01};
-    // PidStepTest(integrator);
+    // DiscreteControllerTest(integrator);
 
     // os_printf("\nd_controller:\n");
     // pid::D<double> d_controller{1, 100, 0.01};
-    // PidStepTest(d_controller);
+    // DiscreteControllerTest(d_controller);
 
     os_printf("\npid_controller:\n");
     pid::PID<float> pid_controller{1.23, 0.54, 0.5, 100, 0.01};
-    PidStepTest(pid_controller);
+    DiscreteControllerTest(pid_controller);
 
     os_printf("\npid_controller, no saturation:\n");
     pid::PID<float, DiscreteIntegrator<float>> pid_controller1{1.23, 0.54, 0.5, 100, 0.01};
-    PidStepTest(pid_controller1);
+    DiscreteControllerTest(pid_controller1);
 
     // os_printf( "\npi_controller:\n");
     // pid::PI<float> pi_controller{1.23, 0.54, 0.01};
-    // PidStepTest(pi_controller, 1000000);
+    // DiscreteControllerTest(pi_controller, 1000000);
 
     // os_printf("\npi_controller, no saturation:\n");
     // pid::PI<float, DiscreteIntegrator<float>> pi_controller1{1.23, 0.54, 0.01};
-    // PidStepTest(pi_controller1, 1000000);
+    // DiscreteControllerTest(pi_controller1, 1000000);
 
     // os_printf("\npd_controller:\n");
     // pid::PD<float> pd_controller{1.23, 0.76, 100, 0.01};
-    // PidStepTest(pd_controller);
+    // DiscreteControllerTest(pd_controller);
 
     // os_printf("PID_AntiWindup:\n");
     // pid::PID_AntiWindup<float> pid_controller{2, 100, 0, 100, 0.01, 50, -5, 5};
     // // pid_controller.i_controller.SetOutputMinMax(-5, 5);
-    // PidStepTest(pid_controller);
+    // DiscreteControllerTest(pid_controller);
     // os_printf("\n");
 
     // os_printf("PI_AntiWindup:\n");
     // pid::PI_AntiWindup<float> pi_controller{2, 100, 0.01, 50, -5, 5};
 
     // pid_controller.i_controller.SetOutputMinMax(-5, 5);
-    // PidStepTest(pi_controller);
+    // DiscreteControllerTest(pi_controller);
     os_printf("\n");
 }
 

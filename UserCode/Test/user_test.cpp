@@ -8,12 +8,15 @@
 
 // Test includes
 #include "test_template.cpp.hpp"
+#include "control_system_test.cpp.hpp"
 
 using namespace user_test;
 
 void TestThread(void *argument)
 {
     (void)argument;
+
+    ZtfTest();
 
     BlinkLedEntry(nullptr);
 
