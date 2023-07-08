@@ -47,16 +47,23 @@ void MX_GPIO_Init(void)
   /* GPIO Ports Clock Enable */
   __HAL_RCC_GPIOH_CLK_ENABLE();
   __HAL_RCC_GPIOA_CLK_ENABLE();
+  __HAL_RCC_GPIOB_CLK_ENABLE();
 
   /*Configure GPIO pin Output Level */
-  HAL_GPIO_WritePin(Led2_GPIO_Port, Led2_Pin, GPIO_PIN_SET);
+  HAL_GPIO_WritePin(ADS_NRESET_GPIO_Port, ADS_NRESET_Pin, GPIO_PIN_SET);
 
   /*Configure GPIO pin : PtPin */
-  GPIO_InitStruct.Pin = Led2_Pin;
+  GPIO_InitStruct.Pin = ADS_NDRDY_Pin;
+  GPIO_InitStruct.Mode = GPIO_MODE_IT_RISING;
+  GPIO_InitStruct.Pull = GPIO_PULLUP;
+  HAL_GPIO_Init(ADS_NDRDY_GPIO_Port, &GPIO_InitStruct);
+
+  /*Configure GPIO pin : PtPin */
+  GPIO_InitStruct.Pin = ADS_NRESET_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
-  HAL_GPIO_Init(Led2_GPIO_Port, &GPIO_InitStruct);
+  HAL_GPIO_Init(ADS_NRESET_GPIO_Port, &GPIO_InitStruct);
 
 }
 
