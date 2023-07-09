@@ -9,14 +9,26 @@
 // Test includes
 #include "test_template.cpp.hpp"
 #include "control_system_test.cpp.hpp"
+#include "adc_test.hpp"
 
 using namespace user_test;
+
+void BlinkLedEntry(void *argument)
+{
+    (void)argument;
+
+    while (true) {
+        HAL_GPIO_TogglePin(Led2_GPIO_Port, Led2_Pin);
+        vTaskDelay(250);
+    }
+}
 
 void TestThread(void *argument)
 {
     (void)argument;
 
-    ZtfTest();
+    // ZtfTest();
+    AdcTest();
 
     BlinkLedEntry(nullptr);
 

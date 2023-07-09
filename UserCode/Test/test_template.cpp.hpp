@@ -5,14 +5,11 @@
 
 namespace user_test
 {
-void BlinkLedEntry(void *argument)
+void UntitledTest()
 {
-    (void)argument;
+    os_printf("==== Start %s ====\n", __func__);
 
-    while (true) {
-        HAL_GPIO_TogglePin(Led2_GPIO_Port, Led2_Pin);
-        vTaskDelay(250);
-    }
+    os_printf("==== End %s ====\n", __func__);
 }
 
 } // namespace user_test

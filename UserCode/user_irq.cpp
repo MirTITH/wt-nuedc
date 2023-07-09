@@ -1,18 +1,19 @@
 /**
  * @file user_irq.cpp
- * @author X. Y.  
+ * @author X. Y.
  * @brief 所有的中断回调函数放在这个文件中
  * @version 0.1
  * @date 2023-07-06
- * 
+ *
  * @copyright Copyright (c) 2023
- * 
+ *
  */
 
 #include "main.h"
 #include "freertos_io/uart_device.hpp"
 #include "HighPrecisionTime/high_precision_time.h"
 #include "freertos_io/os_printf.h"
+#include "freertos_io/uart_device.hpp"
 
 #ifdef __cplusplus
 extern "C" {
@@ -22,6 +23,7 @@ void HAL_UART_TxCpltCallback(UART_HandleTypeDef *huart);
 void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart);
 void HAL_UARTEx_RxEventCallback(UART_HandleTypeDef *huart, uint16_t Size);
 void MY_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim);
+void HAL_ADC_ConvCpltCallback(ADC_HandleTypeDef *hadc);
 
 #ifdef __cplusplus
 }
@@ -59,4 +61,13 @@ void MY_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
 {
     if (htim->Instance == TIM3) {
     }
+}
+
+int AdcCpltCount = 0;
+
+#include "Adc/adc_class_device.hpp"
+
+void HAL_ADC_ConvCpltCallback(ADC_HandleTypeDef *hadc)
+{
+    AdcCpltCount++;
 }

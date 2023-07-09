@@ -11,7 +11,7 @@ class UartThread
 private:
     TaskHandle_t task_handle_;
     TaskHandle_t task_to_notify_ = nullptr;
-    RingBuffer<512> ring_buffer_; // 缓冲区，尖括号里的是缓冲区大小
+    RingBuffer<1024> ring_buffer_; // 缓冲区，尖括号里的是缓冲区大小
     freertos_lock::BinarySemphr lock_{true};
 
 public:

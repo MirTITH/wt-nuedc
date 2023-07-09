@@ -17,5 +17,5 @@ void StartDefaultTask(void const *argument)
 
     StartTestThread();
 
-    vTaskDelete(nullptr);  // 删除当前线程
+    vTaskDelete(nullptr); // 删除当前线程
 }
