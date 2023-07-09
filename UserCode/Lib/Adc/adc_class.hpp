@@ -1,12 +1,12 @@
 /**
  * @file adc_class.hpp
- * @author X. Y.  
- * @brief 
- * @version 0.2
+ * @author X. Y.
+ * @brief
+ * @version 0.3
  * @date 2023-07-09
- * 
+ *
  * @copyright Copyright (c) 2023
- * 
+ *
  */
 
 #pragma once
@@ -14,6 +14,7 @@
 #include "adc.h"
 #include <vector>
 #include <cassert>
+// #include "freertos_lock/freertos_lock.hpp"
 
 /**
  * ADC 需要在 CubeMX 里先配置好，以下参数需要配置：（其他随意）
@@ -34,8 +35,9 @@ class Adc
 private:
     using adc_data_t = uint16_t;
 
+    // freertos_lock::CountingSemphr lock_;
+
     bool is_inited_ = false;
-    ADC_HandleTypeDef *hadc_;
     const float vref_;
     uint8_t number_of_conversion_ = 0;
     std::vector<adc_data_t> adc_data_;
@@ -49,13 +51,22 @@ private:
     }
 
 public:
+    ADC_HandleTypeDef *hadc_;
+    uint32_t conv_cplt_count = 0; // 转换完成的次数
+
     /**
      *
      * @param hadc
      * @param vref 参考电压 (V)
      */
     Adc(ADC_HandleTypeDef *hadc, float vref = 3.3)
-        : hadc_(hadc), vref_(vref){};
+        : vref_(vref), hadc_(hadc){};
+
+    void ConvCpltCallback()
+    {
+        conv_cplt_count++;
+        // lock_.unlock_from_isr();
+    }
 
     /**
      * @brief 初始化 ADC

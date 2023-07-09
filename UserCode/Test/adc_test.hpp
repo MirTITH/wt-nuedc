@@ -5,8 +5,6 @@
 #include "Adc/adc_class_device.hpp"
 #include "freertos_io/os_printf.h"
 
-extern int AdcCpltCount;
-
 namespace user_test
 {
 void AdcTest()
@@ -16,23 +14,25 @@ void AdcTest()
     Adc1.Init();
     Adc1.StartDma();
 
-    // int last_count = 0;
+    int last_count = 0;
     TickType_t pxPreviousWakeTime = xTaskGetTickCount();
+
+    int loop_period_ms = 100;
 
     while (true) {
         auto volts = Adc1.GetAllVoltage();
-        os_printf("%f,%f,%f,%f\n", volts.at(0), volts.at(1), volts.at(2), volts.at(3));
-        // os_printf("adc volt: ");
-        // for (auto &var : volts) {
-        //     os_printf("%f\t", var);
-        // }
+        os_printf("adc volt: ");
+        for (auto &var : volts) {
+            os_printf("%f\t", var);
+        }
 
         // os_printf("temp: %f\t", GetCoreTemperature());
-        // os_printf("count: %d speed: %d", AdcCpltCount, AdcCpltCount - last_count);
-        // last_count = AdcCpltCount;
-        // os_printf("\n");
+        auto count = Adc1.conv_cplt_count;
+        os_printf("count: %lu speed: %g kps", count, (float)(count - last_count) / loop_period_ms);
+        last_count = count;
+        os_printf("\n");
 
-        vTaskDelayUntil(&pxPreviousWakeTime, 1);
+        vTaskDelayUntil(&pxPreviousWakeTime, loop_period_ms);
     }
 
     os_printf("==== End %s ====\n", __func__);

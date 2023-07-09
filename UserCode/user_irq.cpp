@@ -14,6 +14,7 @@
 #include "HighPrecisionTime/high_precision_time.h"
 #include "freertos_io/os_printf.h"
 #include "freertos_io/uart_device.hpp"
+#include "Adc/adc_class_device.hpp"
 
 #ifdef __cplusplus
 extern "C" {
@@ -63,11 +64,9 @@ void MY_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
     }
 }
 
-int AdcCpltCount = 0;
-
-#include "Adc/adc_class_device.hpp"
-
 void HAL_ADC_ConvCpltCallback(ADC_HandleTypeDef *hadc)
 {
-    AdcCpltCount++;
+    if (hadc->Instance == Adc1.hadc_->Instance) {
+        Adc1.ConvCpltCallback();
+    }
 }
