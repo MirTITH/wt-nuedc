@@ -80,7 +80,8 @@
             "fstream": "cpp",
             "iomanip": "cpp",
             "variant": "cpp",
-            "cassert": "cpp"
+            "cassert": "cpp",
+            "list": "cpp"
         },
         "[yaml]": {
             "editor.insertSpaces": true,

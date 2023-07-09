@@ -1,7 +1,19 @@
+/**
+ * @file adc_class.hpp
+ * @author X. Y.  
+ * @brief 
+ * @version 0.2
+ * @date 2023-07-09
+ * 
+ * @copyright Copyright (c) 2023
+ * 
+ */
+
 #pragma once
 
 #include "adc.h"
 #include <vector>
+#include <cassert>
 
 /**
  * ADC 需要在 CubeMX 里先配置好，以下参数需要配置：（其他随意）
@@ -20,11 +32,13 @@
 class Adc
 {
 private:
+    using adc_data_t = uint16_t;
+
+    bool is_inited_ = false;
     ADC_HandleTypeDef *hadc_;
     const float vref_;
-    uint16_t *adc_data_;
     uint8_t number_of_conversion_ = 0;
-    bool is_inited_               = false;
+    std::vector<adc_data_t> adc_data_;
     uint16_t max_range_;
 
     uint16_t CalcMaxRange() const;
@@ -61,9 +75,8 @@ public:
 
     void StartDma()
     {
-        // 需要先初始化才能调用该函数
-        while (is_inited_ == false) {}
-        HAL_ADC_Start_DMA(hadc_, (uint32_t *)adc_data_, number_of_conversion_);
+        assert(is_inited_); // 需要先初始化才能调用该函数
+        HAL_ADC_Start_DMA(hadc_, (uint32_t *)adc_data_.data(), number_of_conversion_);
     }
 
     void StopDma()
@@ -84,24 +97,16 @@ public:
      *
      * @param index [0, NbrOfConversion - 1]
      */
-    std::remove_reference<decltype(*adc_data_)>::type GetData(size_t index) const
+    adc_data_t GetData(size_t index) const
     {
-        if (index < number_of_conversion_) {
-            InvalidateDCache();
-            return adc_data_[index];
-        } else {
-            return 0;
-        }
+        InvalidateDCache();
+        return adc_data_.at(index);
     }
 
-    std::vector<std::remove_reference<decltype(*adc_data_)>::type> GetAllData() const
+    std::vector<adc_data_t> GetAllData() const
     {
-        std::vector<std::remove_reference<decltype(*adc_data_)>::type> result(number_of_conversion_);
         InvalidateDCache();
-        for (size_t i = 0; i < number_of_conversion_; i++) {
-            result.at(i) = adc_data_[i];
-        }
-        return result;
+        return adc_data_;
     }
 
     /**
@@ -146,11 +151,4 @@ public:
      * @return 温度（摄氏度）
      */
     float GetTemperature(size_t temperature_sensor_index);
-
-    ~Adc()
-    {
-        if (adc_data_ != nullptr) {
-            delete[] adc_data_;
-        }
-    };
 };

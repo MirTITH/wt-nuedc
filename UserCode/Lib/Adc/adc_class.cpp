@@ -47,7 +47,7 @@ uint16_t Adc::CalcMaxRange() const
 #endif
 
         default:
-            return 0;
+            assert(false); // hadc_->Init.Resolution 不在此列
             break;
     }
 }
@@ -60,8 +60,8 @@ void Adc::Init()
     is_inited_ = true;
 
     number_of_conversion_ = hadc_->Init.NbrOfConversion;
-    adc_data_             = new std::remove_reference<decltype(*adc_data_)>::type[number_of_conversion_];
-    max_range_            = CalcMaxRange();
+    adc_data_.resize(number_of_conversion_);
+    max_range_ = CalcMaxRange();
 
     Calibrate();
 }
@@ -71,7 +71,7 @@ std::vector<float> Adc::GetAllNormalizedData() const
     std::vector<float> result(number_of_conversion_);
     InvalidateDCache();
     for (size_t i = 0; i < number_of_conversion_; i++) {
-        result.at(i) = (float)adc_data_[i] / max_range_;
+        result.at(i) = (float)adc_data_.at(i) / max_range_;
     }
 
     return result;
@@ -82,7 +82,7 @@ std::vector<float> Adc::GetAllVoltage() const
     std::vector<float> result(number_of_conversion_);
     InvalidateDCache();
     for (size_t i = 0; i < number_of_conversion_; i++) {
-        result.at(i) = (float)adc_data_[i] / max_range_ * vref_;
+        result.at(i) = (float)adc_data_.at(i) / max_range_ * vref_;
     }
     return result;
 }
@@ -105,7 +105,6 @@ float Adc::GetTemperature(size_t temperature_sensor_index)
     static const float FACTOR          = (float)(TEMPSENSOR_CAL2_TEMP - TEMPSENSOR_CAL1_TEMP) / (*TEMPSENSOR_CAL2_ADDR - *TEMPSENSOR_CAL1_ADDR);
     static const float TEMPSENSOR_CAL1 = *TEMPSENSOR_CAL1_ADDR;
     static const float VOLTAGE_FACTOR  = vref_ * 1000.0f / TEMPSENSOR_CAL_VREFANALOG;
-
 
     return (__LL_ADC_CONVERT_DATA_RESOLUTION(GetData(temperature_sensor_index), hadc_->Init.Resolution, LL_ADC_RESOLUTION_12B) * VOLTAGE_FACTOR - TEMPSENSOR_CAL1) * FACTOR + TEMPSENSOR_CAL1_TEMP;
 }

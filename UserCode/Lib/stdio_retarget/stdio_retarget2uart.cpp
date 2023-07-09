@@ -26,10 +26,11 @@ int _write(int file, char *ptr, int len)
     switch (file) {
         case STDOUT_FILENO: // 标准输出流
             stdout_uart.Write(ptr, len);
-            ;
             break;
         case STDERR_FILENO: // 标准错误流
-            stderr_uart.WriteDirectly(ptr, len);
+            while (stderr_uart.WriteDirectly(ptr, len) != HAL_OK) {
+                stderr_uart.huart_.gState = HAL_UART_STATE_READY;
+            }
             break;
         default:
             // EBADF, which means the file descriptor is invalid or the file isn't opened for writing;
