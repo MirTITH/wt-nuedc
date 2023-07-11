@@ -10,7 +10,7 @@
     "c/cpp-compiler": {
         "language-c": "gnu11",
         "language-cpp": "gnu++17",
-        "optimization": "level-3",
+        "optimization": "level-debug",
         "warnings": "all-warnings",
         "one-elf-section-per-function": true,
         "one-elf-section-per-data": true,
@@ -20,7 +20,7 @@
     "linker": {
         "output-format": "elf",
         "remove-unused-input-sections": true,
-        "LIB_FLAGS": "-lm -lstdc++ -larm_cortexM4lf_math",
+        "LIB_FLAGS": "-lm -lstdc++",
         "LD_FLAGS": "-u _printf_float -u _scanf_float"
     }
 }

@@ -49,12 +49,14 @@ void MathTest()
         os_printf("sin(%g): %g\n", inputs.at(i), outputs.at(i));
     }
 
-    float omega = 2 * M_PI * 50 / 1000.0f;
+    // arm_rfft_fast_f32()
 
-    while (true) {
-        os_printf("%g\n", arm_sin_f32(xTaskGetTickCount() * omega));
-        vTaskDelay(1);
-    }
+    // float omega = 2 * M_PI * 50 / 1000.0f;
+
+    // while (true) {
+    //     os_printf("%g\n", arm_sin_f32(xTaskGetTickCount() * omega));
+    //     vTaskDelay(1);
+    // }
 
     os_printf("==== End %s ====\n", __func__);
 }
