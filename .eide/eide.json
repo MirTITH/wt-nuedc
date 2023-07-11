@@ -88,15 +88,19 @@
           "CubeMX/Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F",
           "CubeMX/Drivers/CMSIS/Device/ST/STM32F4xx/Include",
           "CubeMX/Drivers/CMSIS/Include",
+          "CubeMX/Middlewares/ST/ARM/DSP/Inc",
           "UserCode/Lib",
           "UserCode/Lib/FreeRtosSys"
         ],
-        "libList": [],
+        "libList": [
+          "CubeMX/Middlewares/ST/ARM/DSP/Lib"
+        ],
         "sourceDirList": [],
         "defineList": [
           "USE_HAL_DRIVER",
           "STM32F407xx",
-          "STM32_THREAD_SAFE_STRATEGY=4"
+          "STM32_THREAD_SAFE_STRATEGY=4",
+          "ARM_MATH_CM4"
         ]
       }
     }

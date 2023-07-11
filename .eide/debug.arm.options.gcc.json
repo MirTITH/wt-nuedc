@@ -8,9 +8,9 @@
         "misc-control": "-pipe --specs=nano.specs -fno-exceptions"
     },
     "c/cpp-compiler": {
-        "language-c": "c11",
-        "language-cpp": "c++17",
-        "optimization": "level-debug",
+        "language-c": "gnu11",
+        "language-cpp": "gnu++17",
+        "optimization": "level-3",
         "warnings": "all-warnings",
         "one-elf-section-per-function": true,
         "one-elf-section-per-data": true,
@@ -20,7 +20,7 @@
     "linker": {
         "output-format": "elf",
         "remove-unused-input-sections": true,
-        "LIB_FLAGS": "-lm -lstdc++",
+        "LIB_FLAGS": "-lm -lstdc++ -larm_cortexM4lf_math",
         "LD_FLAGS": "-u _printf_float -u _scanf_float"
     }
 }
