@@ -7,10 +7,11 @@
 #include "freertos_io/os_printf.h"
 
 // Test includes
-#include "test_template.cpp.hpp"
-#include "control_system_test.cpp.hpp"
-#include "adc_test.hpp"
-#include "math_test.cpp.hpp"
+// #include "test_template.cpp.hpp"
+// #include "control_system_test.cpp.hpp"
+// #include "adc_test.hpp"
+// #include "math_test.cpp.hpp"
+#include "pll_test.cpp.hpp"
 
 using namespace user_test;
 
@@ -30,7 +31,8 @@ void TestThread(void *argument)
 
     // ZtfTest();
     // AdcTest();
-    MathTest();
+    // MathTest();
+    PllTest();
 
     BlinkLedEntry(nullptr);
 

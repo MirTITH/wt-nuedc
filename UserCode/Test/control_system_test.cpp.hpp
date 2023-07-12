@@ -77,7 +77,7 @@ void PidTest()
     os_printf("\n==============Start PidTest=============\n");
 
     // os_printf("\np_controller:\n");
-    // pid::P<float> p_controller{2};
+    // pid::PController<float> p_controller{2};
     // DiscreteControllerTest(p_controller);
 
     // os_printf("\ni_controller:\n");
@@ -89,27 +89,27 @@ void PidTest()
     // DiscreteControllerTest(integrator);
 
     // os_printf("\nd_controller:\n");
-    // pid::D<double> d_controller{1, 100, 0.01};
+    // pid::DController<double> d_controller{1, 100, 0.01};
     // DiscreteControllerTest(d_controller);
 
     os_printf("\npid_controller:\n");
-    pid::PID<float> pid_controller{1.23, 0.54, 0.5, 100, 0.01};
+    pid::PIDController<float> pid_controller{1.23, 0.54, 0.5, 100, 0.01};
     DiscreteControllerTest(pid_controller);
 
     os_printf("\npid_controller, no saturation:\n");
-    pid::PID<float, DiscreteIntegrator<float>> pid_controller1{1.23, 0.54, 0.5, 100, 0.01};
+    pid::PIDController<float, DiscreteIntegrator<float>> pid_controller1{1.23, 0.54, 0.5, 100, 0.01};
     DiscreteControllerTest(pid_controller1);
 
     // os_printf( "\npi_controller:\n");
-    // pid::PI<float> pi_controller{1.23, 0.54, 0.01};
+    // pid::PIController<float> pi_controller{1.23, 0.54, 0.01};
     // DiscreteControllerTest(pi_controller, 1000000);
 
     // os_printf("\npi_controller, no saturation:\n");
-    // pid::PI<float, DiscreteIntegrator<float>> pi_controller1{1.23, 0.54, 0.01};
+    // pid::PIController<float, DiscreteIntegrator<float>> pi_controller1{1.23, 0.54, 0.01};
     // DiscreteControllerTest(pi_controller1, 1000000);
 
     // os_printf("\npd_controller:\n");
-    // pid::PD<float> pd_controller{1.23, 0.76, 100, 0.01};
+    // pid::PDController<float> pd_controller{1.23, 0.76, 100, 0.01};
     // DiscreteControllerTest(pd_controller);
 
     // os_printf("PID_AntiWindup:\n");

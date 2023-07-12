@@ -30,7 +30,7 @@
  *
  * 使用示例:
  *   定义 PID 控制器:
- *     pid::PID<float> pid_controller{1.23, 0.54, 0, 1000, 0.01};
+ *     pid::PIDController<float> pid_controller{1.23, 0.54, 0, 1000, 0.01};
  *
  *   使用 PID 控制器:
  *     while(1) {
@@ -55,13 +55,13 @@ namespace pid
 {
 
 template <typename T>
-class P : public DiscreteControllerBase<T>
+class PController : public DiscreteControllerBase<T>
 {
 private:
     T Kp = 0;
 
 public:
-    P(T Kp)
+    PController(T Kp)
     {
         SetParam(Kp);
     }
@@ -100,10 +100,10 @@ public:
  * @note 直接使用 DiscreteIntegratorSaturation
  */
 template <typename T>
-using I = DiscreteIntegratorSaturation<T>;
+using IController = DiscreteIntegratorSaturation<T>;
 
 template <typename T>
-class D : public DiscreteControllerBase<T>
+class DController : public DiscreteControllerBase<T>
 {
 private:
     T Kd, Kn, Ts;
@@ -120,7 +120,7 @@ private:
     }
 
 public:
-    D(T Kd, T Kn, T Ts)
+    DController(T Kd, T Kn, T Ts)
     {
         ResetState();
         SetParam(Kd, Kn, Ts);
@@ -185,17 +185,17 @@ public:
  *
  * @tparam T 运算数据类型
  * @tparam IntegratorType 积分器类型，默认为带限幅的 DiscreteIntegratorSaturation<T>. 如果不需要限幅，可以指定为 DiscreteIntegrator<T>
- * @note   例如：pid::PID<float, DiscreteIntegrator<float>> pid_controller{1.23, 0.54, 0.5, 100, 0.01};
+ * @note   例如：pid::PIDController<float, DiscreteIntegrator<float>> pid_controller{1.23, 0.54, 0.5, 100, 0.01};
  */
-template <typename T, typename IntegratorType = I<T>>
-class PID : public DiscreteControllerBase<T>
+template <typename T, typename IntegratorType = IController<T>>
+class PIDController : public DiscreteControllerBase<T>
 {
 public:
     T Kp; // 比例系数，可以直接修改
     IntegratorType i_controller;
-    D<T> d_controller;
+    DController<T> d_controller;
 
-    PID(T Kp, T Ki, T Kd, T Kn, T Ts)
+    PIDController(T Kp, T Ki, T Kd, T Kn, T Ts)
         : Kp{Kp}, i_controller{Ki, Ts}, d_controller{Kd, Kn, Ts} {};
 
     /**
@@ -239,16 +239,16 @@ public:
  *
  * @tparam T 运算数据类型
  * @tparam IntegratorType 积分器类型，默认为带限幅的 DiscreteIntegratorSaturation<T>. 如果不需要限幅，可以指定为 DiscreteIntegrator<T>
- * @note   例如：pid::PI<float, DiscreteIntegrator<float>> pi_controller{1.23, 0.54, 0.01};
+ * @note   例如：pid::PIController<float, DiscreteIntegrator<float>> pi_controller{1.23, 0.54, 0.01};
  */
-template <typename T, typename IntegratorType = I<T>>
-class PI : public DiscreteControllerBase<T>
+template <typename T, typename IntegratorType = IController<T>>
+class PIController : public DiscreteControllerBase<T>
 {
 public:
     T Kp; // 比例系数，可以直接修改
     IntegratorType i_controller;
 
-    PI(T Kp, T Ki, T Ts)
+    PIController(T Kp, T Ki, T Ts)
         : Kp{Kp}, i_controller{Ki, Ts} {};
 
     /**
@@ -273,13 +273,13 @@ public:
 };
 
 template <typename T>
-class PD : public DiscreteControllerBase<T>
+class PDController : public DiscreteControllerBase<T>
 {
 public:
     T Kp; // 比例系数，可以直接修改
-    D<T> d_controller;
+    DController<T> d_controller;
 
-    PD(T Kp, T Kd, T Kn, T Ts)
+    PDController(T Kp, T Kd, T Kn, T Ts)
         : Kp{Kp}, d_controller{Kd, Kn, Ts} {};
 
     /**
@@ -316,7 +316,7 @@ public:
     T Kp; // 比例系数，可以直接修改
     T Ki; // 积分系数，可以直接修改
     T Kb; // 反算系数，可以直接修改
-    D<T> d_controller;
+    DController<T> d_controller;
     Saturation<T, T> output_saturation; // 输出限幅
 
 private:
