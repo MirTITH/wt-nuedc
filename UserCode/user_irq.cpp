@@ -15,6 +15,8 @@
 #include "freertos_io/os_printf.h"
 #include "freertos_io/uart_device.hpp"
 #include "Adc/adc_class_device.hpp"
+#include "control_system/pll.hpp"
+#include <cmath>
 
 #ifdef __cplusplus
 extern "C" {
@@ -58,9 +60,14 @@ void HAL_UARTEx_RxEventCallback(UART_HandleTypeDef *huart, uint16_t Size)
     }
 }
 
+control_system::Pll<float> pll{};
+
+float k = 2 * PI * 50 / 1e6;
+
 void MY_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
 {
     if (htim->Instance == TIM3) {
+        pll.Step(sin(HPT_GetUs() * k));
     }
 }
 
