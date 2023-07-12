@@ -17,6 +17,7 @@
 #include "Adc/adc_class_device.hpp"
 #include "control_system/pll.hpp"
 #include <cmath>
+#include "control_system/signal_generator.hpp"
 
 #ifdef __cplusplus
 extern "C" {
@@ -60,14 +61,13 @@ void HAL_UARTEx_RxEventCallback(UART_HandleTypeDef *huart, uint16_t Size)
     }
 }
 
-control_system::Pll<float> pll{};
-
-float k = 2 * PI * 50 / 1e6;
+int TimCounter = 0;
 
 void MY_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
 {
     if (htim->Instance == TIM3) {
-        pll.Step(sin(HPT_GetUs() * k));
+        // pll.Step(sine.Step());
+        TimCounter++;
     }
 }
 

@@ -70,6 +70,15 @@ public:
         return x_;
     }
 
+    /**
+     * @brief 设置积分初值
+     *
+     */
+    void SetInitialValue(T x)
+    {
+        x_ = x;
+    }
+
     void SetParam(T Ki, T Ts)
     {
         this->Ki = Ki;
