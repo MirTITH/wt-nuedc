@@ -25,7 +25,7 @@ private:
 
     node_t *head;
 
-    void Construct(int length)
+    void Construct(size_t length)
     {
         if (length == 0) {
             length = 1;
@@ -59,7 +59,7 @@ private:
 
 public:
     /**
-     * @brief Construct a new Ring List object
+     * @brief Construct a new Ring List
      *
      * @param length 链表长度
      */
