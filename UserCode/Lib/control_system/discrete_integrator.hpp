@@ -74,7 +74,7 @@ public:
      * @brief 设置积分初值
      *
      */
-    void SetInitialValue(T x)
+    void SetStateValue(T x)
     {
         x_ = x;
     }
