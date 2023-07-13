@@ -61,13 +61,18 @@ void HAL_UARTEx_RxEventCallback(UART_HandleTypeDef *huart, uint16_t Size)
     }
 }
 
-int TimCounter = 0;
+float TimPllInput = 0;
+uint32_t TimStartUs, TimDuration;
+control_system::Pll<float> pll(1.0 / 5000, 2 * M_PI * 50, 2);
+control_system::SineGenerator<float> sine(2 * M_PI * 50, 1.0 / 5000.0, M_PI);
 
 void MY_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
 {
     if (htim->Instance == TIM3) {
-        // pll.Step(sine.Step());
-        TimCounter++;
+        TimStartUs  = HPT_GetUs();
+        TimPllInput = sine.Step();
+        pll.Step(TimPllInput);
+        TimDuration = HPT_GetUs() - TimStartUs;
     }
 }
 

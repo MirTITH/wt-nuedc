@@ -1,12 +1,12 @@
 /**
  * @file pll.hpp
- * @author X. Y.  
+ * @author X. Y.
  * @brief 锁相环
  * @version 0.2
  * @date 2023-07-13
- * 
+ *
  * @copyright Copyright (c) 2023
- * 
+ *
  */
 
 #pragma once
@@ -118,8 +118,8 @@ public:
         auto beta  = Gq.Step(input);
 
         auto integrate_state = integrator.GetStateOutput(); // 积分器的内部状态，作为下一次积分的预估值
-        T sin_value          = sin(integrate_state);
-        T cos_value          = cos(integrate_state);
+        T sin_value          = std::sin(integrate_state);
+        T cos_value          = std::cos(integrate_state);
 
         // park
         d_ = alpha * cos_value + beta * sin_value;

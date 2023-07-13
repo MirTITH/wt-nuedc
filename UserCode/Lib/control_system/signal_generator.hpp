@@ -80,7 +80,7 @@ public:
      */
     T Step()
     {
-        T result = sin(k * counter_ + initial_phase_);
+        T result = std::sin(k * counter_ + initial_phase_);
         counter_++;
         if (counter_ >= reload_num_) {
             counter_ = 0;
@@ -96,7 +96,7 @@ public:
      */
     T GetOutputDeltaPhase(T delta_phase) const
     {
-        return sin(k * counter_ + initial_phase_ + delta_phase);
+        return std::sin(k * counter_ + initial_phase_ + delta_phase);
     }
 
     /**
