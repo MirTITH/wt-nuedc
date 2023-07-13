@@ -1,3 +1,14 @@
+/**
+ * @file pll.hpp
+ * @author X. Y.  
+ * @brief 锁相环
+ * @version 0.2
+ * @date 2023-07-13
+ * 
+ * @copyright Copyright (c) 2023
+ * 
+ */
+
 #pragma once
 #include "discrete_controller_base.hpp"
 #include "z_tf.hpp"

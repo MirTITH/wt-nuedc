@@ -1,3 +1,14 @@
+/**
+ * @file ring_list.hpp
+ * @author X. Y.
+ * @brief 环形链表
+ * @version 0.1
+ * @date 2023-07-13
+ *
+ * @copyright Copyright (c) 2023
+ *
+ */
+
 #pragma once
 
 namespace control_system
@@ -47,28 +58,52 @@ private:
     }
 
 public:
+    /**
+     * @brief Construct a new Ring List object
+     *
+     * @param length 链表长度
+     */
     RingList(size_t length = 1)
     {
         Construct(length);
     }
 
+    /**
+     * @brief head 指针往后移动一格（就像环形链表旋转一格）
+     *
+     * @return T& 移动后 head 所指的元素
+     */
     T &spin()
     {
         head = head->next;
         return head->data;
     }
 
+    /**
+     * @brief 获取 head 所指的元素
+     *
+     */
     T &get()
     {
         return head->data;
     }
 
+    /**
+     * @brief 重设链表长度
+     * @note 这会清除链表中已有的所有内容
+     * @param size 新的长度
+     */
     void resize(size_t size)
     {
         DeleteAll();
         Construct(size);
     }
 
+    /**
+     * @brief 在 head 所指向的元素后面插入
+     *
+     * @param data 要插入的元素
+     */
     void insert_after(const T &data)
     {
         auto temp  = new T(data);
@@ -76,6 +111,10 @@ public:
         head->next = temp;
     }
 
+    /**
+     * @brief 把环形链表用 data 填满
+     *
+     */
     void fill(const T &data)
     {
         auto ptr = head;

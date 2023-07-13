@@ -2,8 +2,8 @@
  * @file z_tf.hpp
  * @author X. Y.
  * @brief Z 传递函数
- * @version 0.2
- * @date 2023-06-26
+ * @version 0.3
+ * @date 2023-07-13
  *
  * @copyright Copyright (c) 2023
  *
