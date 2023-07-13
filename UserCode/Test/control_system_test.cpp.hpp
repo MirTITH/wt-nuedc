@@ -47,47 +47,28 @@ void ZtfTest()
     // ztf
     ZTf<float> ztf1({66.2117333333333, -124.136000000000, 58.1856000000000},
                     {1, -0.333333333333333, -0.666666666666667});
-    NewZTf<float> nztf1({66.2117333333333, -124.136000000000, 58.1856000000000},
-                        {1, -0.333333333333333, -0.666666666666667});
     os_printf("==== ZtfTest: ztf1 ====\n");
     DiscreteControllerTest(ztf1);
-    os_printf("==== ZtfTest: nztf1 ====\n");
-    DiscreteControllerTest(nztf1);
 
     // ZTf<float> ztf2({1, 2}, {1, 2, 3, 4, 5});
-    // NewZTf<float> nztf2({1, 2}, {1, 2, 3, 4, 5});
     // os_printf("==== ZtfTest: ztf2 ====\n");
     // DiscreteControllerTest(ztf2);
-    // os_printf("==== ZtfTest: nztf2 ====\n");
-    // DiscreteControllerTest(nztf2);
 
     // ZTf<float> ztf3({5}, {1});
     // os_printf("==== ZtfTest: ztf3 ====\n");
     // DiscreteControllerTest(ztf3);
-    // NewZTf<float> nztf3({5}, {1});
-    // os_printf("==== ZtfTest: nztf3 ====\n");
-    // DiscreteControllerTest(nztf3);
 
     // ZTf<float> ztf4({2.5}, {1, 3, 4});
     // os_printf("==== ZtfTest: ztf4 ====\n");
     // DiscreteControllerTest(ztf4);
-    // NewZTf<float> nztf4({2.5}, {1, 3, 4});
-    // os_printf("==== ZtfTest: nztf4 ====\n");
-    // DiscreteControllerTest(nztf4);
 
     // ZTf<float> ztf5({}, {1, 4, 4});
     // os_printf("==== ZtfTest: ztf5 ====\n");
     // DiscreteControllerTest(ztf5);
-    // NewZTf<float> nztf5({}, {1, 4, 4});
-    // os_printf("==== ZtfTest: nztf5 ====\n");
-    // DiscreteControllerTest(nztf5);
 
     // ZTf<float> ztf6({1, 2, 3, 4, 5, 6, 7, 8, 9, 10}, {1, 2, 3, 4, 5, 6, 7, 8, 9, 10});
     // os_printf("==== ZtfTest: ztf6 ====\n");
     // DiscreteControllerTest(ztf6);
-    // NewZTf<float> nztf6({1, 2, 3, 4, 5, 6, 7, 8, 9, 10}, {1, 2, 3, 4, 5, 6, 7, 8, 9, 10});
-    // os_printf("==== ZtfTest: nztf6 ====\n");
-    // DiscreteControllerTest(nztf6);
 }
 
 void PidTest()
