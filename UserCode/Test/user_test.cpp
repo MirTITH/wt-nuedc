@@ -29,10 +29,10 @@ void TestThread(void *argument)
 {
     (void)argument;
 
-    ZtfTest();
+    // ZtfTest();
     // AdcTest();
     // MathTest();
-    // PllTest();
+    PllTest();
 
     BlinkLedEntry(nullptr);
 

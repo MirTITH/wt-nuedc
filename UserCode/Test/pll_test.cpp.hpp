@@ -14,7 +14,7 @@ namespace user_test
 void PllTest()
 {
     os_printf("==== Start %s ====\n", __func__);
-    HAL_TIM_Base_Start_IT(&htim3);
+    // HAL_TIM_Base_Start_IT(&htim3);
 
     control_system::Pll<float> pll(1.0 / 5000, 2 * M_PI * 50, 2);
     control_system::SineGenerator<float> sine(2 * M_PI * 50, 1.0 / 5000.0, M_PI);
