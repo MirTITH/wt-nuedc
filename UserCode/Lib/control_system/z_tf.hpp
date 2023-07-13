@@ -108,6 +108,13 @@ public:
     {
         assert(order_ != 0);
 
+        // 阶数为 1 直接计算
+        if (order_ == 1) {
+            return input_c_[0] * input;
+        }
+
+        // 阶数 >= 2 时才能进行下面的计算
+
         T output = input_c_[0] * input;
 
         data_t *data = &(data_list_.get());
