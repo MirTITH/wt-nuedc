@@ -13,15 +13,15 @@ private:
     constexpr static T PI_ = M_PI;
     pid::PIController<T, DiscreteIntegrator<T>> pi_controller;
     DiscreteIntegrator<T> integrator;
-    T wc_; // 初始角频率
 
     // 改进III型二阶广义积分器
     ZTf<T> Gq, Gd;
     std::vector<T> Gd_num, Gd_den;
     std::vector<T> Gq_num, Gq_den;
-    const T Ts;
+    const T wc_; // 目标角频率
+    const T Ts;  // 采样频率
 
-    void UpdateGqGd(T k, T w)
+    void SetK_W(T k, T w)
     {
         T ts_w      = Ts * w;
         T ts2_w2    = ts_w * ts_w;
@@ -50,7 +50,15 @@ private:
         Gq_den.at(1) = -24 - _4_ts_w - _4_k_ts_w + _2_ts2_w2 + _2_k_ts2_w2 + 3 * ts3_w3;
         Gq_den.at(2) = 24 - _4_ts_w - _4_k_ts_w - _2_ts2_w2 - _2_k_ts2_w2 + 3 * ts3_w3;
         Gq_den.at(3) = -8 + _4_ts_w + _4_k_ts_w - _2_ts2_w2 - _2_k_ts2_w2 + ts3_w3;
+    }
 
+    void InitGqGd(T k, T w)
+    {
+        Gd_num.resize(3);
+        Gd_den.resize(3);
+        Gq_num.resize(4);
+        Gq_den.resize(4);
+        SetK_W(k, w);
         Gq.Init(Gq_num, Gq_den);
         Gd.Init(Gd_num, Gd_den);
     }
@@ -60,16 +68,21 @@ public:
     T phase_; // 相位 (rad)，范围 [0, 2*PI). 注：相位值为输入信号的矢量与 x 轴正方向的夹角（即余弦信号的相角）
     T d_, q_;
 
-    Pll(T Ts, T wc = 2 * PI_ * 50, T k = 2, T Kp = 100, T Ki = 2000)
+    /**
+     * @brief 单相锁相环
+     *
+     * @param Ts 采样周期
+     * @param wc 目标角频率
+     * @param k 二阶广义积分器阻尼系数. k 越大幅值响应越快, k = sqrt(2) 刚好无超调
+     * @param Kp PI 控制器 Kp, 值越高相位响应越快
+     * @param Ki PI 控制器 Ki, 当目标频率和实际频率有差距时，此项起作用
+     */
+    Pll(T Ts, T wc = 2 * PI_ * 50, T k = sqrt(2), T Kp = 100, T Ki = 500)
         : pi_controller(Kp, Ki, Ts),
           integrator(1, Ts),
           wc_(wc), Ts(Ts)
     {
-        Gd_num.resize(3);
-        Gd_den.resize(3);
-        Gq_num.resize(4);
-        Gq_den.resize(4);
-        UpdateGqGd(k, wc);
+        InitGqGd(k, wc);
         // // 改进III型二阶广义积分器
         // // 在 50 hz 处相位 -90°
         // Gq.Init({-0.0554645753435237, 0.0590625511353515, 0.0554645753435237, -0.0590625511353515},

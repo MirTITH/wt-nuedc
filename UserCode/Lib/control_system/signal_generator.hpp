@@ -23,8 +23,8 @@ private:
     double omega_, Ts_;
     T initial_phase_;
     T k;
-    uint32_t counter_;    // 计数值
-    uint32_t reload_num_; // 重装载值
+    uint32_t counter_;        // 计数值
+    uint32_t reload_num_ = 0; // 重装载值
 
     void UpdateCoefficient()
     {
@@ -44,8 +44,8 @@ public:
 
     SineGenerator(T omega, T Ts, T initial_phase = 0)
     {
-        SetParam(omega, Ts, initial_phase);
         ResetState();
+        SetParam(omega, Ts, initial_phase);
     }
 
     void SetOmega(T omega)

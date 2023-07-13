@@ -56,24 +56,15 @@ public:
     }
 
     /**
-     * @brief 初始化 Z 传函或重新指定 Z 传函的表达式
-     *
-     * @param num 分子
-     * @param den 分母
-     * @note 分子阶数不能大于分母，否则是非因果系统
+     * @brief 调整分子和分母
+     * @note 不能改变阶数
      */
-    void Init(const std::vector<T> &num, const std::vector<T> &den)
+    void AdjustNumDen(const std::vector<T> &num, const std::vector<T> &den)
     {
         int size_diff = den.size() - num.size(); // 分母维数与分子维数之差
 
         assert(size_diff >= 0); // 分子阶数不能大于分母，否则是非因果系统
-
-        order_    = den.size();
-        order_m1_ = order_ - 1;
-
-        input_c_.resize(order_m1_);
-        output_c_.resize(order_m1_);
-
+        assert(den.size() == order_); // 不能改变阶数
         assert(den.at(0) != 0);
 
         if (size_diff == 0) {
@@ -104,9 +95,27 @@ public:
         for (size_t i = 0; i < order_m1_; i++) {
             output_c_.at(i) = -den.at(i + 1) / den.at(0);
         }
+    }
 
+    /**
+     * @brief 初始化 Z 传函或重新指定 Z 传函的表达式
+     *
+     * @param num 分子
+     * @param den 分母
+     * @note 分子阶数不能大于分母，否则是非因果系统
+     */
+    void Init(const std::vector<T> &num, const std::vector<T> &den)
+    {
+        order_    = den.size();
+        order_m1_ = order_ - 1;
+
+        input_c_.resize(order_m1_);
+        output_c_.resize(order_m1_);
         inputs_.resize(order_);
         outputs_.resize(order_);
+
+        AdjustNumDen(num, den);
+
         ResetState();
     }
 
