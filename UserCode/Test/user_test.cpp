@@ -8,7 +8,7 @@
 
 // Test includes
 // #include "test_template.cpp.hpp"
-// #include "control_system_test.cpp.hpp"
+#include "control_system_test.cpp.hpp"
 // #include "adc_test.hpp"
 // #include "math_test.cpp.hpp"
 #include "pll_test.cpp.hpp"
@@ -29,10 +29,10 @@ void TestThread(void *argument)
 {
     (void)argument;
 
-    // ZtfTest();
+    ZtfTest();
     // AdcTest();
     // MathTest();
-    PllTest();
+    // PllTest();
 
     BlinkLedEntry(nullptr);
 
@@ -41,5 +41,5 @@ void TestThread(void *argument)
 
 void StartTestThread()
 {
-    xTaskCreate(TestThread, "TestThread", 512, nullptr, PriorityNormal, nullptr);
+    xTaskCreate(TestThread, "TestThread", 1024, nullptr, PriorityNormal, nullptr);
 }
