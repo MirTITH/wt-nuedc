@@ -1,16 +1,16 @@
 #include "high_precision_time.h"
+#include "main.h"
 
 /****************
- * 用户开关部分 *
+ * 用户设置部分 *
  ****************/
 
-#define USE_FREERTOS // 使用 FreeRTOS 时请打开该宏定义
+#define USE_FREERTOS             // 使用 FreeRTOS 时请打开该宏定义
+#define HAL_TIMEBASE_htimx htim7 // HAL Timebase Source
 
 /****************
  * 程序代码部分 *
  ****************/
-
-#include "main.h"
 
 #ifdef USE_FREERTOS
 
@@ -18,15 +18,12 @@
 #include "task.h"
 #include "in_handle_mode.h"
 
-#define HAL_TIMEBASE_htimx htim7 // Timebase Source
 extern TIM_HandleTypeDef HAL_TIMEBASE_htimx;
 
 #endif // USE_FREERTOS
 
 static uint8_t kIsInited = 0; // 是否初始化了
 static uint32_t kUs_uwTick;   // 1 uwTick 对应多少 us
-
-static uint32_t kCNT;
 
 #ifdef USE_FREERTOS
 
@@ -41,9 +38,27 @@ void HPT_Init()
 
 uint32_t HPT_GetUs()
 {
-    kCNT            = HAL_TIMEBASE_htimx.Instance->CNT;
-    uint32_t result = uwTick * kUs_uwTick + kCNT;
+    __HAL_TIM_DISABLE_IT(&HAL_TIMEBASE_htimx, TIM_IT_UPDATE);
 
+    uint32_t result;
+    uint32_t tick = uwTick;
+    uint32_t kCNT = HAL_TIMEBASE_htimx.Instance->CNT;
+    if (kCNT < 10) {
+        // 定时器不久前溢出
+        // 判断定时器中断标识是否存在
+        if (__HAL_TIM_GET_FLAG(&HAL_TIMEBASE_htimx, TIM_FLAG_UPDATE) != RESET) {
+            // 刚刚溢出，还没进中断，uwTick 还没递增
+            result = (tick + 1) * kUs_uwTick + kCNT;
+        } else {
+            // 进过了中断，uwTick 已经递增
+            result = tick * kUs_uwTick + kCNT;
+        }
+    } else {
+        // 定时器很久前溢出，uwTick 有效
+        result = tick * kUs_uwTick + kCNT;
+    }
+
+    __HAL_TIM_ENABLE_IT(&HAL_TIMEBASE_htimx, TIM_IT_UPDATE);
     return result;
 }
 
@@ -80,11 +95,9 @@ void HPT_DelayUs(uint32_t us)
 {
     uint32_t startUs = HPT_GetUs();
     uint32_t nowUs   = HPT_GetUs();
-    assert(startUs <= nowUs);
     while ((nowUs - startUs) < us) {
         nowUs = HPT_GetUs();
     }
-    assert(startUs <= nowUs);
 }
 
 void HPT_DelayMs(uint32_t ms)

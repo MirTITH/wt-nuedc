@@ -52,12 +52,14 @@ void TestThread(void *argument)
 
         auto lastSysTick = HPT_GetTotalSysTick();
 
-        HPT_DelayUs(1000000);
-        HAL_GPIO_TogglePin(Led2_GPIO_Port, Led2_Pin);
+        HPT_DelayUs(100000);
+
+        // HAL_GPIO_TogglePin(Led2_GPIO_Port, Led2_Pin);
 
         auto cpuFreq = HPT_GetTotalSysTick() - lastSysTick;
 
         str = to_string(cpuFreq).append("\n");
+
         Uart1.uart_device.WriteDirectly(str.c_str(), str.size());
         // os_printf("%lu\n", cpuFreq);
 

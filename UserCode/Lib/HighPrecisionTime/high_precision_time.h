@@ -2,7 +2,7 @@
  * @file micro_second.h
  * @author X. Y.
  * @brief 高精度时间库
- * @version 0.5
+ * @version 0.6
  * @date 2023-07-14
  *
  * @copyright Copyright (c) 2023
