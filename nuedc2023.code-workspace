@@ -81,7 +81,8 @@
             "iomanip": "cpp",
             "variant": "cpp",
             "cassert": "cpp",
-            "list": "cpp"
+            "list": "cpp",
+            "forward_list": "cpp"
         },
         "[yaml]": {
             "editor.insertSpaces": true,

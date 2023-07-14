@@ -36,7 +36,7 @@ private:
         T output;
     } data_t;
 
-    RingList<data_t> data_list_;
+    RingList<data_t> data_list_; // 之前的输入和输出数据（Z 传函的状态）
 
     size_t order_ = 0; // 系统阶数（等于分母阶数）
     size_t order_m1;   // order_ - 1（提前算好，加快运算速度）
@@ -106,33 +106,32 @@ public:
      */
     T Step(T input) override
     {
-        assert(order_ != 0);
+        if (order_ >= 2) {
+            T output = input_c_[0] * input;
 
-        // 阶数为 1 直接计算
-        if (order_ == 1) {
+            data_t *data = &(data_list_.get()); // 上次的输入输出
+
+            for (size_t i = 1; i < order_m1; i++) {
+                output += input_c_[i] * data->input;
+                output += output_c_[i] * data->output;
+                data = &(data_list_.spin()); // 获得前一个输入输出
+            }
+
+            // 最早的输入输出（不放在循环里是因为这个算完后不用 spin）
+            output += input_c_[order_m1] * data->input;
+            output += output_c_[order_m1] * data->output;
+
+            // 插入当前输入输出数据
+            data->input  = input;
+            data->output = output;
+
+            return output;
+        } else {
+            assert(order_ != 0); // 检查是否调用了 Init() 或者在创建 ZTf 时是否给了分子和分母
+
+            // 一阶系统直接计算乘法
             return input_c_[0] * input;
         }
-
-        // 阶数 >= 2 时才能进行下面的计算
-
-        T output = input_c_[0] * input;
-
-        data_t *data = &(data_list_.get());
-
-        for (size_t i = 1; i < order_m1; i++) {
-            output += input_c_[i] * data->input;
-            output += output_c_[i] * data->output;
-            data = &(data_list_.spin());
-        }
-
-        output += input_c_[order_m1] * data->input;
-        output += output_c_[order_m1] * data->output;
-
-        // 插入新数据，并把新数据放在链表开头
-        data->input  = input;
-        data->output = output;
-
-        return output;
     }
 
     /**
