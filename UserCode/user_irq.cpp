@@ -18,6 +18,8 @@
 #include "control_system/pll.hpp"
 #include <cmath>
 #include "control_system/signal_generator.hpp"
+#include "dac.h"
+#include "Adc/adc_class_device.hpp"
 
 #ifdef __cplusplus
 extern "C" {
@@ -61,18 +63,19 @@ void HAL_UARTEx_RxEventCallback(UART_HandleTypeDef *huart, uint16_t Size)
     }
 }
 
-// float TimPllInput = 0;
-// uint32_t TimStartUs, TimDuration;
-// control_system::Pll<float> pll(1.0 / 5000, 2 * M_PI * 50, 2);
-// control_system::SineGenerator<float> sine(2 * M_PI * 50, 1.0 / 5000.0, M_PI);
+float TimPllInput = 0;
+uint32_t TimStartUs, TimDuration;
+control_system::Pll<float> pll(1.0 / 5000, 2 * M_PI * 50, 2);
+control_system::SineGenerator<float> sine(2 * M_PI * 50, 1.0 / 5000.0, M_PI);
 
 void MY_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
 {
     if (htim->Instance == TIM3) {
-        // TimStartUs  = HPT_GetUs();
-        // TimPllInput = sine.Step();
-        // pll.Step(TimPllInput);
-        // TimDuration = HPT_GetUs() - TimStartUs;
+        HAL_DAC_SetValue(&hdac, DAC_CHANNEL_1, DAC_ALIGN_12B_R, (sine.Step() + 1) * (4095.0 / 3.3));
+        TimStartUs  = HPT_GetUs();
+        TimPllInput = Adc1.GetVoltage(3);
+        pll.Step(TimPllInput);
+        TimDuration = HPT_GetUs() - TimStartUs;
     }
 }
 
