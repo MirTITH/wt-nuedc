@@ -21,7 +21,7 @@
 
 头文件: `#include "control_system/z_tf.hpp"`
 
-```c++
+```cpp
 using namespace control_system;
 
 // 定义一个离散传递函数
@@ -50,7 +50,7 @@ for (size_t i = 0; i < 10; i++) {
 
 示例1:
 
-```c++
+```cpp
 using namespace control_system;
 
 // 定义一个 PID 控制器
@@ -83,7 +83,7 @@ for (size_t i = 0; i < 10; i++) {
 
 示例2:
 
-```c++
+```cpp
 using namespace control_system;
 
 // 定义一个抗饱和的 PI 控制器
@@ -100,7 +100,7 @@ pid::PI_AntiWindup<float> pi_antiwindup{2, 1, 0.1, 1, -5, 5};
 
 示例3:
 
-```c++
+```cpp
 using namespace control_system;
 
 // 如果不需要限幅，可以指定一个不带限幅的积分器，提高计算速度
@@ -113,7 +113,7 @@ pid::PI<float, DiscreteIntegrator<float>> pi_controller{1.23, 0.54, 0.01};
 
 头文件: `#include "control_system/discrete_integrator.hpp"`
 
-```c++
+```cpp
 // 定义一个积分增益为 2 采样周期为 0.01s 的积分器
 control_system::DiscreteIntegrator<float> integrator{2, 0.01};
 
