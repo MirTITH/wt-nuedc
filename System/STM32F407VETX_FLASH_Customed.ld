@@ -73,8 +73,7 @@ SECTIONS
     . = ALIGN(4);
     _sbss_ccm = .;         /* define a global symbol at ccmram bss start */
 
-    /* FreeRTOS 的内存池 */
-    *heap_4.o(.bss.ucHeap*) 
+    *heap_4.o(.bss.ucHeap*) /* FreeRTOS 的内存池 */
     *(.bss.ccmram*)
 
     . = ALIGN(4);
@@ -141,7 +140,7 @@ SECTIONS
     KEEP (*(.preinit_array*))
     PROVIDE_HIDDEN (__preinit_array_end = .);
     . = ALIGN(4);
-  } >FLASH
+  } >FLASH 
 
   .init_array :
   {

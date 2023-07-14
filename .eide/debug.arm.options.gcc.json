@@ -21,6 +21,6 @@
         "output-format": "elf",
         "remove-unused-input-sections": true,
         "LIB_FLAGS": "-lm -lstdc++ -larm_cortexM4lf_math",
-        "LD_FLAGS": "-u _printf_float -u _scanf_float"
+        "LD_FLAGS": "-u _printf_float -u _scanf_float -Wl,--no-warn-rwx-segments"
     }
 }
