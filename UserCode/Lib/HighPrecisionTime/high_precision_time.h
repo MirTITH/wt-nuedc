@@ -2,8 +2,8 @@
  * @file high_precision_time.h
  * @author X. Y.
  * @brief 高精度时间库
- * @version 0.7
- * @date 2023-07-14
+ * @version 1.2
+ * @date 2023-07-15
  *
  * @copyright Copyright (c) 2023
  *
@@ -34,7 +34,9 @@ uint32_t HPT_GetUs();
 /**
  * @brief 获取总 SysTick
  *
- * @note SysTick 默认情况下等于 cpu 时钟周期数，也可以配置成 cpu 时钟周期的 1/8
+ * @note SysTick 的时钟可以配置成 HCLK 或 HCLK/8
+ * @note CubeMX 可以在时钟树界面配置 To Cortex System timer. 这个值就是 SysTick 的频率 (不是 cpu 频率)
+ * @note cpu 的频率是 FCLK Cortex clock, 等于 HCLK
  * @note 这个数字增长得很快，在几十秒内会循环溢出，一般用于测量极短时间。溢出周期取决于 SysTick 速度
  */
 uint32_t HPT_GetTotalSysTick();
@@ -51,6 +53,23 @@ void HPT_DelayMs(uint32_t ms);
  * @param us 要延时的微秒数
  */
 void HPT_DelayUs(uint32_t us);
+
+/**
+ * @brief  Get the SysTick clock source
+ * @retval Returned value can be one of the following values:
+ *         @arg @ref SYSTICK_CLKSOURCE_HCLK_DIV8
+ *         @arg @ref SYSTICK_CLKSOURCE_HCLK
+ */
+uint32_t HPT_GetSysTickClkSource();
+
+/**
+ * @brief 将 SysTick 转换成纳秒
+ *
+ * @param tick SysTick 值
+ * @return uint32_t 纳秒
+ *
+ */
+uint32_t HPT_SysTickToNs(uint64_t tick);
 
 #ifdef __cplusplus
 }

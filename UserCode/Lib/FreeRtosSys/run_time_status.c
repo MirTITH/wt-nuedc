@@ -4,6 +4,7 @@ static unsigned long RunTimeStatusStartUs = 0;
 
 void configureTimerForRunTimeStats(void)
 {
+    HPT_Init();
     RunTimeStatusStartUs = HPT_GetUs();
 }
 
