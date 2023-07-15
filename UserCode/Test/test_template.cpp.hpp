@@ -2,6 +2,7 @@
 #include "main.h"
 #include "FreeRTOS.h"
 #include "task.h"
+#include "freertos_io/os_printf.h"
 
 namespace user_test
 {

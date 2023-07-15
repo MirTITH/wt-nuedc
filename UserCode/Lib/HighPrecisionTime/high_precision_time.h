@@ -1,8 +1,8 @@
 /**
- * @file micro_second.h
+ * @file high_precision_time.h
  * @author X. Y.
  * @brief 高精度时间库
- * @version 0.6
+ * @version 0.7
  * @date 2023-07-14
  *
  * @copyright Copyright (c) 2023

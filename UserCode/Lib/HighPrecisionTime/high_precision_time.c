@@ -38,28 +38,22 @@ void HPT_Init()
 
 uint32_t HPT_GetUs()
 {
+    // 关闭定时器中断，防止在函数运行时 uwTick 改变
     __HAL_TIM_DISABLE_IT(&HAL_TIMEBASE_htimx, TIM_IT_UPDATE);
 
-    uint32_t result;
     uint32_t tick = uwTick;
     uint32_t kCNT = HAL_TIMEBASE_htimx.Instance->CNT;
-    if (kCNT < 10) {
-        // 定时器不久前溢出
-        // 判断定时器中断标识是否存在
-        if (__HAL_TIM_GET_FLAG(&HAL_TIMEBASE_htimx, TIM_FLAG_UPDATE) != RESET) {
-            // 刚刚溢出，还没进中断，uwTick 还没递增
-            result = (tick + 1) * kUs_uwTick + kCNT;
-        } else {
-            // 进过了中断，uwTick 已经递增
-            result = tick * kUs_uwTick + kCNT;
-        }
-    } else {
-        // 定时器很久前溢出，uwTick 有效
-        result = tick * kUs_uwTick + kCNT;
-    }
 
-    __HAL_TIM_ENABLE_IT(&HAL_TIMEBASE_htimx, TIM_IT_UPDATE);
-    return result;
+    // 由于进入溢出中断后会清除中断标志，以此检测上次溢出后是否进过溢出中断
+    if (__HAL_TIM_GET_FLAG(&HAL_TIMEBASE_htimx, TIM_FLAG_UPDATE) == RESET) {
+        // 中断标志被清除，进过了中断，tick 已经递增
+        __HAL_TIM_ENABLE_IT(&HAL_TIMEBASE_htimx, TIM_IT_UPDATE);
+        return tick * kUs_uwTick + kCNT;
+    } else {
+        // 刚刚溢出，还没进中断，uwTick 还没递增
+        __HAL_TIM_ENABLE_IT(&HAL_TIMEBASE_htimx, TIM_IT_UPDATE);
+        return (tick + 1) * kUs_uwTick + HAL_TIMEBASE_htimx.Instance->CNT;
+    }
 }
 
 uint32_t HPT_GetTotalSysTick()
