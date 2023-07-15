@@ -14,6 +14,7 @@
 // #include "math_test.cpp.hpp"
 // #include "pll_test.cpp.hpp"
 #include "high_precision_time_test.cpp.hpp"
+#include "CoreMark/coremark.h"
 
 using namespace user_test;
 
@@ -36,7 +37,10 @@ void TestThread(void *argument)
     // MathTest();
     // PllTest();
     // PllTestInIsr();
-    HighPrecisionTimeTest();
+    // HighPrecisionTimeTest();
+    printf("Start CoreMark\n");
+    vTaskDelay(1000);
+    core_mark_main(0, nullptr);
 
     BlinkLedEntry(nullptr);
 
