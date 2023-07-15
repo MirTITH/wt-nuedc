@@ -1,5 +1,6 @@
 #include "high_precision_time.h"
 #include "main.h"
+#include <assert.h>
 
 /****************
  * 用户设置部分 *
