@@ -14,8 +14,7 @@
  * 程序代码部分 *
  ****************/
 
-#define MEM_BARRIER __asm("" :: \
-                              : "memory") // 内存屏障，防止指令重排
+#define MEM_BARRIER() __DSB() // 内存屏障，防止内存访问指令重排
 
 static uint8_t kIsInited = 0; // 是否初始化了
 static uint32_t kUs_uwTick;   // 1 uwTick 对应多少 us
@@ -42,11 +41,11 @@ uint32_t HPT_GetUs()
 {
     assert(kIsInited); // 记得调用 HPT_Init()
 
-    uint32_t tick = HAL_GetTick();
-    MEM_BARRIER;
+    uint32_t tick = uwTick;
+    MEM_BARRIER();
     uint32_t val = HAL_TIMEBASE_htimx.Instance->CNT;
-    MEM_BARRIER;
-    uint32_t tick1 = HAL_GetTick();
+    MEM_BARRIER();
+    uint32_t tick1 = uwTick;
 
     if (tick == tick1) {
         // 在采样时 uwTick 没发生变化，tick 和 val 有效
@@ -63,9 +62,9 @@ uint32_t HPT_GetTotalSysTick()
     // assert(kIsInited); // 记得调用 HPT_Init()
 
     uint32_t tick = xTaskGetTickCount();
-    MEM_BARRIER;
+    MEM_BARRIER();
     uint32_t val = SysTick->VAL;
-    MEM_BARRIER;
+    MEM_BARRIER();
     uint32_t tick1 = xTaskGetTickCount();
 
     if (tick == tick1) {
@@ -90,11 +89,11 @@ uint32_t HPT_GetUs()
 {
     assert(kIsInited); // 记得调用 HPT_Init()
 
-    uint32_t tick = HAL_GetTick();
-    MEM_BARRIER;
+    uint32_t tick = uwTick;
+    MEM_BARRIER();
     uint32_t val = SysTick->VAL;
-    MEM_BARRIER;
-    uint32_t tick1 = HAL_GetTick();
+    MEM_BARRIER();
+    uint32_t tick1 = uwTick;
 
     if (tick == tick1) {
         return tick * kUs_uwTick + (SysTick->LOAD - val) / kSysTick_Us;
@@ -108,11 +107,11 @@ uint32_t HPT_GetTotalSysTick()
     // 为加快函数执行速度，不判断初始化了
     // assert(kIsInited); // 记得调用 HPT_Init()
 
-    uint32_t tick = HAL_GetTick();
-    MEM_BARRIER;
+    uint32_t tick = uwTick;
+    MEM_BARRIER();
     uint32_t val = SysTick->VAL;
-    MEM_BARRIER;
-    uint32_t tick1 = HAL_GetTick();
+    MEM_BARRIER();
+    uint32_t tick1 = uwTick;
 
     if (tick == tick1) {
         return tick * kSysTick_uwTick + (SysTick->LOAD - val);
