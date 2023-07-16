@@ -15,6 +15,7 @@
 // #include "pll_test.cpp.hpp"
 // #include "high_precision_time_test.cpp.hpp"
 // #include "malloc_test.cpp.hpp"
+#include "Lcd/lcd_device.hpp"
 
 using namespace user_test;
 
@@ -32,13 +33,15 @@ void TestThread(void *argument)
 {
     (void)argument;
 
-    ZtfTest();
+    // ZtfTest();
     // AdcTest();
     // MathTest();
     // PllTest();
     // PllTestInIsr();
     // HighPrecisionTimeTest();
     // MallocTest();
+
+    LCD.InitAll();
 
     BlinkLedEntry(nullptr);
 

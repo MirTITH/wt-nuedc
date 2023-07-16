@@ -20,6 +20,7 @@
 #include "control_system/signal_generator.hpp"
 #include "dac.h"
 #include "Adc/adc_class_device.hpp"
+#include "Lcd/lcd_device.hpp"
 
 #ifdef __cplusplus
 extern "C" {
@@ -83,5 +84,12 @@ void HAL_ADC_ConvCpltCallback(ADC_HandleTypeDef *hadc)
 {
     if (hadc->Instance == Adc1.hadc_->Instance) {
         Adc1.ConvCpltCallback();
+    }
+}
+
+void LcdFmc_DmaXferCpltCallback(DMA_HandleTypeDef *_hdma)
+{
+    if (_hdma->Instance == LCD.GetDma()->Instance) {
+        LCD.DmaXferCpltCallback();
     }
 }
