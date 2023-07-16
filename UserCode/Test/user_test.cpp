@@ -9,11 +9,11 @@
 
 // Test includes
 // #include "test_template.cpp.hpp"
-// #include "control_system_test.cpp.hpp"
+#include "control_system_test.cpp.hpp"
 // #include "adc_test.hpp"
 // #include "math_test.cpp.hpp"
 // #include "pll_test.cpp.hpp"
-#include "high_precision_time_test.cpp.hpp"
+// #include "high_precision_time_test.cpp.hpp"
 
 using namespace user_test;
 
@@ -31,12 +31,12 @@ void TestThread(void *argument)
 {
     (void)argument;
 
-    // ZtfTest();
+    ZtfTest();
     // AdcTest();
     // MathTest();
     // PllTest();
     // PllTestInIsr();
-    HighPrecisionTimeTest();
+    // HighPrecisionTimeTest();
 
     BlinkLedEntry(nullptr);
 
