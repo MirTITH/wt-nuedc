@@ -100,18 +100,6 @@ public:
     }
 
     /**
-     * @brief 在 head 所指向的元素后面插入
-     *
-     * @param data 要插入的元素
-     */
-    void insert_after(const T &data)
-    {
-        auto temp  = new T(data);
-        temp->next = head->next;
-        head->next = temp;
-    }
-
-    /**
      * @brief 把环形链表用 data 填满
      *
      */
