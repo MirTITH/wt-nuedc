@@ -89,7 +89,6 @@ void HAL_ADC_ConvCpltCallback(ADC_HandleTypeDef *hadc)
 
 void LcdFmc_DmaXferCpltCallback(DMA_HandleTypeDef *_hdma)
 {
-    if (_hdma->Instance == LCD.GetDma()->Instance) {
-        LCD.DmaXferCpltCallback();
-    }
+    (void)_hdma;
+    LCD.DmaXferCpltCallback();
 }

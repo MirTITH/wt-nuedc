@@ -145,8 +145,6 @@ public:
             _remaining_dma_data_num = data_num - _MAX_DMA_DATA_NUM;
             _next_dma_src           = data + _MAX_DMA_DATA_NUM;
         }
-
-        // HAL_DMA_Start_IT(_dma, (uint32_t)data, (uint32_t)_data_address, data_num);
     }
 
     DMA_HandleTypeDef *GetDma()
