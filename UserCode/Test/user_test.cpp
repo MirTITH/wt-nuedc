@@ -14,6 +14,7 @@
 // #include "math_test.cpp.hpp"
 // #include "pll_test.cpp.hpp"
 // #include "high_precision_time_test.cpp.hpp"
+// #include "malloc_test.cpp.hpp"
 
 using namespace user_test;
 
@@ -37,6 +38,7 @@ void TestThread(void *argument)
     // PllTest();
     // PllTestInIsr();
     // HighPrecisionTimeTest();
+    // MallocTest();
 
     BlinkLedEntry(nullptr);
 
