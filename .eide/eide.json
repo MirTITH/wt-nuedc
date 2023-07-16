@@ -101,7 +101,8 @@
           "CubeMX/Drivers/CMSIS/Include",
           "CubeMX/Middlewares/ST/ARM/DSP/Inc",
           "UserCode/Lib",
-          "UserCode/Lib/FreeRtosSys"
+          "UserCode/Lib/FreeRtosSys",
+          "UserCode/Lib/lvgl"
         ],
         "libList": [
           "CubeMX/Middlewares/ST/ARM/DSP/Lib"

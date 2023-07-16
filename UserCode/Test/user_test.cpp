@@ -29,10 +29,6 @@ void BlinkLedEntry(void *argument)
     }
 }
 
-#define kData_SIZE (320 * 480)
-
-const uint16_t kData[kData_SIZE] = {};
-
 uint16_t Rgb888To565(uint32_t rgb888)
 {
     return ((((rgb888) >> 19) & 0x1f) << 11) | ((((rgb888) >> 10) & 0x3f) << 5) | (((rgb888) >> 3) & 0x1f);
@@ -54,18 +50,18 @@ void TestThread(void *argument)
     //     kData[i] = 0xffff;
     // }
 
-    LCD.InitAll();
+    // LCD.InitAll();
 
-    while (true) {
-        LCD.FillScreen(Rgb888To565(0xCC9999));
-        vTaskDelay(500);
-        LCD.FillScreen(Rgb888To565(0xFFFF99));
-        vTaskDelay(500);
-        LCD.FillScreen(Rgb888To565(0x666699));
-        vTaskDelay(500);
-        LCD.WriteScreenDma(0, 0, 320 - 1, 480 - 1, (uint16_t *)(kData));
-        vTaskDelay(500);
-    }
+    // while (true) {
+    //     LCD.FillScreen(Rgb888To565(0xCC9999));
+    //     vTaskDelay(500);
+    //     LCD.FillScreen(Rgb888To565(0xFFFF99));
+    //     vTaskDelay(500);
+    //     LCD.FillScreen(Rgb888To565(0x666699));
+    //     vTaskDelay(500);
+    //     LCD.WriteScreenDma(0, 0, 320 - 1, 480 - 1, (uint16_t *)(kData));
+    //     vTaskDelay(500);
+    // }
 
     BlinkLedEntry(nullptr);
 
