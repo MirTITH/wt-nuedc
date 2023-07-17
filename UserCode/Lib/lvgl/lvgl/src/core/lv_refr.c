@@ -22,6 +22,9 @@
 #if LV_USE_PERF_MONITOR || LV_USE_MEM_MONITOR
     #include "../widgets/lv_label.h"
 #endif
+#if LV_USE_MEM_MONITOR && LV_MEM_CUSTOM == 1 && LV_USE_LABEL
+#include "sysmem.h"
+#endif
 
 /*********************
  *      DEFINES
@@ -431,6 +434,39 @@ void _lv_disp_refr_timer(lv_timer_t * tmr)
                               "%d%% frag.",
                               used_kb, used_kb_tenth, mon.used_pct,
                               mon.frag_pct);
+    }
+#endif
+
+#if LV_USE_MEM_MONITOR && LV_MEM_CUSTOM == 1 && LV_USE_LABEL
+    lv_obj_t *mem_label = mem_monitor.mem_label;
+    if (mem_label == NULL) {
+        mem_label = lv_label_create(lv_layer_sys());
+        lv_obj_set_style_bg_opa(mem_label, LV_OPA_50, 0);
+        lv_obj_set_style_bg_color(mem_label, lv_color_black(), 0);
+        lv_obj_set_style_text_color(mem_label, lv_color_white(), 0);
+        lv_obj_set_style_pad_top(mem_label, 3, 0);
+        lv_obj_set_style_pad_bottom(mem_label, 3, 0);
+        lv_obj_set_style_pad_left(mem_label, 3, 0);
+        lv_obj_set_style_pad_right(mem_label, 3, 0);
+        lv_label_set_text(mem_label, "?");
+        lv_obj_align(mem_label, LV_USE_MEM_MONITOR_POS, 0, 0);
+        mem_monitor.mem_label = mem_label;
+    }
+
+    if (lv_tick_elaps(mem_monitor.mem_last_time) > 300) {
+        mem_monitor.mem_last_time = lv_tick_get();
+        uint32_t used_size        = GetUsedNewlibHeapSize();
+        uint32_t total_size       = GetTotalNewlibHeapSize();
+
+        if (used_size < 99999) {
+            lv_label_set_text_fmt(mem_label,
+                                  "MEM: %lu B (%lu %%)\nTotal: %lu KB",
+                                  used_size, 100 * used_size / total_size, total_size / 1024);
+        } else {
+            lv_label_set_text_fmt(mem_label,
+                                  "MEM %lu KB (%lu %%)\nTotal: %lu KB",
+                                  used_size / 1024, 100 * used_size / total_size, total_size / 1024);
+        }
     }
 #endif
 

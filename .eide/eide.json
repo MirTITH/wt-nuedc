@@ -24,7 +24,8 @@
       "excludeList": [
         "CubeMX/Core/Startup",
         "CubeMX/Core/ThreadSafe",
-        "CubeMX/Core/Src/syscalls.c"
+        "CubeMX/Core/Src/syscalls.c",
+        "CubeMX/Core/Src/sysmem.c"
       ],
       "toolchain": "GCC",
       "compileConfig": {
@@ -56,7 +57,7 @@
           "baseAddr": "",
           "cpuInfo": {
             "vendor": "ST",
-            "cpuName": "STM32F407VG"
+            "cpuName": "STM32F407VE"
           },
           "proType": 1,
           "speed": 8000,
@@ -102,7 +103,8 @@
           "CubeMX/Middlewares/ST/ARM/DSP/Inc",
           "UserCode/Lib",
           "UserCode/Lib/FreeRtosSys",
-          "UserCode/Lib/lvgl"
+          "UserCode/Lib/lvgl",
+          "System"
         ],
         "libList": [
           "CubeMX/Middlewares/ST/ARM/DSP/Lib"

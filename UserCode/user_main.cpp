@@ -8,6 +8,7 @@
 #include "lvgl/lvgl.h"
 #include "lvgl/lv_port_disp.h"
 #include "lvgl/lvgl_thread.h"
+#include "freertos_io/os_printf.h"
 
 using namespace std;
 
@@ -15,19 +16,19 @@ void StartDefaultTask(void const *argument)
 {
     (void)argument;
 
+    // 时间库初始化，需要最先 init
+    HPT_Init();
+
     // HAL_TIM_Base_Start_IT(&htim3);
     // HAL_TIM_PWM_Start(&htim3, TIM_CHANNEL_1);
     // HAL_TIM_PWM_Start(&htim3, TIM_CHANNEL_2);
 
-    HPT_Init();
+    StartTestThread();
 
+    // lvgl
     lv_init();
     lv_port_disp_init();
-    // lv_port_indev_init();
-
     StartLvglThread();
-
-    StartTestThread();
 
     vTaskDelete(nullptr); // 删除当前线程
 }

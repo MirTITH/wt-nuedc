@@ -48,9 +48,8 @@ static lv_disp_drv_t disp_drv; /*Descriptor of a display driver*/
 
 static void dma_cplt_cb(LcdSt7796 *lcd)
 {
-    if (lcd == &LCD) {
-        lv_disp_flush_ready(&disp_drv);
-    }
+    (void)lcd;
+    lv_disp_flush_ready(&disp_drv);
 }
 
 static void wait_callback(struct _lv_disp_drv_t *disp_drv)
@@ -94,8 +93,8 @@ void lv_port_disp_init(void)
     /* Example for 2) */
     static lv_disp_draw_buf_t draw_buf_dsc_2;
     const int buf_size = 320 * 48;
-    static lv_color_t buf_1[buf_size];                              /*A buffer for 10 rows*/
-    static lv_color_t buf_2[buf_size];                              /*An other buffer for 10 rows*/
+    static lv_color_t buf_1[buf_size];
+    static lv_color_t buf_2[buf_size];
     lv_disp_draw_buf_init(&draw_buf_dsc_2, buf_1, buf_2, buf_size); /*Initialize the display buffer*/
 
     /*-----------------------------------

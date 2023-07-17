@@ -6,6 +6,7 @@
 #include <cstdio>
 #include "freertos_io/os_printf.h"
 #include "freertos_io/uart_device.hpp"
+#include "sysmem.h"
 
 // Test includes
 // #include "test_template.cpp.hpp"
@@ -62,6 +63,11 @@ void TestThread(void *argument)
     //     LCD.WriteScreenDma(0, 0, 320 - 1, 480 - 1, (uint16_t *)(kData));
     //     vTaskDelay(500);
     // }
+
+    while (true) {
+        os_printf("%u, %u, %u\n", GetTotalNewlibHeapSize(), GetUsedNewlibHeapSize(), GetAvailableNewlibHeapSize());
+        vTaskDelay(100);
+    }
 
     BlinkLedEntry(nullptr);
 
