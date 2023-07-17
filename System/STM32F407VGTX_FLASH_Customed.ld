@@ -47,7 +47,8 @@ MEMORY
 {
   CCMRAM    (xrw)    : ORIGIN = 0x10000000,   LENGTH = 64K
   RAM    (xrw)    : ORIGIN = 0x20000000,   LENGTH = 128K
-  FLASH    (rx)    : ORIGIN = 0x8000000,   LENGTH = 1024K
+  FLASH    (rx)    : ORIGIN = 0x8000000,   LENGTH = 512K
+  FLASH2   (rx)    : ORIGIN = 0x8080000,   LENGTH = 512K
 }
 
 /* Sections */
@@ -111,14 +112,21 @@ SECTIONS
   } >FLASH
 
   /* Constant data into "FLASH" Rom type memory */
+
   .rodata :
   {
     . = ALIGN(4);
     *(.rodata)         /* .rodata sections (constants, strings, etc.) */
     *(.rodata*)        /* .rodata* sections (constants, strings, etc.) */
-    /* KEEP (*(.rodata.ttffont))  */
     . = ALIGN(4);
   } >FLASH
+
+  .rodata_ttf_font :
+  {
+    . = ALIGN(4);
+
+    . = ALIGN(4);
+  } >FLASH2
 
   .ARM.extab   : {
     . = ALIGN(4);
