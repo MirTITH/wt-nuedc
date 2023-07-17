@@ -6,7 +6,7 @@
 #include "tim.h"
 #include "HighPrecisionTime/high_precision_time.h"
 #include "lvgl/lvgl.h"
-#include "lvgl/lv_port_disp.h"
+#include "lv_port_disp.h"
 #include "lvgl/lvgl_thread.h"
 #include "freertos_io/os_printf.h"
 

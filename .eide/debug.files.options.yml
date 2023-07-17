@@ -23,6 +23,7 @@ version: '1.0'
 files:
     # './test/**/*.c': --c99
     './UserCode/**': -Wextra
+    './ThirdParty/**': -Wno-dangling-pointer
 
 #
 # for source files with virtual paths

@@ -6,7 +6,8 @@
     ".eide/deps",
     "UserCode",
     "CubeMX",
-    "System"
+    "System",
+    "ThirdParty"
   ],
   "virtualFolder": {
     "name": "<virtual_root>",
@@ -25,7 +26,14 @@
         "CubeMX/Core/Startup",
         "CubeMX/Core/ThreadSafe",
         "CubeMX/Core/Src/syscalls.c",
-        "CubeMX/Core/Src/sysmem.c"
+        "CubeMX/Core/Src/sysmem.c",
+        "ThirdParty/freetype/src/base/source",
+        "ThirdParty/freetype/src/cache/source",
+        "ThirdParty/freetype/src/gzip/source",
+        "ThirdParty/freetype/src/sfnt/source",
+        "ThirdParty/freetype/src/smooth/source",
+        "ThirdParty/freetype/src/truetype/source",
+        "ThirdParty/lvgl/lvgl/demos"
       ],
       "toolchain": "GCC",
       "compileConfig": {
@@ -103,8 +111,9 @@
           "CubeMX/Middlewares/ST/ARM/DSP/Inc",
           "UserCode/Lib",
           "UserCode/Lib/FreeRtosSys",
-          "UserCode/Lib/lvgl",
-          "System"
+          "ThirdParty/lvgl",
+          "System",
+          "ThirdParty/freetype/include"
         ],
         "libList": [
           "CubeMX/Middlewares/ST/ARM/DSP/Lib"
@@ -114,7 +123,10 @@
           "USE_HAL_DRIVER",
           "STM32F407xx",
           "STM32_THREAD_SAFE_STRATEGY=4",
-          "ARM_MATH_CM4"
+          "ARM_MATH_CM4",
+          "FT2_BUILD_LIBRARY",
+          "FT_CONFIG_MODULES_H=\"lvgl/src/extra/libs/freetype/ftmodule.h\"",
+          "FT_CONFIG_OPTIONS_H=\"lvgl/src/extra/libs/freetype/ftoption.h\""
         ]
       }
     }
