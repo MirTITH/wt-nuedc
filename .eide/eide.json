@@ -32,8 +32,7 @@
         "ThirdParty/freetype/src/gzip/source",
         "ThirdParty/freetype/src/sfnt/source",
         "ThirdParty/freetype/src/smooth/source",
-        "ThirdParty/freetype/src/truetype/source",
-        "ThirdParty/lvgl/lvgl/demos"
+        "ThirdParty/freetype/src/truetype/source"
       ],
       "toolchain": "GCC",
       "compileConfig": {
@@ -116,7 +115,8 @@
           "ThirdParty/freetype/include"
         ],
         "libList": [
-          "CubeMX/Middlewares/ST/ARM/DSP/Lib"
+          "CubeMX/Middlewares/ST/ARM/DSP/Lib",
+          "ThirdParty/lvgl/fonts"
         ],
         "sourceDirList": [],
         "defineList": [

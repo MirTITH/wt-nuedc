@@ -90,11 +90,15 @@ void lv_port_disp_init(void)
      *      and you only need to change the frame buffer's address.
      */
 
-    /* Example for 2) */
     static lv_disp_draw_buf_t draw_buf_dsc_2;
-    const int buf_size = 320 * 48;
+    const size_t buf_size = 320 * 32;
     static lv_color_t buf_1[buf_size];
     static lv_color_t buf_2[buf_size];
+
+    // 1 buffer
+    // lv_disp_draw_buf_init(&draw_buf_dsc_2, buf_1, nullptr, buf_size); /*Initialize the display buffer*/
+    
+    // 2 buffers
     lv_disp_draw_buf_init(&draw_buf_dsc_2, buf_1, buf_2, buf_size); /*Initialize the display buffer*/
 
     /*-----------------------------------
@@ -165,9 +169,8 @@ static void disp_flush(lv_disp_drv_t *disp_drv, const lv_area_t *area, lv_color_
     if (disp_flush_enabled) {
         // 横屏无法垂直同步，干脆不同步了
         // int16_t scanLine;
-        // LCD.SemaphoreTake();
         // do {
-        //     scanLine = LCD.getScanline() - 1;
+        //     scanLine = LCD.GetScanline() - 1;
         // } while (scanLine > area->x1 && scanLine < area->x2);
 
         LCD.WriteScreenDma(area->x1, area->y1, area->x2, area->y2, (uint16_t *)color_p);

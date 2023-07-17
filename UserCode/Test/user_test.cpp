@@ -53,23 +53,13 @@ void TestThread(void *argument)
 
     // LCD.InitAll();
 
+
     // while (true) {
-    //     LCD.FillScreen(Rgb888To565(0xCC9999));
-    //     vTaskDelay(500);
-    //     LCD.FillScreen(Rgb888To565(0xFFFF99));
-    //     vTaskDelay(500);
-    //     LCD.FillScreen(Rgb888To565(0x666699));
-    //     vTaskDelay(500);
-    //     LCD.WriteScreenDma(0, 0, 320 - 1, 480 - 1, (uint16_t *)(kData));
+    //     os_printf("%u, %u, %u\n", GetTotalNewlibHeapSize(), GetUsedNewlibHeapSize(), GetAvailableNewlibHeapSize());
     //     vTaskDelay(500);
     // }
 
-    while (true) {
-        os_printf("%u, %u, %u\n", GetTotalNewlibHeapSize(), GetUsedNewlibHeapSize(), GetAvailableNewlibHeapSize());
-        vTaskDelay(100);
-    }
-
-    BlinkLedEntry(nullptr);
+    // BlinkLedEntry(nullptr);
 
     vTaskDelete(nullptr);
 }

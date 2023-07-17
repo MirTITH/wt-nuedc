@@ -116,6 +116,7 @@ SECTIONS
     . = ALIGN(4);
     *(.rodata)         /* .rodata sections (constants, strings, etc.) */
     *(.rodata*)        /* .rodata* sections (constants, strings, etc.) */
+    /* KEEP (*(.rodata.ttffont))  */
     . = ALIGN(4);
   } >FLASH
 
