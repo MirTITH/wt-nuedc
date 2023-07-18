@@ -5,7 +5,7 @@
 #include "semphr.h"
 #include "freertos_io/os_printf.h"
 #include "FreeRtosSys/thread_priority_def.h"
-#include "fonts/ttf_font.h"
+#include "lvgl_ttf/lvgl_ttf.h"
 
 static SemaphoreHandle_t LvglMutex;
 
@@ -21,22 +21,14 @@ void LvglUnlock()
 
 void lv_example_freetype_1(void)
 {
-    /*Create a font*/
-    static lv_ft_info_t info;
-    /*FreeType uses C standard file system, so no driver letter is required.*/
-    info.name     = nullptr;
-    info.weight   = 24;
-    info.style    = FT_FONT_STYLE_NORMAL;
-    info.mem      = TTF_MEM_START;
-    info.mem_size = TTF_MEM_SIZE;
-    if (!lv_ft_font_init(&info)) {
-        LV_LOG_ERROR("create failed.");
-    }
+    auto font = LvglTtf_GetFont();
 
     /*Create style with the new font*/
     static lv_style_t style;
     lv_style_init(&style);
-    lv_style_set_text_font(&style, info.font);
+    if (font != NULL) {
+        lv_style_set_text_font(&style, font);
+    }
     lv_style_set_text_align(&style, LV_TEXT_ALIGN_CENTER);
     lv_style_set_width(&style, lv_pct(90));
 
@@ -45,13 +37,13 @@ void lv_example_freetype_1(void)
     lv_obj_add_style(label, &style, 0);
     lv_label_set_long_mode(label, LV_LABEL_LONG_WRAP);
     lv_label_set_text(label, "Hello world\nI'm a font created with FreeType\n"
-    "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890\n"
-    "~!@#$%^&*()-_=+[{}]\\|;:'"",<.>?\\/"
-    "~·！@#￥%……&（）——++-=、|【{}】；：‘“，《。》？\n"
-    "相位电压电流频率角度效亮度"
-    );
-    // lv_obj_center(label);
-    lv_obj_align(label, LV_ALIGN_TOP_MID, 0, 0);
+                             "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890\n"
+                             "~!@#$%^&*()-_=+[{}]\\|;:'"
+                             ",<.>?\\/"
+                             "~·！@#￥%……&（）——++-=、|【{}】；：‘“，《。》？\n"
+                             "相位电压电流频率角度效亮度");
+    lv_obj_center(label);
+    // lv_obj_align(label, LV_ALIGN_TOP_MID, 0, 0);
 }
 
 static void LvglThreadEntry(void *argument)
@@ -60,9 +52,9 @@ static void LvglThreadEntry(void *argument)
 
     lv_example_freetype_1();
 
-    // lv_obj_t *spinner = lv_spinner_create(lv_scr_act(), 1000, 60);
-    // lv_obj_set_size(spinner, 100, 100);
-    // lv_obj_center(spinner);
+    lv_obj_t *spinner = lv_spinner_create(lv_scr_act(), 1000, 60);
+    lv_obj_set_size(spinner, 100, 100);
+    lv_obj_center(spinner);
 
     // static lv_ft_info_t info;
     // info.name     = nullptr;
