@@ -33,7 +33,8 @@
         "ThirdParty/freetype/src/sfnt/source",
         "ThirdParty/freetype/src/smooth/source",
         "ThirdParty/freetype/src/truetype/source",
-        "ThirdParty/lvgl/lvgl/demos"
+        "ThirdParty/lvgl/lvgl/demos",
+        "ThirdParty/lvgl/fonts/ttf_font.s"
       ],
       "toolchain": "GCC",
       "compileConfig": {
