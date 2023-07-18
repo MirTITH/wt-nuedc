@@ -121,13 +121,6 @@ SECTIONS
     . = ALIGN(4);
   } >FLASH
 
-  .rodata_ttf_font :
-  {
-    . = ALIGN(4);
-
-    . = ALIGN(4);
-  } >FLASH2
-
   .ARM.extab   : {
     . = ALIGN(4);
     *(.ARM.extab* .gnu.linkonce.armextab.*)
