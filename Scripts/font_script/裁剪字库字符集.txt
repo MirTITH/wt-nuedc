@@ -1,0 +1,736 @@
+国家出版局抽样统计：最常用的 1000 个汉字（转载）
+汉字的数量非常庞大，总数大约九万左右。但常用字才三千多个，即使是常用字，使用频率的差别也
+很悬殊。国家标准 GB2312-80《信息交换用汉字编码字符集*基本集》就是根据这种事实制订的。一级
+字库为常用字，3755 个，二级字库为不常用字，3008 个，一、二级字库共有汉字 6763 个。一级字库
+的字，使用频率合计达 99.7%。即在现代汉语材料中的每一万个汉字中，这些字就会出现 9970 次以
+上，其余的所有汉字也不足 30 次。而最常用的 1000 个汉字，使用频率在 90%以上。
+根据国家出版局抽样统计，汉字中最常用字 560 个，常用字 807 个，次常用字 1033 个。三者合计
+2400 个，占一般书刊用字的 99%，所以小学生如果认识 2400 个常用字就能阅读一般书刊。
+最常用的 140 个汉字（按使用频率从高到低的右序排列,这 140 个汉字的使用频率之和为 50%):
+的一是了我不人在他有这个上们来到时大地为子中你说生国年着就那和要她出也得里后自以会家可下
+而过天去能对小多然于心学么之都好看起发当没成只如事把还用第样道想作种开美总从无情己面最女
+但现前些所同日手又行意动方期它头经长儿回位分爱老因很给名法间斯知世什两次使身者被高已亲其
+进此话常与活正感
+使用频率排名 141-232 的汉字(这 92 个汉字的频率之和为 10%):
+见明问力理尔点文几定本公特做外孩相西果走将月十实向声车全信重三机工物气每并别真打太新比才
+便夫再书部水像眼等体却加电主界门利海受听表德少克代员许稜先口由死安写性马光白或住难望教命
+花结乐色
+使用频率排名 233-380 的汉字（148 个汉字，使用频率之和 10%):
+更拉东神记处让母父应直字场平报友关放至张认接告入笑内英军候民岁往何度山觉路带万男边风解叫
+任金快原吃妈变通师立象数四失满战远格士音轻目条呢病始达深完今提求清王化空业思切怎非找片罗
+钱紶吗语元喜曾离飞科言干流欢约各即指合反题必该论交终林请医晚制球决窢传画保读运及则房早院
+量苦火布品近坐产答星精视五连司巴
+使用频率排名 382-500 的汉字（使用频率之和 5.43%):
+奇管类未朋且婚台夜青北队久乎越观落尽形影红爸百令周吧识步希亚术留市半热送兴造谈容极随演收
+首根讲整式取照办强石古华諣拿计您装似足双妻尼转诉米称丽客南领节衣站黑刻统断福城故历惊脸选
+包紧争另建维绝树系伤示愿持千史谁准联妇纪基买志静阿诗独复痛消社算
+使用频率排名 501-1000 的汉字:
+算义竟确酒需单治卡幸兰念举仅钟怕共毛句息功官待究跟穿室易游程号居考突皮哪费倒价图具刚脑永
+歌响商礼细专黄块脚味灵改据般破引食仍存众注笔甚某沉血备习校默务土微娘须试怀料调广蜖苏显赛
+查密议底列富梦错座参八除跑亮假印设线温虽掉京初养香停际致阳纸李纳验助激够严证帝饭忘趣支春
+集丈木研班普导顿睡展跳获艺六波察群皇段急庭创区奥器谢弟店否害草排背止组州朝封睛板角况曲馆
+育忙质河续哥呼若推境遇雨标姐充围案伦护冷警贝著雪索剧啊船险烟依斗值帮汉慢佛肯闻唱沙局伯族
+低玩资屋击速顾泪洲团圣旁堂兵七露园牛哭旅街劳型烈姑陈莫鱼异抱宝权鲁简态级票怪寻杀律胜份汽
+右洋范床舞秘午登楼贵吸责例追较职属渐左录丝牙党继托赶章智冲叶胡吉卖坚喝肉遗救修松临藏担戏
+善卫药悲敢靠伊村戴词森耳差短祖云规窗散迷油旧适乡架恩投弹铁博雷府压超负勒杂醒洗采毫嘴毕九
+冰既状乱景席珍童顶派素脱农疑练野按犯拍征坏骨余承置臓彩灯巨琴免环姆暗换技翻束增忍餐洛塞缺
+忆判欧层付阵玛批岛项狗休懂武革良恶恋委拥娜妙探呀营退摇弄桌熟诺宣银势奖宫忽套康供优课鸟喊
+降夏困刘罪亡鞋健模败伴守挥鲜财孤枪禁恐伙杰迹妹藸遍盖副坦牌江顺秋萨菜划授归浪听凡预奶雄升
+碃编典袋莱含盛济蒙棋端腿招释介烧误
+电流
+导体内的自由电子或离子在电场力的作用下，有规律 的流动叫作电流。人们规定正电荷移动的方向为电流 的正方向。电流用字母I 表示，单位为A 。
+
+
+电流强度
+衡量电流强弱的物理量。单位时间内通过导体截面积的电量即为电流强度，用字母I表示，习惯上简称为电流。
+
+
+电流密度
+在单位横截面积上通过的电流大小，称为电流密度。单位为A/mm2。
+
+
+电位
+在电场中，单位正电荷从a点移到参考点时，电场力 所做的功，称为a点对参考点的电位。进行理论研究时， 常取无限远点作为电位的参考点; 在实用工程中， 常取大地作为电位的参考点。电位的单位为V。
+
+
+电动势
+单位正电荷由低电位移向高电位时非静电力对它所做的功称为电动势。用字母 E 表示，单位为V
+
+
+电阻
+导体能导电，同时对电流有阻力作用，这种阻碍电流 通过的能力称为电阻，用字母R或r表示，单位为Ω。
+
+
+电阻率
+又称电阻系数。是衡量物体导电性能好坏的一个物理量，用字母ρ表示，单位为Ω·m。其数值是指导体的长度为1m 、截面积为1m2的均匀导体在温度为20℃时所具有的电阻值，即为该导体的电阻率。
+
+
+电阻的温度系数
+表示物质的电阻率随温度而变化的物理量，其数值等于温度每升高1℃ 时，电阻率的变化量与原来的电阻率的比值，用字母d 表示，单位为1/℃。
+
+
+电导
+物体传导电流的本领叫电导。电阻值的倒数就是电导， 用字母G表示，单位为S(西门子)。
+
+
+电导率
+又叫电导系数。是衡量物质导电性能好坏的一个物理量。其数值大小是电阻率的倒数。用字母γ表示，单 位为S/m(西/米)。
+
+
+自感
+当闭合回路中的电流发生变化时，由这个变化电流所产生的、穿过回路本身的磁通随之发生变化，在这回路中将产生感生电动势，这种现象称为自感现象。这种感生电动势叫作自感电动势。
+穿过回路所包围面积的磁通与产生此磁通的电流之间的比例系数，叫作回路的自感系数，简称自感。其数值等于单位时间内， 电流变化一个单位时由于自感而引起的电动势，用字母L 表示，单位为H(亨利)。
+
+
+互感
+两只相邻线圈，当任一线圈中的电流发生变化时，则 在另一只线圈中产生感生电动势，这种电磁感应现象叫互感。由此产生的感生电动机势称为互感电动势。用字母 M 表示，单位为H。电感：自感与互感的统称。
+
+
+电容
+凡是用绝缘介质隔开的两个导体就构成了一个电容 器。两个极板在单位电压作用下每一极板上所储存的电荷量叫作该电容器的电容，用字母C 表示，单位为F(法拉) 。
+
+
+感抗
+交流电流过具有电感的电路时，电感有阻碍交流电流过的作用， 这种作用称为感抗， 用XL 表示， 单位为Ω。
+
+
+容抗
+交流电流过具有电容的电路时，电容有阻碍交流电流过的作用， 这种作用称为容抗， 用XC表示， 单位为Ω。
+
+
+阻抗
+交流电流过具有电阻、电感、电容的电路时，它们阻碍交流电流通过的作用叫做阻抗。
+
+
+直流电
+大小和方向不随时间变化的电流称为直流电，交流电：大小和方向随时间周期性变化的电流称为交流电。
+
+
+正弦交流电
+随时间按正弦规律变化的交流电流称为正弦交流电。
+
+
+非正弦交流电
+随时间不按正弦规律变化的交流电流称为非正弦交流电。
+
+
+脉动直流电
+大小随时间变化而方向不变的电流称为脉动直流电。
+
+
+频率
+交流电流1s内电流方向改变的次数称为频率， 用字母f表示，单位为Hz(赫兹) 。
+
+
+周期
+交流电每变化一周所需的时间称为周期，用字母T表 示，单位为s(秒)。
+
+
+瞬时值
+交流电在任一瞬间的值称为瞬时值， 用小写字母表示， 如i 、u 、e分别表示电流、电压及电动势的瞬时值。
+
+
+最大值
+瞬时值中的最大幅度值称为最大值，用带下标m的大写字母表示，如Im 、Um 、Em 分别表示电流、电压及电动势的最大值。
+
+
+有效值
+如某一交流电通过某一电阻经过一定时间所产生的热 量，等于某一直流电通过同一电阻在同一时间产生的 热量，则该直流电的数值即称为交流电的有效值，即交流电的有效值就是与它的热效应相当的直流值。用 大写字母I 、U 、E 分别表示电流、电压及电动势的有效值。
+
+
+平均值
+交流电的平均值是指某段时间内流过电路的总电荷与该段时间的比值。正弦交流电的平均值通常指正半周内的平均值。
+
+
+电功
+电流所做的功叫电功， 及符号W表示， 单位为J(焦耳)和kW ·h(千瓦/时) 。
+
+
+电功率
+单位时间(1s)电流所做的功叫作电功率，用符号P表示单位为W或kW。
+
+
+瞬时功率
+交流电路中任一瞬间的功率称为瞬时功率， 用符号Pt表示，单位为W或kW。
+
+
+有功功率
+正弦交流电路的瞬时功率在一个周期内的平均值，称 为有功功率，用字母Pa表示，单位为W或kW。
+
+
+视在功率
+电流I和电压U的有效值的乘积称为视在功率，用字母S 或Ps表示，单位为V ·A或kV·A。
+
+
+无功功率
+具有电感或电容的电路中，在半周期的时间里，电源 的能量变成磁场 (或电场 ) 的能量储存起来，而在另半 周期的时间里，又把储存在磁场(或电场 ) 的能量释放 出来送还电源。
+它只与电源进行能量交换而没有消耗能量。与电源交换能量的速率的振幅值叫作无功功率， 用字母Q 或Pr 表示，单位为var(乏) 或kvar(千乏)。
+
+
+功率因数
+有功功率与视在功率的比值称为功率因数cos φ。
+
+
+效率
+能量在转换或传递的过程中总要消耗一部分，即输出小于输入，输出能量与输入能量的比值叫作效率，用字母η表示。
+
+
+相电压
+三相电路中，相线与中性线之间的电压称为相电压。
+
+
+线电压
+三相电路中，相线与相线之间的电压称为线电压。
+
+
+相电流
+三相电路中，流过每相上的电流称为相电流。
+
+
+线电流
+三相电路中，三根端线中的电流称为线电流。
+
+
+损耗电场
+把电荷(或带电体)引入其他带电体周围的空间时，将会受到力的作用，就是说在带电体周围存在电场。
+
+
+电场强度
+表示电场强弱的物理量。数值上等于单位正电荷在该点处所受的作用力，方向是正电荷受力的方向。用字母E表示，单位为V/m。
+
+
+击穿
+电介质在电场的作用下发生剧烈放电或导电的现象叫击穿，绝缘强度又称击穿电场强度。
+
+
+介电常数
+表示物质绝缘能力特性的一个系数，用字母ε表示，单位为F/m。相对介质常数：任一物质的介电常数ε与真空介电常数ε0的比值称为相对介质常数，用符号εr表示。
+
+
+小编今天整理了电工识图基础手册、常见电路接线图大全、热门仿真软件、电工培训课件。
+1、元件设备
+
+三绕组变压器：three-column transformer
+
+双绕组变压器：double-column transformer
+
+变压器 transformer
+
+升压变压器 step-up transformer
+
+电压互感器 potential transformer （PT）
+
+电流互感器 current transformer（CT）
+
+电容器：Capacitor
+
+并联电容器：shunt capacitor
+
+电抗器：Reactor
+
+母线：Busbar
+
+断路器：Breaker
+
+刀闸(隔离开关)：Isolator
+
+分接头：tap
+
+电动机：motor
+
+直流电动机 dc motor
+
+交流电动机 ac motor
+
+异步电动机 asynchronous motor
+
+同步电动机 synchronous motor
+
+三相异步电动机 three-phase asynchronous motor
+
+单相异步电动机 single-phase asynchronous motor
+
+发电机 generator
+
+定子：stator
+
+转子 rotor
+
+电枢 armature
+
+电刷 brush
+
+铁芯 ironcore
+
+绕组 winding
+
+开关站 switch station
+
+变电站 transformer substation
+
+热敏电阻 thermistor
+
+
+
+2、状态参数
+
+功率：power
+
+功角：power-angle
+
+有功功率：active power
+
+无功功率：reactive power
+
+视在功率 apparent power
+
+功率因数补偿 power-factor compensation
+
+电流：current
+
+容量：capacity
+
+相位 phase
+
+初相位 initial phase
+
+相位差 phase difference
+
+相位领先 phase lead
+
+相位落后 phase lag
+
+装机容量 installed capacity
+
+电压：voltage
+
+档位：tap position
+
+无功损耗：reactive loss
+
+有功损耗：active loss
+
+功率因数：power-factor
+
+电压等级：voltage grade
+
+空载损耗：no-load loss
+
+铁损：iron loss
+
+铜损：copper loss
+
+空载电流：no-load current
+
+阻抗：impedance
+
+正序阻抗：positive sequence impedance
+
+负序阻抗：negative sequence impedance
+
+零序阻抗：zero sequence impedance
+
+电阻器：resistor
+
+电阻：resistance
+
+电抗：reactance
+
+阻抗：impedance
+
+电导：conductance
+
+电纳：susceptance
+
+导纳：admittance
+
+电感：inductance
+
+电容: capacitance
+
+无功负载：reactive load
+
+有功负载: active load
+
+无功电流 reactive current
+
+励磁电流(转子电流)：magnetizing current
+
+旋转磁场 rotating magnetic field
+
+转差率 slip
+
+起动电流 starting current
+
+起动转矩 starting torque
+
+额定电压 rated voltage
+
+额定电流 rated current
+
+额定功率 rated power
+
+机械特性 mechanical characteristic
+
+
+
+3、常见名词
+
+上限:upper limit
+
+下限：lower limit
+
+高压: high voltage
+
+低压：low voltage
+
+中压：middle voltage
+
+电力系统 power system
+
+励磁 excitation
+
+励磁器 excitor
+
+输电系统 power transmission system
+
+输电线 transmission line
+
+稳定 stability
+
+电压稳定 voltage stability
+
+功角稳定 angle stability
+
+暂态稳定 transient stability
+
+交流 alternating current （AC）
+
+直流 direct current（DC）
+
+平均值 average value
+
+有效值 effective value
+
+均方根值root-mean-squire value (rms)
+
+补偿度 degree of compensation
+
+高压并联电抗器high voltage shunt reactor
+
+无功补偿 reactive power compensation
+
+故障 fault
+
+调节 regulation
+
+裕度 magin
+
+三相故障 three phase fault
+
+故障切除时间 fault clearing time
+
+极限切除时间 critical clearing time
+
+发电机跳闸 generator triping
+
+高限值 high limited value
+
+强行励磁 reinforced excitation
+
+机端 generator terminal
+
+静态 static (state)
+
+动态 dynamic (state)
+
+电压自动控制 Automatic Voltage Regulation （AVR）
+
+斜率 slope
+
+额定 rating
+
+变比 ratio
+
+参考值 reference value
+
+仿真分析 simulation analysis
+
+框图 block diagram
+
+受端 receive-side
+
+同步 synchronization
+
+失去同步 loss of synchronization
+
+阻尼 damping
+
+断路器 circuit breaker
+
+伏安特性 volt-ampere characteristic
+
+开路（断路）open circuit
+
+短路 short circuit
+
+开路电压 open-circuit voltage
+
+短路电流 short-circuit current
+
+三相三线制 three-phase three-wire system
+
+三相四线制 three-phase four-wire system
+
+星形连接 star connection(Y-connection)
+
+三角形连接triangular connection(△- connection )（delta connection)
+
+中线 neutral line
+
+
+
+4、电力电子
+
+Bi-directional Triode Thyristor — 双向晶闸管
+
+Boost-Buck Chopper — 升降压斩波电路
+
+Boost Chopper — 升压斩波电路
+
+Boost Converter — 升压变换器
+
+Bridge Reversible Chopper — 桥式可逆斩波电路
+
+Buck Chopper — 降压斩波电路
+
+Buck Converter — 降压变换器
+
+Commutation — 换流
+
+Conduction Angle — 导通角
+
+Constant Voltage Constant Frequency （CVCF） — 恒压恒频
+
+Continuous Conduction — （电流）连续模式
+
+Control Circuit — 控制电路
+
+DC-AC-DC Converter — 直交直变换器
+
+DC Chopping — 直流斩波
+
+DC Chopping Circuit — 直流斩波电路
+
+DC-DC Converter — 直直变换器
+
+Device Commutation — 器件换流
+
+Direct Current Control — 直流控制
+
+Discontinuous Conduction mode — （电流）断续模式
+
+double end converter — 双端电路
+
+driving circuit — 驱动电路
+
+electrical isolation — 电气隔离
+
+fast acting fuse —— 快速熔断器
+
+fast recovery diode —— 快恢复二极管
+
+fast recovery epitaxial diodes —— 快恢复外延二极管
+
+fast switching thyristor —— 快速晶闸管
+
+field controlled thyristor —— 场控晶闸管
+
+flyback converter —— 反激电流
+
+forced commutation —— 强迫换流
+
+forward converter —— 正激电路
+
+frequency converter —— 变频器
+
+full bridge converter —— 全桥电路
+
+full bridge rectifier —— 全桥整流电路
+
+full wave rectifier —— 全波整流电路
+
+fundamental factor —— 基波因数
+
+gate turn-off thyristor（GTO） —— 可关断晶闸管
+
+general purpose diode —— 普通二极管
+
+giant transistor（GTR） —— 电力晶体管
+
+half bridge converter —— 半桥电路
+
+hard switching —— 硬开关
+
+high voltage IC —— 高压集成电路
+
+indirect current control —— 间接电流控制
+
+indirect DC-DC converter —— 间接直直转换器
+
+insulated-gate bipolar transistor（IGBT） —— 绝缘栅双极晶体管
+
+intelligent power module（IPM） —— 智能功率模块
+
+integrated gate-commutated thyristor（IGCT） —— 集成门极换流晶闸管
+
+inversion —— 逆变
+
+rectification —— 整流
+
+latching effect —— 擎住效应
+
+leakage inductance —— 漏感
+
+light triggered thyristo（LTT） —— 光控晶闸管
+
+line commutation —— 电网换流
+
+load commutation —— 负载换流
+
+loop current —— 环流
+
+auxiliary circuit 辅助电路
+
+
+
+5、模拟电路
+
+二极管 diode
+
+阳极 anode
+
+阴极 cathode
+
+发光二极管 light-emitting diode (LED)
+
+稳压二极管 Zener diode
+
+晶体管（三极管） transistor
+
+发射极 emitter
+
+集电极 collector
+
+基极 base
+
+场效应管 field-effect transistor (FET)
+
+金属氧化物半导体 metal-oxide semiconductor (MOS)
+
+源极 source
+
+栅极 grid
+
+漏极 drain
+
+饱和 saturation
+
+截止 cut-off
+
+放大区 amplifier region
+
+饱和区 saturation region
+
+截止区 cut-off region
+
+失真 distortion
+
+正反馈 positive feedback
+
+负反馈 negative feedback
+
+变阻器（电位器）rheostat
+
+积分电路 integrator（circuit）
+
+微分电路 differentiator（circuit）
+
+振荡器 oscillator
+
+幅度 magnitude
+电平level
+
+AD转换器analog -digital converter (ADC)
+
+DA转换器 digital-analog converter (DAC)
+
+5、继电控制
+
+按钮 button
+
+熔断器 fuse
+
+开关 switch
+
+行程开关 travel switch
+
+继电器 relay
+
+接触器 contactor
+
+常开(动合)触点 normally open contact
+
+常闭(动断)触点 normally closed contact
+
+时间继电器 time relay
+
+热继电器 thermal overload relay
+
+中间继电器 intermediate relay
+
+可编程控制器 programmable logic controller（PLC）
+
+语句表 statement list
+
+梯形图 ladder diagram
+
+
+
+6、西门子综合保护装置
+
+DMT/IDMT Phase 定时限/反时限相过流保护
+
+DMT/IDMT Phase Pick Up Characteriatic 定时限/反时限保护特性曲线
+
+① Definite Time only 仅定时限
+
+② Time Overcurrent curve IEC 反时限过流IEC曲线
+
+③ Time Overcurrent curve ANSI 反时限过流ANSI曲线
+
+④ User Defined Pickup Curve 用户自定义启动曲线
+
+⑤ User Defined Pickup and Reset Curve 用户自定义启动和复位曲线
+
+
+
+Solid Earthed 可靠接地
+
+Solid Earthed 绝缘（不接地）
+
+Vector Group Numeber of Sides 2 低压侧绕组接线组别
+
+CT-Strpnt. Side1 in Direct of Object 高压侧CT星接点指向保护对象
+
+Increase of Trip Char. During Start 启动期间动作特性提高
+
+Inrush with 2. Harmonic Restraint 二次谐波限制（制动）
+
+n-th Harmonic Restraint n次谐波制动
+
+
+
+7、其他
+
+谐波总畸变率 total harmonic distortion（THD）
