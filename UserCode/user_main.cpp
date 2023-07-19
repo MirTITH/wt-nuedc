@@ -9,7 +9,7 @@
 #include "lv_port_disp.h"
 #include "lvgl/lvgl_thread.h"
 #include "freertos_io/os_printf.h"
-#include "lvgl_ttf/lvgl_ttf.h"
+#include "fonts/lvgl_ttf.h"
 
 using namespace std;
 
@@ -29,7 +29,7 @@ void StartDefaultTask(void const *argument)
     // lvgl
     lv_init();
     lv_port_disp_init();
-    LvglTtf_Init();
+    LvglTTF_Init();
     StartLvglThread();
 
     vTaskDelete(nullptr); // 删除当前线程

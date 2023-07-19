@@ -388,11 +388,11 @@
 /*Optionally declare custom fonts here.
  *You can use these fonts as default font too and they will be available globally.
  *E.g. #define LV_FONT_CUSTOM_DECLARE   LV_FONT_DECLARE(my_font_1) LV_FONT_DECLARE(my_font_2)*/
-#define LV_FONT_CUSTOM_DECLARE extern lv_font_t *LvglTtf_GetFont();
+#define LV_FONT_CUSTOM_DECLARE extern lv_font_t *LvglTTF_GetSmallFont();
 
 /*Always set a default font*/
 
-#define LV_FONT_DEFAULT LvglTtf_GetFont()
+#define LV_FONT_DEFAULT LvglTTF_GetSmallFont()
 
 /*Enable handling large font and/or fonts with a lot of characters.
  *The limit depends on the font size, font face and bpp.
@@ -403,7 +403,7 @@
 #define LV_USE_FONT_COMPRESSED 0
 
 /*Enable subpixel rendering*/
-#define LV_USE_FONT_SUBPX 0
+#define LV_USE_FONT_SUBPX 1
 #if LV_USE_FONT_SUBPX
     /*Set the pixel order of the display. Physical order of RGB channels. Doesn't matter with "normal" fonts.*/
     #define LV_FONT_SUBPX_BGR 1  /*0: RGB; 1:BGR order*/

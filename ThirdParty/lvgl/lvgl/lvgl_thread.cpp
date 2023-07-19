@@ -5,7 +5,7 @@
 #include "semphr.h"
 #include "freertos_io/os_printf.h"
 #include "FreeRtosSys/thread_priority_def.h"
-#include "lvgl_ttf/lvgl_ttf.h"
+#include "fonts/lvgl_ttf.h"
 
 static SemaphoreHandle_t LvglMutex;
 
@@ -21,33 +21,33 @@ void LvglUnlock()
 
 void lv_example_freetype_1(void)
 {
-    auto font = LvglTtf_GetFont();
-
     /*Create style with the new font*/
     static lv_style_t style;
     lv_style_init(&style);
-    if (font != NULL) {
-        // lv_style_set_text_font(&style, font);
-    }
     lv_style_set_text_align(&style, LV_TEXT_ALIGN_CENTER);
     lv_style_set_width(&style, lv_pct(90));
 
     /*Create a label with the new style*/
     lv_obj_t *label0 = lv_label_create(lv_scr_act());
     lv_obj_add_style(label0, &style, 0);
-    lv_obj_set_style_text_font(label0, font, 0);
+    lv_obj_set_style_text_font(label0, LvglTTF_GetFont(), 0);
     lv_label_set_long_mode(label0, LV_LABEL_LONG_WRAP);
-    lv_label_set_text(label0, "小字体");
-    lv_obj_center(label0);
-    lv_obj_align(label0, LV_ALIGN_TOP_MID, 0, 0);
+    lv_label_set_text(label0, "正常大小字体\nThis is normal sized font");
+    lv_obj_align(label0, LV_ALIGN_TOP_MID, 0, 20);
 
     lv_obj_t *label = lv_label_create(lv_scr_act());
     lv_obj_add_style(label, &style, 0);
-    lv_obj_set_style_text_font(label, LvglTtf_GetLargeFont(), 0);
+    lv_obj_set_style_text_font(label, LvglTTF_GetLargeFont(), 0);
     lv_label_set_long_mode(label, LV_LABEL_LONG_WRAP);
-    lv_label_set_text(label, "大就是好");
+    lv_label_set_text(label, "大就是好！\nBigger!");
     lv_obj_center(label);
-    // lv_obj_align(label, LV_ALIGN_TOP_MID, 0, 0);
+
+    lv_obj_t *label2 = lv_label_create(lv_scr_act());
+    lv_obj_add_style(label2, &style, 0);
+    lv_obj_set_style_text_font(label2, LvglTTF_GetSmallFont(), 0);
+    lv_label_set_long_mode(label2, LV_LABEL_LONG_WRAP);
+    lv_label_set_text(label2, "Tiny qute font\nThis does not support 中文");
+    lv_obj_align(label2, LV_ALIGN_BOTTOM_MID, 0, -50);
 }
 
 static void LvglThreadEntry(void *argument)

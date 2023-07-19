@@ -1,5 +1,5 @@
 /**
- * @file ttf_font.h
+ * @file lvgl_ttf.h
  * @author X. Y.
  * @brief 用于加载 Flash 中的 ttf 字体文件
  * @version 0.1
@@ -13,15 +13,35 @@
 
 #pragma once
 
-#include <stdint.h>
+#include "lvgl/lvgl.h"
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-#define TTF_MEM_BASE  0x8080000                                   // 字体文件信息的地址
-#define TTF_MEM_SIZE  (*(uint32_t *)TTF_MEM_BASE)                 // ttf 文件大小
-#define TTF_MEM_START ((void *)(TTF_MEM_BASE + sizeof(uint32_t))) // ttf 文件起始地址
+/**
+ * @brief 初始化 TTF 字体
+ *
+ */
+void LvglTTF_Init();
+
+/**
+ * @brief 获取字体
+ *
+ */
+lv_font_t *LvglTTF_GetFont();
+
+/**
+ * @brief 获取大字体
+ *
+ */
+lv_font_t *LvglTTF_GetLargeFont();
+
+/**
+ * @brief 获取小字体
+ *
+ */
+lv_font_t *LvglTTF_GetSmallFont();
 
 #ifdef __cplusplus
 }
