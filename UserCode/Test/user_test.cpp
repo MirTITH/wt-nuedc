@@ -17,6 +17,7 @@
 // #include "high_precision_time_test.cpp.hpp"
 // #include "malloc_test.cpp.hpp"
 #include "Lcd/lcd_device.hpp"
+#include "ads1256_test.cpp.hpp"
 
 using namespace user_test;
 
@@ -25,7 +26,7 @@ void BlinkLedEntry(void *argument)
     (void)argument;
 
     while (true) {
-        HAL_GPIO_TogglePin(Led2_GPIO_Port, Led2_Pin);
+        // HAL_GPIO_TogglePin(Led2_GPIO_Port, Led2_Pin);
         vTaskDelay(250);
     }
 }
@@ -46,18 +47,8 @@ void TestThread(void *argument)
     // PllTestInIsr();
     // HighPrecisionTimeTest();
     // MallocTest();
-
-    // for (size_t i = 0; i < kData_SIZE; i++) {
-    //     kData[i] = 0xffff;
-    // }
-
-    // LCD.InitAll();
-
-
-    // while (true) {
-    //     os_printf("%u, %u, %u\n", GetTotalNewlibHeapSize(), GetUsedNewlibHeapSize(), GetAvailableNewlibHeapSize());
-    //     vTaskDelay(500);
-    // }
+    // PidTest();
+    Ads1256Test();
 
     // BlinkLedEntry(nullptr);
 

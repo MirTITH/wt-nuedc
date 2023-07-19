@@ -21,6 +21,7 @@
 #include "dac.h"
 #include "Adc/adc_class_device.hpp"
 #include "Lcd/lcd_device.hpp"
+#include "ads1256/ads1256_device.hpp"
 
 #ifdef __cplusplus
 extern "C" {
@@ -31,6 +32,7 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart);
 void HAL_UARTEx_RxEventCallback(UART_HandleTypeDef *huart, uint16_t Size);
 void MY_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim);
 void HAL_ADC_ConvCpltCallback(ADC_HandleTypeDef *hadc);
+void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin);
 
 #ifdef __cplusplus
 }
@@ -38,15 +40,15 @@ void HAL_ADC_ConvCpltCallback(ADC_HandleTypeDef *hadc);
 
 void HAL_UART_TxCpltCallback(UART_HandleTypeDef *huart)
 {
-    if (huart->Instance == USART1) {
-        Uart1.uart_device.TxCpltCallback();
+    if (huart->Instance == MainUart.uart_device.huart_.Instance) {
+        MainUart.uart_device.TxCpltCallback();
     }
 }
 
 void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
 {
-    if (huart->Instance == USART1) {
-        Uart1.uart_device.RxCpltCallback();
+    if (huart->Instance == MainUart.uart_device.huart_.Instance) {
+        MainUart.uart_device.RxCpltCallback();
     }
 }
 
@@ -59,8 +61,8 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
  */
 void HAL_UARTEx_RxEventCallback(UART_HandleTypeDef *huart, uint16_t Size)
 {
-    if (huart->Instance == USART1) {
-        Uart1.uart_device.RxEventCallback(Size);
+    if (huart->Instance == MainUart.uart_device.huart_.Instance) {
+        MainUart.uart_device.RxEventCallback(Size);
     }
 }
 
@@ -91,4 +93,16 @@ void LcdFmc_DmaXferCpltCallback(DMA_HandleTypeDef *_hdma)
 {
     (void)_hdma;
     LCD.DmaXferCpltCallback();
+}
+
+void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin)
+{
+    switch (GPIO_Pin) {
+        case VDrdy_Pin:
+            VAds.DRDY_Callback();
+            break;
+
+        default:
+            break;
+    }
 }
