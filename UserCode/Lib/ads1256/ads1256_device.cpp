@@ -1,5 +1,4 @@
 #include "ads1256_device.hpp"
 
-Ads1256 Ads(&hspi1,
-            ADS_NDRDY_GPIO_Port, ADS_NDRDY_Pin,
-            ADS_NRESET_GPIO_Port, ADS_NRESET_Pin);
+Ads1256 VAds(&hspi3, VDrdy_GPIO_Port, VDrdy_Pin);
+Ads1256 IAds(&hspi3, IDrdy_GPIO_Port, IDrdy_Pin);

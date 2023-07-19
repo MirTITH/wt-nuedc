@@ -23,6 +23,9 @@ public:
           n_drdy_port_(n_drdy_port), n_drdy_pin_(n_drdy_pin),
           n_reset_port_(n_reset_port), n_reset_pin_(n_reset_pin){};
 
+    Ads1256(SPI_HandleTypeDef *hspi, GPIO_TypeDef *n_drdy_port, uint16_t n_drdy_pin)
+        : hspi_(hspi), n_drdy_port_(n_drdy_port), n_drdy_pin_(n_drdy_pin){};
+
     void Init();
 
     bool IsDataReady()

@@ -19,7 +19,7 @@ void Ads1256Test()
 
     // Ads.Init();
 
-    auto ads_reg = Ads.ReadAllRegs();
+    auto ads_reg = VAds.ReadAllRegs();
     // auto ads_reg = ADS1256_RREG_All();
 
     os_printf("ADCON: %x\n", ads_reg.ADCON);
@@ -31,7 +31,7 @@ void Ads1256Test()
     uint32_t last_drdy_count = 0;
 
     while (true) {
-        auto drdy_count = Ads.drdy_count;
+        auto drdy_count = VAds.drdy_count;
         os_printf("drdy count: %lu, speed %lu\n", drdy_count, drdy_count - last_drdy_count);
         last_drdy_count = drdy_count;
         vTaskDelay(1000);

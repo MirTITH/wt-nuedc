@@ -85,7 +85,7 @@ int32_t ADS1256_diff_data[4];
 uint8_t ADS1256_SPI_RW(uint8_t TxData)
 {
 	uint8_t RxData;
-	HAL_SPI_TransmitReceive(&hspi1, &TxData, &RxData, 1, HAL_MAX_DELAY);
+	HAL_SPI_TransmitReceive(&hspi3, &TxData, &RxData, 1, HAL_MAX_DELAY);
 	HPT_DelayUs(5);
 	// printf("ADS1256: W %X\t R %X\n",TxData, RxData);
 	return RxData;
@@ -120,6 +120,7 @@ void ADS1256_Reset()
  */
 void ADS1256_NSS(uint8_t value)
 {
+	(void)value;
 #ifdef ADS1256_NSS_Enable
 	if (value == 0)
 	{
@@ -248,7 +249,7 @@ int32_t ADS1256_RDATA()
 
 	HPT_DelayUs(5); // 发出 RDATA 需要等待一段时间才能正常接收
 
-	HAL_SPI_TransmitReceive(&hspi1, TxGroup, RxGroup, 3, HAL_MAX_DELAY);
+	HAL_SPI_TransmitReceive(&hspi3, TxGroup, RxGroup, 3, HAL_MAX_DELAY);
 
 	// 将读取的三段数据拼接
 	result |= ((int32_t)RxGroup[0] << 16);

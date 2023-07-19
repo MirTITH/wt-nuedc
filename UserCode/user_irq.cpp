@@ -98,8 +98,8 @@ void LcdFmc_DmaXferCpltCallback(DMA_HandleTypeDef *_hdma)
 void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin)
 {
     switch (GPIO_Pin) {
-        case ADS_NDRDY_Pin:
-            Ads.DRDY_Callback();
+        case VDrdy_Pin:
+            VAds.DRDY_Callback();
             break;
 
         default:

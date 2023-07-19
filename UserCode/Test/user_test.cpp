@@ -26,7 +26,7 @@ void BlinkLedEntry(void *argument)
     (void)argument;
 
     while (true) {
-        HAL_GPIO_TogglePin(Led2_GPIO_Port, Led2_Pin);
+        // HAL_GPIO_TogglePin(Led2_GPIO_Port, Led2_Pin);
         vTaskDelay(250);
     }
 }
