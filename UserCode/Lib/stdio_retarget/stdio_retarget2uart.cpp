@@ -5,9 +5,9 @@
 using namespace freertos_io;
 
 // 串口号配置
-static UartThread &stdout_uart = Uart1;
-static Uart &stderr_uart       = Uart1.uart_device;
-static UartThread &stdin_uart  = Uart1;
+static UartThread &stdout_uart = MainUart;
+static Uart &stderr_uart       = MainUart.uart_device;
+static UartThread &stdin_uart  = MainUart;
 
 extern "C" {
 int _read(int file, char *ptr, int len);

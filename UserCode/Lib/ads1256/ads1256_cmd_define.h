@@ -1,0 +1,39 @@
+#pragma once
+
+// 一些命令
+#define ADS1256_CMD_WREG   0x50
+#define ADS1256_CMD_RREG   0x10
+#define ADS1256_CMD_SYNC   0xFC
+#define ADS1256_CMD_WAKEUP 0xFF
+#define ADS1256_CMD_RDATA  0x01
+
+// 寄存器地址
+#define ADS1256_STATUS 0x00
+#define ADS1256_MUX    0x01
+#define ADS1256_ADCON  0x02
+#define ADS1256_DRATE  0x03
+#define ADS1256_IO     0x04
+#define ADS1256_OFC0   0x05
+#define ADS1256_OFC1   0x06
+#define ADS1256_OFC2   0x07
+#define ADS1256_FSC0   0x08
+#define ADS1256_FSC1   0x09
+#define ADS1256_FSC2   0x0A
+
+// A/D Data Rate
+#define ADS1256_DRATE_2_5   0x03
+#define ADS1256_DRATE_5     0x13
+#define ADS1256_DRATE_10    0x23
+#define ADS1256_DRATE_15    0x33
+#define ADS1256_DRATE_25    0x43
+#define ADS1256_DRATE_30    0x53
+#define ADS1256_DRATE_50    0x63
+#define ADS1256_DRATE_60    0x72
+#define ADS1256_DRATE_100   0x82
+#define ADS1256_DRATE_500   0x92
+#define ADS1256_DRATE_1000  0xA1
+#define ADS1256_DRATE_2000  0xB0
+#define ADS1256_DRATE_3750  0xC0
+#define ADS1256_DRATE_7500  0xD0
+#define ADS1256_DRATE_15000 0xE0
+#define ADS1256_DRATE_30000 0xF0

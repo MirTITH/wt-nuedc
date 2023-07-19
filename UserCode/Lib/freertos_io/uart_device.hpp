@@ -3,4 +3,4 @@
 #include "uart_io.hpp"
 #include "uart_thread.hpp"
 
-extern UartThread Uart1;
+extern UartThread MainUart;

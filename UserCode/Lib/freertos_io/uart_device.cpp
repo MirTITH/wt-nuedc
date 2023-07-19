@@ -1,5 +1,5 @@
 #include "uart_device.hpp"
 #include "usart.h"
 
-static freertos_io::Uart Uart1Device(huart1);
-UartThread Uart1(Uart1Device, "Uart1");
+static freertos_io::Uart MainUartDevice(huart1);
+UartThread MainUart(MainUartDevice, "MainUart");
