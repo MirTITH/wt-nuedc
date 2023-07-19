@@ -18,6 +18,8 @@ void LvglTtf_Init();
  */
 lv_font_t *LvglTtf_GetFont();
 
+lv_font_t *LvglTtf_GetLargeFont();
+
 #ifdef __cplusplus
 }
 #endif

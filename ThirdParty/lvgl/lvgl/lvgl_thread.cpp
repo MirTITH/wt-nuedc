@@ -27,21 +27,25 @@ void lv_example_freetype_1(void)
     static lv_style_t style;
     lv_style_init(&style);
     if (font != NULL) {
-        lv_style_set_text_font(&style, font);
+        // lv_style_set_text_font(&style, font);
     }
     lv_style_set_text_align(&style, LV_TEXT_ALIGN_CENTER);
     lv_style_set_width(&style, lv_pct(90));
 
     /*Create a label with the new style*/
+    lv_obj_t *label0 = lv_label_create(lv_scr_act());
+    lv_obj_add_style(label0, &style, 0);
+    lv_obj_set_style_text_font(label0, font, 0);
+    lv_label_set_long_mode(label0, LV_LABEL_LONG_WRAP);
+    lv_label_set_text(label0, "小字体");
+    lv_obj_center(label0);
+    lv_obj_align(label0, LV_ALIGN_TOP_MID, 0, 0);
+
     lv_obj_t *label = lv_label_create(lv_scr_act());
     lv_obj_add_style(label, &style, 0);
+    lv_obj_set_style_text_font(label, LvglTtf_GetLargeFont(), 0);
     lv_label_set_long_mode(label, LV_LABEL_LONG_WRAP);
-    lv_label_set_text(label, "Hello world\nI'm a font created with FreeType\n"
-                             "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890\n"
-                             "~!@#$%^&*()-_=+[{}]\\|;:'"
-                             ",<.>?\\/"
-                             "~·！@#￥%……&（）——++-=、|【{}】；：‘“，《。》？\n"
-                             "相位电压电流频率角度效亮度");
+    lv_label_set_text(label, "大就是好");
     lv_obj_center(label);
     // lv_obj_align(label, LV_ALIGN_TOP_MID, 0, 0);
 }
