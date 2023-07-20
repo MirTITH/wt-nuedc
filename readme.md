@@ -1,5 +1,11 @@
 # STM32F407 Project for NUEDC 2023
 
+## Git 分支管理
+
+main 分支为主分支，不直接在这上面开发。开发时先从 main 创建一个 dev_xxx 分支，开发完后将 dev_xxx 合并到 main 中
+
+请保证 main 分支的代码一直处于可以编译成功的状态
+
 ## 工程说明
 
 ### 目录结构
