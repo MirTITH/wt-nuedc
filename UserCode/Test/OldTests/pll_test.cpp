@@ -13,8 +13,6 @@ extern control_system::Pll<float> pll;
 extern float TimPllInput;
 extern uint32_t TimDuration;
 
-namespace user_test
-{
 void PllTest()
 {
     os_printf("==== Start %s ====\n", __func__);
@@ -54,4 +52,3 @@ void PllTestInIsr()
     os_printf("==== End %s ====\n", __func__);
 }
 
-} // namespace user_test

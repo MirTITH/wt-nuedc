@@ -10,9 +10,6 @@
 using namespace std;
 using namespace control_system;
 
-namespace user_test
-{
-
 template <typename T>
 void DiscreteControllerTest(DiscreteControllerBase<T> &controller, const uint32_t loop_time = 500000)
 {
@@ -124,5 +121,3 @@ void PidTest()
     // DiscreteControllerTest(pi_controller);
     os_printf("\n");
 }
-
-} // namespace user_test

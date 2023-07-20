@@ -8,8 +8,6 @@
 #include "HighPrecisionTime/high_precision_time.h"
 #include "HighPrecisionTime/high_precision_time_test.h"
 
-namespace user_test
-{
 namespace hpt_test
 {
 
@@ -132,4 +130,3 @@ void HighPrecisionTimeTest()
     os_printf("==== End %s ====\n", __func__);
 }
 
-} // namespace user_test

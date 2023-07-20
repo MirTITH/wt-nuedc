@@ -12,8 +12,6 @@
 
 using namespace std;
 
-namespace user_test
-{
 void ListTest()
 {
     os_printf("ListTest:\n");
@@ -76,5 +74,3 @@ void VectorTest()
     duration = HPT_GetUs() - start_us;
     os_printf("Vector sum in %lu us. Sum result: %d\n", duration, sum);
 }
-
-} // namespace user_test

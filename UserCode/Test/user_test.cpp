@@ -3,33 +3,17 @@
 #include "FreeRTOS.h"
 #include "task.h"
 #include "FreeRtosSys/thread_priority_def.h"
-#include <cstdio>
-#include "freertos_io/os_printf.h"
-#include "freertos_io/uart_device.hpp"
-#include "sysmem.h"
 
 // Test includes
-// #include "test_template.cpp.hpp"
-#include "control_system_test.cpp.hpp"
-// #include "adc_test.hpp"
-// #include "math_test.cpp.hpp"
-// #include "pll_test.cpp.hpp"
-// #include "high_precision_time_test.cpp.hpp"
-// #include "malloc_test.cpp.hpp"
-#include "Lcd/lcd_device.hpp"
-#include "ads1256_test.cpp.hpp"
-
-using namespace user_test;
-
-void BlinkLedEntry(void *argument)
-{
-    (void)argument;
-
-    while (true) {
-        // HAL_GPIO_TogglePin(Led2_GPIO_Port, Led2_Pin);
-        vTaskDelay(250);
-    }
-}
+#include "test_template.cpp"
+// #include "OldTests/control_system_test.cpp"
+// #include "OldTests/adc_test"
+// #include "OldTests/math_test.cpp"
+// #include "OldTests/pll_test.cpp"
+// #include "OldTests/high_precision_time_test.cpp"
+// #include "OldTests/malloc_test.cpp"
+// #include "OldTests/ads1256_test.cpp"
+#include "UnitTests/test_lvgl.cpp"
 
 uint16_t Rgb888To565(uint32_t rgb888)
 {
@@ -40,6 +24,7 @@ void TestThread(void *argument)
 {
     (void)argument;
 
+    // TestTemplate();
     // ZtfTest();
     // AdcTest();
     // MathTest();
@@ -48,14 +33,13 @@ void TestThread(void *argument)
     // HighPrecisionTimeTest();
     // MallocTest();
     // PidTest();
-    Ads1256Test();
-
-    // BlinkLedEntry(nullptr);
+    // Ads1256Test();
+    TestLvgl();
 
     vTaskDelete(nullptr);
 }
 
 void StartTestThread()
 {
-    xTaskCreate(TestThread, "TestThread", 1024, nullptr, PriorityNormal, nullptr);
+    xTaskCreate(TestThread, "TestThread", 1024 * 2, nullptr, PriorityNormal, nullptr);
 }

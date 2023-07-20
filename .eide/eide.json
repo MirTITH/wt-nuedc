@@ -34,7 +34,9 @@
         "ThirdParty/freetype/src/smooth/source",
         "ThirdParty/freetype/src/truetype/source",
         "ThirdParty/lvgl/lvgl/demos",
-        "ThirdParty/lvgl/fonts/ttf_font.s"
+        "ThirdParty/lvgl/fonts/ttf_font.s",
+        "UserCode/Test/UnitTests",
+        "UserCode/Test/test_template.cpp"
       ],
       "toolchain": "GCC",
       "compileConfig": {
@@ -54,7 +56,7 @@
         "proType": "SWD",
         "resetMode": "default",
         "runAfterProgram": true,
-        "speed": 4000,
+        "speed": "2000",
         "address": "0x08000000",
         "elFile": "None",
         "optionBytes": ".eide/debug.st.option.bytes.ini",
@@ -112,14 +114,14 @@
           "CubeMX/Middlewares/ST/ARM/DSP/Inc",
           "UserCode/Lib",
           "UserCode/Lib/FreeRtosSys",
-          "ThirdParty/lvgl",
           "System",
           "ThirdParty/freetype/include",
-          "UserCode/App"
+          "UserCode/App",
+          "ThirdParty",
+          "ThirdParty/lvgl"
         ],
         "libList": [
-          "CubeMX/Middlewares/ST/ARM/DSP/Lib",
-          "ThirdParty/lvgl/fonts"
+          "CubeMX/Middlewares/ST/ARM/DSP/Lib"
         ],
         "sourceDirList": [],
         "defineList": [

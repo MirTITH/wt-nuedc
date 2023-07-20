@@ -11,8 +11,6 @@
 
 using namespace std;
 
-namespace user_test
-{
 void MathTest()
 {
     os_printf("==== Start %s ====\n", __func__);
@@ -59,4 +57,3 @@ void MathTest()
     os_printf("==== End %s ====\n", __func__);
 }
 
-} // namespace user_test

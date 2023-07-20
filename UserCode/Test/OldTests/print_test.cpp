@@ -6,8 +6,6 @@
 #include "task.h"
 #include "HighPrecisionTime/high_precision_time.h"
 
-namespace user_test
-{
 void PrintTestTask(void *argument)
 {
     uint32_t counter = 0;
@@ -23,5 +21,3 @@ void PrintTestTask(void *argument)
         vTaskDelay(100);
     }
 }
-
-} // namespace user_test

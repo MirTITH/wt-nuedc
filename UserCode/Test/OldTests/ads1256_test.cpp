@@ -7,8 +7,6 @@
 #include "freertos_io/os_printf.h"
 #include "ads1256/old/ADS1256.h"
 
-namespace user_test
-{
 void Ads1256Test()
 {
     os_printf("==== Start %s ====\n", __func__);
@@ -39,5 +37,3 @@ void Ads1256Test()
 
     os_printf("==== End %s ====\n", __func__);
 }
-
-} // namespace user_test

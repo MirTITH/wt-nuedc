@@ -5,9 +5,6 @@
 #include "freertos_io/os_printf.h"
 #include <stdio.h>
 
-namespace user_test
-{
-
 void ScanfTest()
 {
     float a, b, c;
@@ -21,4 +18,3 @@ void ScanfTest()
     }
 }
 
-} // namespace user_test

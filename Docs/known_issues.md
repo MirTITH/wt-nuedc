@@ -52,4 +52,7 @@ __ISB()
 不想深究的话一般使用 __DSB()
 
 > 在 high_precision_time 中有使用内存屏障，注释掉就通不过测试了
->
+
+## freetype 栈占用巨大
+
+暂时没找到解决方法，可能要放弃 freetype 了

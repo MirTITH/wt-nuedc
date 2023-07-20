@@ -6,8 +6,6 @@
 #include "freertos_io/os_printf.h"
 #include "dac.h"
 
-namespace user_test
-{
 void AdcTest()
 {
     os_printf("==== Start %s ====\n", __func__);
@@ -57,5 +55,3 @@ void AdcTest()
 
     os_printf("==== End %s ====\n", __func__);
 }
-
-} // namespace user_test
