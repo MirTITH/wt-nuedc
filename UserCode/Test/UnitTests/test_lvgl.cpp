@@ -9,6 +9,11 @@
 #include "lvgl/lvgl_thread.h"
 // #include "fonts/lvgl_ttf.h"
 
+uint16_t Rgb888To565(uint32_t rgb888)
+{
+    return ((((rgb888) >> 19) & 0x1f) << 11) | ((((rgb888) >> 10) & 0x3f) << 5) | (((rgb888) >> 3) & 0x1f);
+}
+
 void TestLvgl()
 {
     os_printf("====== Start %s ======\n", __func__);

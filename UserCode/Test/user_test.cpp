@@ -15,11 +15,6 @@
 // #include "OldTests/ads1256_test.cpp"
 #include "UnitTests/test_lvgl.cpp"
 
-uint16_t Rgb888To565(uint32_t rgb888)
-{
-    return ((((rgb888) >> 19) & 0x1f) << 11) | ((((rgb888) >> 10) & 0x3f) << 5) | (((rgb888) >> 3) & 0x1f);
-}
-
 void TestThread(void *argument)
 {
     (void)argument;
