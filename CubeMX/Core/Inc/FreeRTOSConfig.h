@@ -52,6 +52,7 @@
   #include <stdint.h>
   extern uint32_t SystemCoreClock;
 /* USER CODE BEGIN 0 */
+  #define INCLUDE_xTaskGetIdleTaskHandle 1
   extern void configureTimerForRunTimeStats(void);
   extern unsigned long getRunTimeCounterValue(void);
 /* USER CODE END 0 */

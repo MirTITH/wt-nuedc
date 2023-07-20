@@ -21,9 +21,12 @@
 
 #if LV_USE_PERF_MONITOR || LV_USE_MEM_MONITOR
     #include "../widgets/lv_label.h"
+    #include "FreeRTOS.h"
+    #include "task.h"
 #endif
 #if LV_USE_MEM_MONITOR && LV_MEM_CUSTOM == 1 && LV_USE_LABEL
-#include "sysmem.h"
+    #include "sysmem.h"
+    #include "FreeRTOS.h"
 #endif
 
 /*********************
@@ -400,9 +403,16 @@ void _lv_disp_refr_timer(lv_timer_t * tmr)
         }
 
         perf_monitor.fps_sum_all += fps;
-        perf_monitor.fps_sum_cnt ++;
-        uint32_t cpu = 100 - lv_timer_get_idle();
-        lv_label_set_text_fmt(perf_label, "%"LV_PRIu32" FPS\n%"LV_PRIu32"%% CPU", fps, cpu);
+        perf_monitor.fps_sum_cnt++;
+        // uint32_t cpu = 100 - lv_timer_get_idle();
+        static uint32_t last_idle_count  = 0;
+        static uint32_t last_timer_count = 0;
+        uint32_t current_idle_count      = xTaskGetIdleRunTimeCounter();
+        uint32_t current_timer_count     = getRunTimeCounterValue();
+        uint32_t cpu                     = 100 - 100 * (current_idle_count - last_idle_count) / (current_timer_count - last_timer_count);
+        last_idle_count                  = current_idle_count;
+        last_timer_count                 = current_timer_count;
+        lv_label_set_text_fmt(perf_label, "%" LV_PRIu32 " FPS\n%" LV_PRIu32 "%% CPU", fps, cpu);
     }
 #endif
 
@@ -457,16 +467,13 @@ void _lv_disp_refr_timer(lv_timer_t * tmr)
         mem_monitor.mem_last_time = lv_tick_get();
         uint32_t used_size        = GetUsedNewlibHeapSize();
         uint32_t total_size       = GetTotalNewlibHeapSize();
+        uint32_t rtos_used_size   = configTOTAL_HEAP_SIZE - xPortGetFreeHeapSize();
 
-        if (used_size < 99999) {
-            lv_label_set_text_fmt(mem_label,
-                                  "MEM: %lu B (%lu %%)\nTotal: %lu KB",
-                                  used_size, 100 * used_size / total_size, total_size / 1024);
-        } else {
-            lv_label_set_text_fmt(mem_label,
-                                  "MEM %lu KB (%lu %%)\nTotal: %lu KB",
-                                  used_size / 1024, 100 * used_size / total_size, total_size / 1024);
-        }
+        lv_label_set_text_fmt(mem_label,
+                              "Newlib: %lu B / %lu KB (%lu %%)\n"
+                              "RTOS: %lu B / %u KB (%lu %%)",
+                              used_size, total_size / 1024, 100 * used_size / total_size,
+                              rtos_used_size, configTOTAL_HEAP_SIZE / 1024, 100 * rtos_used_size / configTOTAL_HEAP_SIZE);
     }
 #endif
 
