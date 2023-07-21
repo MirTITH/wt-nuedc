@@ -93,13 +93,13 @@ void lv_port_disp_init(void)
     static lv_disp_draw_buf_t draw_buf_dsc_2;
     const size_t buf_size = 320 * 32;
     static lv_color_t buf_1[buf_size];
-    static lv_color_t buf_2[buf_size];
+    // static lv_color_t buf_2[buf_size];
 
     // 1 buffer
-    // lv_disp_draw_buf_init(&draw_buf_dsc_2, buf_1, nullptr, buf_size); /*Initialize the display buffer*/
+    lv_disp_draw_buf_init(&draw_buf_dsc_2, buf_1, nullptr, buf_size); /*Initialize the display buffer*/
     
     // 2 buffers
-    lv_disp_draw_buf_init(&draw_buf_dsc_2, buf_1, buf_2, buf_size); /*Initialize the display buffer*/
+    // lv_disp_draw_buf_init(&draw_buf_dsc_2, buf_1, buf_2, buf_size); /*Initialize the display buffer*/
 
     /*-----------------------------------
      * Register the display in LVGL
