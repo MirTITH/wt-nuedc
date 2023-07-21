@@ -4,7 +4,7 @@
  *
  *   User-selectable configuration macros (specification only).
  *
- * Copyright (C) 1996-2022 by
+ * Copyright (C) 1996-2023 by
  * David Turner, Robert Wilhelm, and Werner Lemberg.
  *
  * This file is part of the FreeType project, and may only be used,
@@ -109,7 +109,7 @@ FT_BEGIN_HEADER
  * ```
  *
  */
-#define FT_CONFIG_OPTION_ENVIRONMENT_PROPERTIES
+// #define FT_CONFIG_OPTION_ENVIRONMENT_PROPERTIES
 
 
 /**************************************************************************
@@ -153,7 +153,7 @@ FT_BEGIN_HEADER
  * that to verify that the assembler function works properly, or to execute
  * benchmark tests of the various implementations.
  */
-/* #define FT_CONFIG_OPTION_NO_ASSEMBLER */
+#define FT_CONFIG_OPTION_NO_ASSEMBLER
 
 
 /**************************************************************************
@@ -180,7 +180,7 @@ FT_BEGIN_HEADER
  *
  *   Define this macro if you want to enable this 'feature'.
  */
-#define FT_CONFIG_OPTION_USE_LZW
+/* #define FT_CONFIG_OPTION_USE_LZW */
 
 
 /**************************************************************************
@@ -195,7 +195,7 @@ FT_BEGIN_HEADER
  *   Define this macro if you want to enable this 'feature'.  See also the
  *   macro `FT_CONFIG_OPTION_SYSTEM_ZLIB` below.
  */
-#define FT_CONFIG_OPTION_USE_ZLIB
+/* #define FT_CONFIG_OPTION_USE_ZLIB */
 
 
 /**************************************************************************
@@ -255,7 +255,7 @@ FT_BEGIN_HEADER
  * stream support, in the cases where file stream support is not necessary
  * such as memory loading of font files.
  */
-/* #define FT_CONFIG_OPTION_DISABLE_STREAM_SUPPORT */
+#define FT_CONFIG_OPTION_DISABLE_STREAM_SUPPORT
 
 
 /**************************************************************************
@@ -401,7 +401,7 @@ FT_BEGIN_HEADER
  * The size in bytes of the render pool used by the scan-line converter to
  * do all of its work.
  */
-#define FT_RENDER_POOL_SIZE  16384L
+#define FT_RENDER_POOL_SIZE  2048L
 
 
 /**************************************************************************
@@ -411,7 +411,7 @@ FT_BEGIN_HEADER
  *   The maximum number of modules that can be registered in a single
  *   FreeType library object.  32~is the default.
  */
-#define FT_MAX_MODULES  32
+#define FT_MAX_MODULES  16
 
 
 /**************************************************************************
@@ -451,44 +451,44 @@ FT_BEGIN_HEADER
 /* #define FT_DEBUG_LOGGING */
 
 
-/**************************************************************************
- *
- * Autofitter debugging
- *
- *   If `FT_DEBUG_AUTOFIT` is defined, FreeType provides some means to
- *   control the autofitter behaviour for debugging purposes with global
- *   boolean variables (consequently, you should **never** enable this
- *   while compiling in 'release' mode):
- *
- *   ```
- *     _af_debug_disable_horz_hints
- *     _af_debug_disable_vert_hints
- *     _af_debug_disable_blue_hints
- *   ```
- *
- *   Additionally, the following functions provide dumps of various
- *   internal autofit structures to stdout (using `printf`):
- *
- *   ```
- *     af_glyph_hints_dump_points
- *     af_glyph_hints_dump_segments
- *     af_glyph_hints_dump_edges
- *     af_glyph_hints_get_num_segments
- *     af_glyph_hints_get_segment_offset
- *   ```
- *
- *   As an argument, they use another global variable:
- *
- *   ```
- *     _af_debug_hints
- *   ```
- *
- *   Please have a look at the `ftgrid` demo program to see how those
- *   variables and macros should be used.
- *
- *   Do not `#undef` these macros here since the build system might define
- *   them for certain configurations only.
- */
+  /**************************************************************************
+   *
+   * Autofitter debugging
+   *
+   *   If `FT_DEBUG_AUTOFIT` is defined, FreeType provides some means to
+   *   control the autofitter behaviour for debugging purposes with global
+   *   boolean variables (consequently, you should **never** enable this
+   *   while compiling in 'release' mode):
+   *
+   *   ```
+   *     af_debug_disable_horz_hints_
+   *     af_debug_disable_vert_hints_
+   *     af_debug_disable_blue_hints_
+   *   ```
+   *
+   *   Additionally, the following functions provide dumps of various
+   *   internal autofit structures to stdout (using `printf`):
+   *
+   *   ```
+   *     af_glyph_hints_dump_points
+   *     af_glyph_hints_dump_segments
+   *     af_glyph_hints_dump_edges
+   *     af_glyph_hints_get_num_segments
+   *     af_glyph_hints_get_segment_offset
+   *   ```
+   *
+   *   As an argument, they use another global variable:
+   *
+   *   ```
+   *     af_debug_hints_
+   *   ```
+   *
+   *   Please have a look at the `ftgrid` demo program to see how those
+   *   variables and macros should be used.
+   *
+   *   Do not `#undef` these macros here since the build system might define
+   *   them for certain configurations only.
+   */
 /* #define FT_DEBUG_AUTOFIT */
 
 
@@ -538,7 +538,7 @@ FT_BEGIN_HEADER
  *
  *   More details on the hooks can be found in file `otsvg.h`.
  */
-#define FT_CONFIG_OPTION_SVG
+/* #define FT_CONFIG_OPTION_SVG */
 
 
 /**************************************************************************
@@ -551,7 +551,7 @@ FT_BEGIN_HEADER
  *
  *   More details can be found in the file `fterrors.h`.
  */
-#define FT_CONFIG_OPTION_ERROR_STRINGS
+/* #define FT_CONFIG_OPTION_ERROR_STRINGS */
 
 
 /*************************************************************************/
@@ -581,18 +581,18 @@ FT_BEGIN_HEADER
 #define TT_CONFIG_OPTION_COLOR_LAYERS
 
 
-/**************************************************************************
- *
- * Define `TT_CONFIG_OPTION_POSTSCRIPT_NAMES` if you want to be able to
- * load and enumerate the glyph Postscript names in a TrueType or OpenType
- * file.
- *
- * Note that when you do not compile the 'psnames' module by undefining the
- * above `FT_CONFIG_OPTION_POSTSCRIPT_NAMES`, the 'sfnt' module will
- * contain additional code used to read the PS Names table from a font.
- *
- * (By default, the module uses 'psnames' to extract glyph names.)
- */
+  /**************************************************************************
+   *
+   * Define `TT_CONFIG_OPTION_POSTSCRIPT_NAMES` if you want to be able to
+   * load and enumerate Postscript names of glyphs in a TrueType or OpenType
+   * file.
+   *
+   * Note that if you do not compile the 'psnames' module by undefining the
+   * above `FT_CONFIG_OPTION_POSTSCRIPT_NAMES` macro, the 'sfnt' module will
+   * contain additional code to read the PostScript name table from a font.
+   *
+   * (By default, the module uses 'psnames' to extract glyph names.)
+   */
 #define TT_CONFIG_OPTION_POSTSCRIPT_NAMES
 
 
@@ -607,7 +607,7 @@ FT_BEGIN_HEADER
  * Accessing SFNT names is done through the functions declared in
  * `ftsnames.h`.
  */
-#define TT_CONFIG_OPTION_SFNT_NAMES
+/* #define TT_CONFIG_OPTION_SFNT_NAMES */
 
 
 /**************************************************************************
@@ -650,64 +650,38 @@ FT_BEGIN_HEADER
 #define TT_CONFIG_OPTION_BYTECODE_INTERPRETER
 
 
-/**************************************************************************
- *
- * Define `TT_CONFIG_OPTION_SUBPIXEL_HINTING` if you want to compile
- * subpixel hinting support into the TrueType driver.  This modifies the
- * TrueType hinting mechanism when anything but `FT_RENDER_MODE_MONO` is
- * requested.
- *
- * In particular, it modifies the bytecode interpreter to interpret (or
- * not) instructions in a certain way so that all TrueType fonts look like
- * they do in a Windows ClearType (DirectWrite) environment.  See [1] for a
- * technical overview on what this means.  See `ttinterp.h` for more
- * details on the LEAN option.
- *
- * There are three possible values.
- *
- * Value 1:
- *   This value is associated with the 'Infinality' moniker, contributed by
- *   an individual nicknamed Infinality with the goal of making TrueType
- *   fonts render better than on Windows.  A high amount of configurability
- *   and flexibility, down to rules for single glyphs in fonts, but also
- *   very slow.  Its experimental and slow nature and the original
- *   developer losing interest meant that this option was never enabled in
- *   default builds.
- *
- *   The corresponding interpreter version is v38.
- *
- * Value 2:
- *   The new default mode for the TrueType driver.  The Infinality code
- *   base was stripped to the bare minimum and all configurability removed
- *   in the name of speed and simplicity.  The configurability was mainly
- *   aimed at legacy fonts like 'Arial', 'Times New Roman', or 'Courier'.
- *   Legacy fonts are fonts that modify vertical stems to achieve clean
- *   black-and-white bitmaps.  The new mode focuses on applying a minimal
- *   set of rules to all fonts indiscriminately so that modern and web
- *   fonts render well while legacy fonts render okay.
- *
- *   The corresponding interpreter version is v40.
- *
- * Value 3:
- *   Compile both, making both v38 and v40 available (the latter is the
- *   default).
- *
- * By undefining these, you get rendering behavior like on Windows without
- * ClearType, i.e., Windows XP without ClearType enabled and Win9x
- * (interpreter version v35).  Or not, depending on how much hinting blood
- * and testing tears the font designer put into a given font.  If you
- * define one or both subpixel hinting options, you can switch between
- * between v35 and the ones you define (using `FT_Property_Set`).
- *
- * This option requires `TT_CONFIG_OPTION_BYTECODE_INTERPRETER` to be
- * defined.
- *
- * [1]
- * https://www.microsoft.com/typography/cleartype/truetypecleartype.aspx
- */
-/* #define TT_CONFIG_OPTION_SUBPIXEL_HINTING  1         */
-#define TT_CONFIG_OPTION_SUBPIXEL_HINTING  2
-/* #define TT_CONFIG_OPTION_SUBPIXEL_HINTING  ( 1 | 2 ) */
+  /**************************************************************************
+   *
+   * Define `TT_CONFIG_OPTION_SUBPIXEL_HINTING` if you want to compile
+   * subpixel hinting support into the TrueType driver.  This modifies the
+   * TrueType hinting mechanism when anything but `FT_RENDER_MODE_MONO` is
+   * requested.
+   *
+   * In particular, it modifies the bytecode interpreter to interpret (or
+   * not) instructions in a certain way so that all TrueType fonts look like
+   * they do in a Windows ClearType (DirectWrite) environment.  See [1] for a
+   * technical overview on what this means.  See `ttinterp.h` for more
+   * details on this option.
+   *
+   * The new default mode focuses on applying a minimal set of rules to all
+   * fonts indiscriminately so that modern and web fonts render well while
+   * legacy fonts render okay.  The corresponding interpreter version is v40.
+   * The so-called Infinality mode (v38) is no longer available in FreeType.
+   *
+   * By undefining these, you get rendering behavior like on Windows without
+   * ClearType, i.e., Windows XP without ClearType enabled and Win9x
+   * (interpreter version v35).  Or not, depending on how much hinting blood
+   * and testing tears the font designer put into a given font.  If you
+   * define one or both subpixel hinting options, you can switch between
+   * between v35 and the ones you define (using `FT_Property_Set`).
+   *
+   * This option requires `TT_CONFIG_OPTION_BYTECODE_INTERPRETER` to be
+   * defined.
+   *
+   * [1]
+   * https://www.microsoft.com/typography/cleartype/truetypecleartype.aspx
+   */
+#define TT_CONFIG_OPTION_SUBPIXEL_HINTING
 
 
 /**************************************************************************
@@ -737,6 +711,24 @@ FT_BEGIN_HEADER
  * also.  This has many similarities to Type~1 Multiple Masters support.
  */
 #define TT_CONFIG_OPTION_GX_VAR_SUPPORT
+
+
+  /**************************************************************************
+   *
+   * Define `TT_CONFIG_OPTION_NO_BORING_EXPANSION` if you want to exclude
+   * support for 'boring' OpenType specification expansions.
+   *
+   *   https://github.com/harfbuzz/boring-expansion-spec
+   *
+   * Right now, the following features are covered:
+   *
+   *   - 'avar' version 2.0
+   *
+   * Most likely, this is a temporary configuration option to be removed in
+   * the near future, since it is assumed that eventually those features are
+   * added to the OpenType standard.
+   */
+#define TT_CONFIG_OPTION_NO_BORING_EXPANSION
 
 
 /**************************************************************************
@@ -958,22 +950,15 @@ FT_BEGIN_HEADER
 /* #define FT_CONFIG_OPTION_OLD_INTERNALS */
 
 
-/*
- * The next three macros are defined if native TrueType hinting is
- * requested by the definitions above.  Don't change this.
- */
+  /*
+   * The next two macros are defined if native TrueType hinting is
+   * requested by the definitions above.  Don't change this.
+   */
 #ifdef TT_CONFIG_OPTION_BYTECODE_INTERPRETER
-    #define  TT_USE_BYTECODE_INTERPRETER
-
-    #ifdef TT_CONFIG_OPTION_SUBPIXEL_HINTING
-        #if TT_CONFIG_OPTION_SUBPIXEL_HINTING & 1
-            #define  TT_SUPPORT_SUBPIXEL_HINTING_INFINALITY
-        #endif
-
-        #if TT_CONFIG_OPTION_SUBPIXEL_HINTING & 2
-            #define  TT_SUPPORT_SUBPIXEL_HINTING_MINIMAL
-        #endif
-    #endif
+#define  TT_USE_BYTECODE_INTERPRETER
+#ifdef TT_CONFIG_OPTION_SUBPIXEL_HINTING
+#define  TT_SUPPORT_SUBPIXEL_HINTING_MINIMAL
+#endif
 #endif
 
 

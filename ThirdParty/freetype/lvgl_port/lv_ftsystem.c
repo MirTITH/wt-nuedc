@@ -40,6 +40,7 @@
  *  STATIC PROTOTYPES
  **********************/
 
+#ifndef FT_CONFIG_OPTION_DISABLE_STREAM_SUPPORT
 FT_CALLBACK_DEF(unsigned long)
 ft_lv_fs_stream_io(FT_Stream       stream,
                    unsigned long   offset,
@@ -47,6 +48,8 @@ ft_lv_fs_stream_io(FT_Stream       stream,
                    unsigned long   count);
 FT_CALLBACK_DEF(void)
 ft_lv_fs_stream_close(FT_Stream  stream);
+#endif // FT_CONFIG_OPTION_DISABLE_STREAM_SUPPORT
+
 FT_CALLBACK_DEF(void *)
 ft_alloc(FT_Memory  memory,
          long       size);

@@ -111,6 +111,6 @@ static void LvglThreadEntry(void *argument)
 void StartLvglThread()
 {
     // freetype 要的栈空间实在是太大了 qwq
-    xTaskCreate(LvglThreadEntry, "lvgl_thread", 1024 * 6, nullptr, PriorityBelowNormal, nullptr);
+    xTaskCreate(LvglThreadEntry, "lvgl_thread", 1024 * 2, nullptr, PriorityBelowNormal, nullptr);
     LvglThreadStartSem.lock(); // 等待 lvgl_thread 启动完毕
 }
