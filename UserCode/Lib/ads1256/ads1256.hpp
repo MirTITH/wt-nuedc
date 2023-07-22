@@ -51,6 +51,13 @@ public:
         drdy_count++;
     }
 
+    int32_t ReadData();
+
+    float ReadVoltage()
+    {
+        return vref_2 * ReadData() / 0x7FFFFF;
+    }
+
 private:
     SPI_HandleTypeDef *hspi_;
 
@@ -59,6 +66,8 @@ private:
 
     GPIO_TypeDef *n_reset_port_;
     uint16_t n_reset_pin_;
+
+    float vref_2 = 5.0f; // 2 * vref
 
     /**
      * @brief 从 SPI 读取
@@ -92,6 +101,10 @@ private:
     void WriteReg(uint8_t regaddr, const uint8_t *databyte, uint8_t size);
 
     void WriteReg(uint8_t regaddr, uint8_t databyte);
+
+    void WriteCmd(uint8_t cmd);
+
+    void WaitForDataReady();
 
     /**
      * @brief 读取寄存器

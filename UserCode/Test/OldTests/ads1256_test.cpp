@@ -14,33 +14,22 @@ void Ads1256Test()
     // ADS1256_Init();
 
     VAds.Init();
-    // VAds.Init();
+
+    auto ads_reg = VAds.ReadAllRegs();
+    os_printf("ADCON: %x\n", ads_reg.ADCON);
+    os_printf("DRATE: %x\n", ads_reg.DRATE);
+    os_printf("IO: %x\n", ads_reg.IO);
+    os_printf("MUX: %x\n", ads_reg.MUX);
+    os_printf("STATUS: %x\n", ads_reg.STATUS);
+    vTaskDelay(1000);
 
     uint32_t last_drdy_count = 0;
-
     while (true) {
-        auto ads_reg = VAds.ReadAllRegs();
-        // auto ads_reg = ADS1256_RREG_All();
-
-        os_printf("ADCON: %x\n", ads_reg.ADCON);
-        os_printf("DRATE: %x\n", ads_reg.DRATE);
-        os_printf("IO: %x\n", ads_reg.IO);
-        os_printf("MUX: %x\n", ads_reg.MUX);
-        os_printf("STATUS: %x\n", ads_reg.STATUS);
         auto drdy_count = VAds.drdy_count;
-        os_printf("drdy count: %lu, speed %lu\n\n", drdy_count, drdy_count - last_drdy_count);
+        os_printf("%f, %lu, 5, -5\n", VAds.ReadVoltage(), drdy_count - last_drdy_count);
         last_drdy_count = drdy_count;
-        vTaskDelay(1000);
+        vTaskDelay(10);
     }
-
-    // uint32_t last_drdy_count = 0;
-
-    // while (true) {
-    //     auto drdy_count = VAds.drdy_count;
-    //     os_printf("drdy count: %lu, speed %lu\n", drdy_count, drdy_count - last_drdy_count);
-    //     last_drdy_count = drdy_count;
-    //     vTaskDelay(1000);
-    // }
 
     os_printf("==== End %s ====\n", __func__);
 }

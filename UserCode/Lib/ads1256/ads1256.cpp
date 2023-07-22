@@ -33,6 +33,14 @@
 #include "ads1256_cmd_define.h"
 #include "HighPrecisionTime/high_precision_time.h"
 
+constexpr float kClkin = 7.68; // MHz
+
+// 延时数据 (page 6)
+constexpr uint32_t kT6    = 80 / kClkin + 1; // > 50 tclk
+constexpr uint32_t kT10   = 16 / kClkin + 1; // > 8 tclk
+constexpr uint32_t kT11_1 = 8 / kClkin + 1;  // for RREG, WREG, RDATA, > 4 tclk
+constexpr uint32_t kT11_2 = 48 / kClkin + 1; // for RDATAC, nSYNC, > 24 tclk
+
 void Ads1256::Init()
 {
     // 等待电源稳定
@@ -53,7 +61,7 @@ void Ads1256::Init()
      * Positive Input Channel: AIN0 (default)
      * Negative Input Channel: AINCOM
      */
-    WriteReg(ADS1256_MUX, 0x08);
+    WriteReg(ADS1256_MUX, 0x01);
 
     /**
      * @brief  A/D Control Register
@@ -87,11 +95,34 @@ void Ads1256::Reset()
         HAL_GPIO_WritePin(n_reset_port_, n_reset_pin_, GPIO_PIN_SET);
         HPT_DelayMs(10);
     } else {
-        while (!IsDataReady()) {};
-        const uint8_t reset_cmd = ADS1256_CMD_RESET;
-        SpiWrite(&reset_cmd, 1);
+        WaitForDataReady();
+        WriteCmd(ADS1256_CMD_RESET);
         HPT_DelayMs(10);
     }
+}
+
+int32_t Ads1256::ReadData()
+{
+    WaitForDataReady();
+    WriteCmd(ADS1256_CMD_RDATA);
+    HPT_DelayUs(kT6);
+    uint8_t data[3];
+    SpiRead(data, 3);
+
+    // 将读取的三段数据拼接
+    int32_t result = 0;
+    result |= ((int32_t)data[0] << 16);
+    result |= ((int32_t)data[1] << 8);
+    result |= (int32_t)data[2];
+
+    // 处理负数
+    if (result & 0x800000) {
+        result = ~(unsigned long)result;
+        result &= 0x7fffff;
+        result += 1;
+        result = -result;
+    }
+    return result;
 }
 
 bool Ads1256::SpiRead(uint8_t *pData, uint16_t Size, uint32_t Timeout)
@@ -124,7 +155,7 @@ void Ads1256::WriteReg(uint8_t regaddr, const uint8_t *databyte, uint8_t size)
     temp[0] = ADS1256_CMD_WREG | (regaddr & 0x0F);
     temp[1] = size - 1;
 
-    while (!IsDataReady()) {};
+    WaitForDataReady();
     SpiWrite(temp, sizeof(temp));
 
     // Write reg
@@ -135,6 +166,16 @@ void Ads1256::WriteReg(uint8_t regaddr, const uint8_t *databyte, uint8_t size)
 void Ads1256::WriteReg(uint8_t regaddr, uint8_t databyte)
 {
     WriteReg(regaddr, &databyte, 1);
+}
+
+void Ads1256::WriteCmd(uint8_t cmd)
+{
+    SpiWrite(&cmd, 1);
+}
+
+void Ads1256::WaitForDataReady()
+{
+    while (IsDataReady() == false) {};
 }
 
 void Ads1256::ReadReg(uint8_t regaddr, uint8_t *databyte, uint8_t size)
@@ -148,7 +189,7 @@ void Ads1256::ReadReg(uint8_t regaddr, uint8_t *databyte, uint8_t size)
     uint8_t temp[2];
     temp[0] = ADS1256_CMD_RREG | (regaddr & 0x0F);
     temp[1] = size - 1;
-    while (!IsDataReady()) {};
+    WaitForDataReady();
     SpiWrite(temp, sizeof(temp));
 
     HPT_DelayUs(10); // t6
