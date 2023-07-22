@@ -117,9 +117,9 @@
           "UserCode/Lib/FreeRtosSys",
           "System",
           "ThirdParty/freetype/include",
-          "UserCode/App",
           "ThirdParty",
-          "ThirdParty/lvgl"
+          "ThirdParty/lvgl",
+          "UserCode"
         ],
         "libList": [
           "CubeMX/Middlewares/ST/ARM/DSP/Lib"
