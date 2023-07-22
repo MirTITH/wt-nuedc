@@ -22,6 +22,7 @@
 #include "Adc/adc_class_device.hpp"
 #include "Lcd/lcd_device.hpp"
 #include "ads1256/ads1256_device.hpp"
+#include "App/Filters/butterworth.hpp"
 
 #ifdef __cplusplus
 extern "C" {
@@ -82,10 +83,14 @@ void MY_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
     }
 }
 
+Butter_LP_5_20_40dB_5000Hz<float> kFilter;
+float kFilterResult;
+
 void HAL_ADC_ConvCpltCallback(ADC_HandleTypeDef *hadc)
 {
     if (hadc->Instance == Adc1.hadc_->Instance) {
         Adc1.ConvCpltCallback();
+        kFilterResult = kFilter.Step(GetCoreTemperature());
     }
 }
 

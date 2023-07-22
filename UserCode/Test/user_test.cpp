@@ -29,7 +29,7 @@ void TestThread(void *argument)
     // MallocTest();
     // PidTest();
     // Ads1256Test();
-    TestLvgl();
+    // TestLvgl();
 
     vTaskDelete(nullptr);
 }

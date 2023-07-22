@@ -22,36 +22,6 @@ void LvglUnlock()
     LvglMutex.unlock();
 }
 
-// static void InitTtf()
-// {
-//     lv_style_set_text_font(&Style_NormalFont, LvglTTF_GetFont());
-//     lv_style_set_text_font(&Style_LargeFont, LvglTTF_GetLargeFont());
-//     lv_style_set_text_font(&Style_SmallFont, LvglTTF_GetSmallFont());
-
-//     lv_obj_t *label0 = lv_label_create(lv_scr_act());
-//     lv_obj_add_style(label0, &Style_NormalFont, 0);
-//     lv_label_set_text(label0, "Normal font");
-//     lv_obj_align(label0, LV_ALIGN_TOP_MID, 0, 20);
-
-//     lv_obj_t *label1 = lv_label_create(lv_scr_act());
-//     lv_obj_add_style(label1, &Style_LargeFont, 0);
-//     lv_obj_set_style_text_font(label1, LvglTTF_GetLargeFont(), 0);
-//     lv_label_set_text(label1, "Large font");
-//     lv_obj_center(label1);
-
-//     lv_obj_t *label2 = lv_label_create(lv_scr_act());
-//     lv_obj_add_style(label2, &Style_SmallFont, 0);
-//     lv_obj_set_style_text_font(label2, LvglTTF_GetSmallFont(), 0);
-//     lv_label_set_text(label2, "Small font");
-//     lv_obj_align(label2, LV_ALIGN_BOTTOM_MID, 0, -20);
-
-//     lv_timer_handler();
-
-//     // lv_obj_del(label0);
-//     // lv_obj_del(label1);
-//     // lv_obj_del(label2);
-// }
-
 void lv_example_freetype_1(void)
 {
     /*Create style with the new font*/
@@ -93,9 +63,9 @@ static void LvglThreadEntry(void *argument)
 
     LvglThreadStartSem.unlock(); // 线程初始化完毕，解锁信号量
 
-    LvglLock();
-    lv_example_freetype_1();
-    LvglUnlock();
+    // LvglLock();
+    // lv_example_freetype_1();
+    // LvglUnlock();
 
     uint32_t PreviousWakeTime = xTaskGetTickCount();
 
