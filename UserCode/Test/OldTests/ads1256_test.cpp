@@ -26,7 +26,7 @@ void Ads1256Test()
     uint32_t last_drdy_count = 0;
     while (true) {
         auto drdy_count = VAds.drdy_count;
-        os_printf("%f, %lu, 5, -5\n", VAds.ReadVoltage(), drdy_count - last_drdy_count);
+        os_printf("%f, %lu, 5, -5\n", VAds.Data2Voltage(VAds.ReadData()), drdy_count - last_drdy_count);
         last_drdy_count = drdy_count;
         vTaskDelay(10);
     }

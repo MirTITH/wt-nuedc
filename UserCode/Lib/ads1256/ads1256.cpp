@@ -8,38 +8,27 @@
  * @copyright Copyright (c) 2023
  *
  * 本驱动在 ADS1256 时钟频率为 7.68 MHz 下测试
- * 以下内容为写驱动时的笔记，使用者可以不必深究
- * 在 f = 7.68 MHz (T = 130 ns) 下：
  *
- * (手册 page 5)
- * SPI T_min = 4T = 521 ns
- * 输入命令到读取数据的延时 T_min = 50T = 6510 ns
- * 命令之间延时各不相同，最长的需要 24T = 3125 ns
- * 片选使能后可以立即进行操作，但失能需要与最后一个读写操作相隔至少 8T = 1042 ns
+ * SPI 频率范围： 3K ~ 1.92M
  *
- * Settling Time Using the Input Multiplexer读取数据时，
- * 需要在发送 SYNC 命令后在 SETTLING TIME 内完成
- * SETTLING TIME 长度随着 DATA RATE 变化（见手册Table 13, page 20）
- * 摘取几个值：
- * DATA RATE        SETTLING TIME(ms)
- * 30 000           0.21
- * 2000             0.68
- * 1000             1.18
- * 500              2.18
- * 100              10.18
  */
 
 #include "ads1256.hpp"
 #include "ads1256_cmd_define.h"
 #include "HighPrecisionTime/high_precision_time.h"
 
-constexpr float kClkin = 7.68; // MHz
+static constexpr float kClkin = 7.68; // MHz, 晶振频率
 
 // 延时数据 (page 6)
-constexpr uint32_t kT6    = 80 / kClkin + 1; // > 50 tclk
-constexpr uint32_t kT10   = 16 / kClkin + 1; // > 8 tclk
-constexpr uint32_t kT11_1 = 8 / kClkin + 1;  // for RREG, WREG, RDATA, > 4 tclk
-constexpr uint32_t kT11_2 = 48 / kClkin + 1; // for RDATAC, nSYNC, > 24 tclk
+// > 50 tclkin, Delay from last SCLK edge for DIN to first SCLK rising edge for DOUT: RDATA, RDATAC, RREG Commands
+static constexpr uint32_t kT6 = 50 / kClkin + 2;
+
+// > 8 tclkin, nCS low after final SCLK falling edge
+static constexpr uint32_t kT10 = 8 / kClkin + 2;
+
+// Final SCLK falling edge of command to first SCLK rising edge of next command.
+static constexpr uint32_t kT11_1 = 4 / kClkin + 2;  // > 4 tclkin, for RREG, WREG, RDATA
+static constexpr uint32_t kT11_2 = 24 / kClkin + 2; // > 24 tclkin, for RDATAC, SYNC
 
 void Ads1256::Init()
 {
@@ -101,28 +90,70 @@ void Ads1256::Reset()
     }
 }
 
-int32_t Ads1256::ReadData()
+void Ads1256::WaitForDataReady()
 {
-    WaitForDataReady();
+    while (IsDataReady() == false) {};
+}
+
+int32_t Ads1256::ReadDataNoWait()
+{
     WriteCmd(ADS1256_CMD_RDATA);
     HPT_DelayUs(kT6);
+
     uint8_t data[3];
     SpiRead(data, 3);
 
     // 将读取的三段数据拼接
-    int32_t result = 0;
-    result |= ((int32_t)data[0] << 16);
-    result |= ((int32_t)data[1] << 8);
-    result |= (int32_t)data[2];
+    int32_t result = (static_cast<uint32_t>(data[0]) << 16) |
+                     (static_cast<uint32_t>(data[1]) << 8) |
+                     static_cast<uint32_t>(data[2]);
 
     // 处理负数
     if (result & 0x800000) {
-        result = ~(unsigned long)result;
-        result &= 0x7fffff;
-        result += 1;
-        result = -result;
+        result |= 0xFF000000;
     }
+
     return result;
+}
+
+void Ads1256::SyncWakeup()
+{
+    WriteCmd(ADS1256_CMD_SYNC);
+    HPT_DelayUs(kT11_2);
+    WriteCmd(ADS1256_CMD_WAKEUP);
+}
+
+void Ads1256::DRDY_Callback()
+{
+    drdy_count++;
+    if (use_conv_queue_) {
+        switch (conv_queue_.size()) {
+            case 0:
+                break;
+            case 1:
+                conv_queue_.at(0).value = ReadDataNoWait();
+                break;
+
+            default:
+                conv_queue_.at(conv_queue_index_).value = ReadDataNoWait(); // 上一个通道转换完成，读取它的值
+
+                // 下一个通道
+                conv_queue_index_++;
+                if (conv_queue_index_ >= conv_queue_.size()) {
+                    conv_queue_index_ = 0;
+                }
+
+                // 开始转换下一个通道
+                SetMux(conv_queue_.at(conv_queue_index_).mux);
+                break;
+        }
+    }
+}
+
+int32_t Ads1256::ReadData()
+{
+    WaitForDataReady();
+    return ReadDataNoWait();
 }
 
 bool Ads1256::SpiRead(uint8_t *pData, uint16_t Size, uint32_t Timeout)
@@ -132,6 +163,40 @@ bool Ads1256::SpiRead(uint8_t *pData, uint16_t Size, uint32_t Timeout)
     } else {
         return false;
     }
+}
+
+void Ads1256::SetConvQueue(const std::vector<uint8_t> &muxs)
+{
+    auto prev_use_conv_queue = use_conv_queue_;
+    use_conv_queue_          = false;
+
+    conv_queue_index_ = 0;
+
+    auto size = muxs.size();
+    conv_queue_.resize(size);
+    for (size_t i = 0; i < size; i++) {
+        conv_queue_.at(i).mux   = muxs.at(i);
+        conv_queue_.at(i).value = 0;
+    }
+
+    if (prev_use_conv_queue) {
+        StartConvQueue();
+    }
+}
+
+void Ads1256::StartConvQueue()
+{
+    if (conv_queue_.size() != 0) {
+        SetMux(conv_queue_.at(0).mux);
+    }
+
+    use_conv_queue_ = true;
+}
+
+void Ads1256::SetMux(uint8_t mux)
+{
+    WriteReg(ADS1256_MUX, mux);
+    SyncWakeup();
 }
 
 bool Ads1256::SpiWrite(const uint8_t *pData, uint16_t Size, uint32_t Timeout)
@@ -160,7 +225,7 @@ void Ads1256::WriteReg(uint8_t regaddr, const uint8_t *databyte, uint8_t size)
 
     // Write reg
     SpiWrite(databyte, size);
-    HPT_DelayUs(10); // t11
+    HPT_DelayUs(kT11_1);
 }
 
 void Ads1256::WriteReg(uint8_t regaddr, uint8_t databyte)
@@ -171,11 +236,6 @@ void Ads1256::WriteReg(uint8_t regaddr, uint8_t databyte)
 void Ads1256::WriteCmd(uint8_t cmd)
 {
     SpiWrite(&cmd, 1);
-}
-
-void Ads1256::WaitForDataReady()
-{
-    while (IsDataReady() == false) {};
 }
 
 void Ads1256::ReadReg(uint8_t regaddr, uint8_t *databyte, uint8_t size)
@@ -192,12 +252,12 @@ void Ads1256::ReadReg(uint8_t regaddr, uint8_t *databyte, uint8_t size)
     WaitForDataReady();
     SpiWrite(temp, sizeof(temp));
 
-    HPT_DelayUs(10); // t6
+    HPT_DelayUs(kT6);
 
     // Read reg
     SpiRead(databyte, size);
 
-    HPT_DelayUs(10); // t11
+    HPT_DelayUs(kT11_1);
 }
 
 uint8_t Ads1256::ReadReg(uint8_t regaddr)

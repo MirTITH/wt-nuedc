@@ -1,6 +1,8 @@
 #pragma once
 #include "main.h"
 #include "spi.h"
+#include <vector>
+#include <stdint.h>
 
 class Ads1256
 {
@@ -15,20 +17,25 @@ public:
 
     uint32_t drdy_count = 0;
 
+    using ConvInfo_t = struct
+    {
+        uint8_t mux; // 输入通道选择。0x23 表示正输入为 AIN2, 负输入 AIN3，以此类推。AINCOM 用 8 表示
+        int32_t value;
+    };
+
+    using ConvQueue_t = std::vector<ConvInfo_t>;
+
+    ConvQueue_t conv_queue_;
+
 public:
     Ads1256(SPI_HandleTypeDef *hspi,
             GPIO_TypeDef *n_drdy_port, uint16_t n_drdy_pin,
-            GPIO_TypeDef *n_reset_port, uint16_t n_reset_pin)
+            GPIO_TypeDef *n_reset_port = nullptr, uint16_t n_reset_pin = 0,
+            float vref = 2.5)
         : hspi_(hspi),
           n_drdy_port_(n_drdy_port), n_drdy_pin_(n_drdy_pin),
-          n_reset_port_(n_reset_port), n_reset_pin_(n_reset_pin){};
-
-    Ads1256(SPI_HandleTypeDef *hspi, GPIO_TypeDef *n_drdy_port, uint16_t n_drdy_pin)
-        : hspi_(hspi), n_drdy_port_(n_drdy_port), n_drdy_pin_(n_drdy_pin)
-    {
-        n_reset_port_ = nullptr;
-        n_reset_pin_  = 0;
-    };
+          n_reset_port_(n_reset_port), n_reset_pin_(n_reset_pin),
+          v_max_(2 * vref){};
 
     void Init();
 
@@ -39,6 +46,26 @@ public:
 
     void Reset();
 
+    /**
+     * @brief 设置转换队列
+     *
+     */
+    void SetConvQueue(const std::vector<uint8_t> &muxs);
+
+    void StartConvQueue();
+
+    void StopConvQueue()
+    {
+        use_conv_queue_ = false;
+    }
+
+    bool GetConvQueueState()
+    {
+        return use_conv_queue_;
+    }
+
+    void SetMux(uint8_t mux);
+
     Registers_t ReadAllRegs()
     {
         Registers_t result{};
@@ -46,17 +73,20 @@ public:
         return result;
     }
 
-    void DRDY_Callback()
-    {
-        drdy_count++;
-    }
+    void DRDY_Callback();
 
     int32_t ReadData();
 
-    float ReadVoltage()
+    float Data2Voltage(int32_t data)
     {
-        return vref_2 * ReadData() / 0x7FFFFF;
+        if (data > 0) {
+            return v_max_ * ReadData() / 0x7FFFFF;
+        } else {
+            return v_max_ * ReadData() / 0x800000;
+        }
     }
+
+    void WaitForDataReady();
 
 private:
     SPI_HandleTypeDef *hspi_;
@@ -67,7 +97,10 @@ private:
     GPIO_TypeDef *n_reset_port_;
     uint16_t n_reset_pin_;
 
-    float vref_2 = 5.0f; // 2 * vref
+    float v_max_; // 2 * vref
+
+    volatile bool use_conv_queue_ = false;
+    size_t conv_queue_index_      = 0;
 
     /**
      * @brief 从 SPI 读取
@@ -102,9 +135,12 @@ private:
 
     void WriteReg(uint8_t regaddr, uint8_t databyte);
 
+    /**
+     * @brief 写命令
+     *
+     * @note Do not call this function for WREG or RREG.
+     */
     void WriteCmd(uint8_t cmd);
-
-    void WaitForDataReady();
 
     /**
      * @brief 读取寄存器
@@ -116,4 +152,8 @@ private:
     void ReadReg(uint8_t regaddr, uint8_t *databyte, uint8_t size);
 
     uint8_t ReadReg(uint8_t regaddr);
+
+    int32_t ReadDataNoWait();
+
+    void SyncWakeup();
 };
