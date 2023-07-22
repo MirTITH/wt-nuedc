@@ -40,7 +40,7 @@ void Ads1256::Init()
     /**
      * @brief STATUS REGISTER
      * ORDER: Most Significant Bit First (default)
-     * 自校准: 开启
+     * 自动校准: 开启
      * BUFEN: Buffer Enabled
      */
     WriteReg(ADS1256_STATUS, 0x06);
@@ -64,7 +64,7 @@ void Ads1256::Init()
      * @brief A/D Data Rate
      * 默认值：30,000SPS
      */
-    WriteReg(ADS1256_DRATE, ADS1256_DRATE_1000);
+    SetDataRate(DataRate::SPS_1000);
 
     /**
      * @brief GPIO Control Register
@@ -72,6 +72,8 @@ void Ads1256::Init()
      * 引脚电平全部设为 low
      */
     WriteReg(ADS1256_IO, 0x00);
+
+    WriteCmd(ADS1256_CMD_SELFCAL); // 自校准
 
     HPT_DelayMs(10);
 }
@@ -125,7 +127,7 @@ void Ads1256::SyncWakeup()
 
 void Ads1256::DRDY_Callback()
 {
-    drdy_count++;
+    drdy_count_++;
     if (use_conv_queue_) {
         switch (conv_queue_.size()) {
             case 0:
@@ -258,6 +260,18 @@ void Ads1256::ReadReg(uint8_t regaddr, uint8_t *databyte, uint8_t size)
     SpiRead(databyte, size);
 
     HPT_DelayUs(kT11_1);
+}
+
+void Ads1256::SetGain(PGA gain)
+{
+    // 实际上 ADCON 的 bit[2-0] 控制增益，其他 bit 控制时钟输出和传感器检测
+    // 这里将时钟输出和传感器检测都关闭
+    WriteReg(ADS1256_ADCON, (uint8_t)gain);
+}
+
+void Ads1256::SetDataRate(DataRate rate)
+{
+    WriteReg(ADS1256_DRATE, (uint8_t)rate);
 }
 
 uint8_t Ads1256::ReadReg(uint8_t regaddr)
