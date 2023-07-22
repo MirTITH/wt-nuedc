@@ -35,10 +35,10 @@
 
 void Ads1256::Init()
 {
-    Reset();
-
     // 等待电源稳定
-    HAL_Delay(100);
+    HPT_DelayMs(100);
+
+    Reset();
 
     /**
      * @brief STATUS REGISTER
@@ -76,17 +76,22 @@ void Ads1256::Init()
      */
     WriteReg(ADS1256_IO, 0x00);
 
-    HAL_Delay(10);
+    HPT_DelayMs(10);
 }
 
 void Ads1256::Reset()
 {
-    HAL_GPIO_WritePin(n_reset_port_, n_reset_pin_, GPIO_PIN_RESET);
-    // HPT_DelayUs(100);
-    HAL_Delay(10);
-    HAL_GPIO_WritePin(n_reset_port_, n_reset_pin_, GPIO_PIN_SET);
-    HAL_Delay(10);
-    // HPT_DelayUs(100);
+    if (n_reset_port_ != nullptr) {
+        HAL_GPIO_WritePin(n_reset_port_, n_reset_pin_, GPIO_PIN_RESET);
+        HPT_DelayMs(10);
+        HAL_GPIO_WritePin(n_reset_port_, n_reset_pin_, GPIO_PIN_SET);
+        HPT_DelayMs(10);
+    } else {
+        while (!IsDataReady()) {};
+        const uint8_t reset_cmd = ADS1256_CMD_RESET;
+        SpiWrite(&reset_cmd, 1);
+        HPT_DelayMs(10);
+    }
 }
 
 bool Ads1256::SpiRead(uint8_t *pData, uint16_t Size, uint32_t Timeout)
@@ -119,6 +124,7 @@ void Ads1256::WriteReg(uint8_t regaddr, const uint8_t *databyte, uint8_t size)
     temp[0] = ADS1256_CMD_WREG | (regaddr & 0x0F);
     temp[1] = size - 1;
 
+    while (!IsDataReady()) {};
     SpiWrite(temp, sizeof(temp));
 
     // Write reg
@@ -142,6 +148,7 @@ void Ads1256::ReadReg(uint8_t regaddr, uint8_t *databyte, uint8_t size)
     uint8_t temp[2];
     temp[0] = ADS1256_CMD_RREG | (regaddr & 0x0F);
     temp[1] = size - 1;
+    while (!IsDataReady()) {};
     SpiWrite(temp, sizeof(temp));
 
     HPT_DelayUs(10); // t6

@@ -12,8 +12,8 @@
 // #include "OldTests/pll_test.cpp"
 // #include "OldTests/high_precision_time_test.cpp"
 // #include "OldTests/malloc_test.cpp"
-// #include "OldTests/ads1256_test.cpp"
-#include "UnitTests/test_lvgl.cpp"
+#include "OldTests/ads1256_test.cpp"
+// #include "UnitTests/test_lvgl.cpp"
 
 void TestThread(void *argument)
 {
@@ -28,8 +28,8 @@ void TestThread(void *argument)
     // HighPrecisionTimeTest();
     // MallocTest();
     // PidTest();
-    // Ads1256Test();
-    TestLvgl();
+    Ads1256Test();
+    // TestLvgl();
 
     vTaskDelete(nullptr);
 }

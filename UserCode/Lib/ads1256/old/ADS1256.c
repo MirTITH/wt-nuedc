@@ -190,7 +190,7 @@ void ADS1256_Init(void)
 {
 	ADS1256_NSS(1);
 
-	ADS1256_Reset();
+	// ADS1256_Reset();
 
 	HAL_Delay(100);
 

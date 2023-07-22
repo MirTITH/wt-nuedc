@@ -6,6 +6,7 @@
 #define ADS1256_CMD_SYNC   0xFC
 #define ADS1256_CMD_WAKEUP 0xFF
 #define ADS1256_CMD_RDATA  0x01
+#define ADS1256_CMD_RESET  0xFE
 
 // 寄存器地址
 #define ADS1256_STATUS 0x00
