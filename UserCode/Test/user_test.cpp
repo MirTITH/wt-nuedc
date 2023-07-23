@@ -14,6 +14,7 @@
 // #include "OldTests/malloc_test.cpp"
 #include "OldTests/ads1256_test.cpp"
 // #include "UnitTests/test_lvgl.cpp"
+// #include "UnitTests/test_atomic.cpp"
 
 void TestThread(void *argument)
 {
@@ -30,6 +31,7 @@ void TestThread(void *argument)
     // PidTest();
     Ads1256Test();
     // TestLvgl();
+    // StartTestAtomic();
 
     vTaskDelete(nullptr);
 }
