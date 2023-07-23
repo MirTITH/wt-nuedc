@@ -64,4 +64,6 @@ void StartTestAtomic()
 
         vTaskDelay(10);
     }
+
+    os_printf("is_lock_free: %d\n", kAtomicVar.is_lock_free());
 }
