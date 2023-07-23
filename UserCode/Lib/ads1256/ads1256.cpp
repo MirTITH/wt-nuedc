@@ -169,8 +169,8 @@ bool Ads1256::SpiRead(uint8_t *pData, uint16_t Size, uint32_t Timeout)
 
 void Ads1256::SetConvQueue(const std::vector<uint8_t> &muxs)
 {
-    auto prev_use_conv_queue = use_conv_queue_;
-    use_conv_queue_          = false;
+    auto prev_use_conv_queue = GetConvQueueState();
+    StopConvQueue();
 
     conv_queue_index_ = 0;
 
