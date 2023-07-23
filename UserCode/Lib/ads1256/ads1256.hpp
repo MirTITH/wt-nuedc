@@ -46,8 +46,8 @@ public:
 
     typedef struct
     {
-        uint8_t mux; // 输入通道选择。例如：0x23 表示正输入为 AIN2, 负输入 AIN3，以此类推。AINCOM 用 8 表示
-        int32_t value;
+        volatile uint8_t mux; // 输入通道选择。例如：0x23 表示正输入为 AIN2, 负输入 AIN3，以此类推。AINCOM 用 8 表示
+        volatile int32_t value;
     } ConvInfo_t;
 
     using ConvQueue_t = std::vector<ConvInfo_t>;
@@ -91,9 +91,9 @@ public:
     float Data2Voltage(int32_t data)
     {
         if (data > 0) {
-            return v_max_ * ReadData() / 0x7FFFFF;
+            return v_max_ * data / 0x7FFFFF;
         } else {
-            return v_max_ * ReadData() / 0x800000;
+            return v_max_ * data / 0x800000;
         }
     }
 
@@ -139,6 +139,7 @@ public:
     Registers_t ReadAllRegs()
     {
         Registers_t result{};
+        WaitForDataReady();
         ReadReg(0x00, (uint8_t *)(&result), sizeof(result));
         return result;
     }
