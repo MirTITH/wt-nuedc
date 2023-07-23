@@ -2,8 +2,8 @@
  * @file ads1256.cpp
  * @author X. Y.
  * @brief ADS1256 的驱动程序
- * @version 0.1
- * @date 2023-07-08
+ * @version 0.3
+ * @date 2023-07-23
  *
  * @copyright Copyright (c) 2023
  *
@@ -16,6 +16,8 @@
 #include "ads1256.hpp"
 #include "ads1256_cmd_define.h"
 #include "HighPrecisionTime/high_precision_time.h"
+#include "FreeRTOS.h"
+#include "task.h"
 
 static constexpr float kClkin = 7.68; // MHz, 晶振频率
 
@@ -36,37 +38,41 @@ void Ads1256::Init()
     HPT_DelayMs(100);
 
     Reset();
-    HPT_DelayMs(100);
+    // HPT_DelayMs(100);
 
-    // /**
-    //  * @brief  A/D Control Register
-    //  * Clock Out OFF
-    //  * Sensor Detect OFF (default)（可用来检测外部传感器是否完好）
-    //  * Programmable Gain Amplifier Setting = 1
-    //  */
+    /**
+     * @brief  A/D Control Register
+     * default value: 0x20
+     * Clock Out: OFF (default: ON)
+     * Sensor Detect OFF (default: OFF)（用来检测外部传感器）
+     * Programmable Gain Amplifier Setting = 1 (default: 1)
+     */
     // WriteReg(ADS1256_ADCON, 0x00);
+    SetGain(PGA::Gain1);
 
-    // /**
-    //  * @brief GPIO Control Register
-    //  * 全部设为 Output
-    //  * 引脚电平全部设为 low
-    //  */
+    /**
+     * @brief GPIO Control Register
+     * default value: 0xE0
+     * 全部设为输出 (default: 全部设为输入)
+     * 引脚电平全部设为低 (default: 全部设为低)
+     */
     // WriteReg(ADS1256_IO, 0x00);
 
     /**
      * @brief STATUS REGISTER
-     * ORDER: Most Significant Bit First (default)
-     * 自动校准: 开启
-     * BUFEN: Buffer Enabled
+     * default value: 0xX1 (X 为 ID，未知)
+     * ORDER: Most Significant Bit First (default: MSB)
+     * 自动校准: 开启 (default: OFF)
+     * BUFEN: default: Disable
      */
-    WriteReg(ADS1256_STATUS, 0x04);
+    WriteReg(ADS1256_STATUS, 0x04); // Buffer disable
+    // WriteReg(ADS1256_STATUS, 0x06); // Buffer enable
 
     /**
      * @brief A/D Data Rate
      * 默认值：30,000SPS
      */
-    HPT_DelayMs(10);
-    WaitForDataReady();
+    // WaitForDataReady();
     SetDataRate(DataRate::SPS_100);
 
     // /**
@@ -77,11 +83,9 @@ void Ads1256::Init()
     // WriteReg(ADS1256_MUX, 0x01);
 
     // WaitForDataReady();
-    // WriteCmd(ADS1256_CMD_SELFCAL); // 自校准
+    WriteCmd(ADS1256_CMD_SELFCAL); // 自校准
 
-    // WaitForDataReady();
-
-    HPT_DelayMs(10);
+    WaitForDataReady();
 }
 
 void Ads1256::Reset()
@@ -91,15 +95,25 @@ void Ads1256::Reset()
         HPT_DelayMs(10);
         HAL_GPIO_WritePin(n_reset_port_, n_reset_pin_, GPIO_PIN_SET);
         HPT_DelayMs(10);
+        WaitForDataReady();
     } else {
         WriteCmd(ADS1256_CMD_RESET);
         HPT_DelayMs(10);
+        WaitForDataReady();
     }
 }
 
-void Ads1256::WaitForDataReady()
+bool Ads1256::WaitForDataReady(uint32_t timeout_us) const
 {
-    while (IsDataReady() == false) {};
+    if (timeout_us == std::numeric_limits<uint32_t>::max()) {
+        while (IsDataReady() == false) {};
+    } else {
+        uint32_t startUs = HPT_GetUs();
+        while (IsDataReady() == false) {
+            if (HPT_GetUs() - startUs >= timeout_us) return false;
+        }
+    }
+    return true;
 }
 
 int32_t Ads1256::ReadDataNoWait()
@@ -138,11 +152,11 @@ void Ads1256::DRDY_Callback()
             case 0:
                 break;
             case 1:
-                conv_queue_.at(0).value = ReadDataNoWait();
+                conv_queue_.at(0).value.store(ReadDataNoWait());
                 break;
 
             default:
-                auto now_index = conv_queue_index_;
+                auto now_index = conv_queue_index_.load();
 
                 // 下一个通道
                 conv_queue_index_++;
@@ -274,11 +288,29 @@ void Ads1256::SetGain(PGA gain)
     // 实际上 ADCON 的 bit[2-0] 控制增益，其他 bit 控制时钟输出和传感器检测
     // 这里将时钟输出和传感器检测都关闭
     WriteReg(ADS1256_ADCON, (uint8_t)gain);
+    pga_ = gain;
+}
+
+Ads1256::PGA Ads1256::GetGainFromChip()
+{
+    auto reg       = ReadReg(ADS1256_ADCON);
+    uint8_t result = reg & 0x7;
+    if (result == 0x7) {
+        result = 0x6; // 0x6 和 0x7 都表示增益为 64 倍
+    }
+    pga_ = static_cast<PGA>(result);
+    return static_cast<PGA>(result);
 }
 
 void Ads1256::SetDataRate(DataRate rate)
 {
     WriteReg(ADS1256_DRATE, (uint8_t)rate);
+}
+
+Ads1256::DataRate Ads1256::GetDataRateFromChip()
+{
+    auto reg = ReadReg(ADS1256_DRATE);
+    return static_cast<DataRate>(reg);
 }
 
 uint8_t Ads1256::ReadReg(uint8_t regaddr)

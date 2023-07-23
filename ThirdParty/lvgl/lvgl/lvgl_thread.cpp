@@ -69,11 +69,11 @@ static void LvAdsMonitor(void *argument)
     lv_obj_align(label, LV_ALIGN_LEFT_MID, 0, 0);
     LvglUnlock();
 
-    auto last_count = ads->drdy_count_;
+    auto last_count = ads->GetDrdyCount();
 
     uint32_t PreviousWakeTime = xTaskGetTickCount();
     while (1) {
-        auto now_count = ads->drdy_count_;
+        auto now_count = ads->GetDrdyCount();
 
         LvglLock();
         lv_label_set_text_fmt(label, "DRDY 频率：%lu Hz", (now_count - last_count) * 1000 / period);

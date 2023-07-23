@@ -33,6 +33,12 @@ void Ads1256Test()
         vTaskDelay(1000);
     }
 
+    // 检测 ADS 有没有连接或上电
+    if (VAds.WaitForDataReady(1000 * 1000) != true) {
+        os_printf("==== Error. WaitForDataReady timeout. End %s ====\n", __func__);
+        return;
+    }
+
     VAds.Init();
     // vTaskDelay(1000);
     // VAds.Init();

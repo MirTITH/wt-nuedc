@@ -3,10 +3,13 @@
 #include "spi.h"
 #include <vector>
 #include <stdint.h>
+#include <atomic>
+#include "atom_wrapper.hpp"
+#include <limits>
 
 class Ads1256
 {
-public:
+public: // Type defines
     enum class PGA {
         Gain1 = 0,
         Gain2,
@@ -46,16 +49,16 @@ public:
 
     typedef struct
     {
-        volatile uint8_t mux; // 输入通道选择。例如：0x23 表示正输入为 AIN2, 负输入 AIN3，以此类推。AINCOM 用 8 表示
-        volatile int32_t value;
+        atom_wrapper<uint8_t> mux; // 输入通道选择。例如：0x23 表示正输入为 AIN2, 负输入 AIN3，以此类推。AINCOM 用 8 表示
+        atom_wrapper<int32_t> value;
     } ConvInfo_t;
 
     using ConvQueue_t = std::vector<ConvInfo_t>;
 
-    uint32_t drdy_count_ = 0;
+public: // Public vars
     ConvQueue_t conv_queue_;
 
-public:
+public: // Public functions
     Ads1256(SPI_HandleTypeDef *hspi,
             GPIO_TypeDef *n_drdy_port, uint16_t n_drdy_pin,
             GPIO_TypeDef *n_reset_port = nullptr, uint16_t n_reset_pin = 0,
@@ -75,12 +78,12 @@ public:
 
     void Reset();
 
-    bool IsDataReady()
+    bool IsDataReady() const
     {
         return !HAL_GPIO_ReadPin(n_drdy_port_, n_drdy_pin_);
     }
 
-    void WaitForDataReady();
+    bool WaitForDataReady(uint32_t timeout_us = std::numeric_limits<uint32_t>::max()) const;
 
     int32_t ReadData();
 
@@ -88,12 +91,12 @@ public:
      * @brief 将 原始数据转换为电压 (V)
      *
      */
-    float Data2Voltage(int32_t data)
+    float Data2Voltage(int32_t data) const
     {
         if (data > 0) {
-            return v_max_ * data / 0x7FFFFF;
+            return v_max_ * Pow2(static_cast<int>(pga_.load())) / 0x7FFFFF * data;
         } else {
-            return v_max_ * data / 0x800000;
+            return v_max_ * Pow2(static_cast<int>(pga_.load())) / 0x800000 * data;
         }
     }
 
@@ -124,7 +127,7 @@ public:
      * @return true 已启动
      * @return false 未启动
      */
-    bool GetConvQueueState()
+    bool GetConvQueueState() const
     {
         return use_conv_queue_;
     }
@@ -145,7 +148,19 @@ public:
     }
 
     void SetGain(PGA gain);
+    PGA GetGain() const
+    {
+        return pga_;
+    }
+    PGA GetGainFromChip();
+
     void SetDataRate(DataRate rate);
+    DataRate GetDataRateFromChip();
+
+    uint32_t GetDrdyCount() const
+    {
+        return drdy_count_;
+    }
 
 private:
     SPI_HandleTypeDef *hspi_;
@@ -156,10 +171,13 @@ private:
     GPIO_TypeDef *n_reset_port_;
     uint16_t n_reset_pin_;
 
-    float v_max_; // 2 * vref
+    std::atomic<PGA> pga_;
 
-    volatile bool use_conv_queue_ = false;
-    size_t conv_queue_index_      = 0;
+    const float v_max_; // 2 * vref
+
+    std::atomic<bool> use_conv_queue_{false};
+    std::atomic<size_t> conv_queue_index_{0};
+    uint32_t drdy_count_{0};
 
     /**
      * @brief 从 SPI 读取
@@ -213,4 +231,13 @@ private:
     int32_t ReadDataNoWait();
 
     void SyncWakeup();
+
+    /**
+     * @brief 2^y
+     *
+     */
+    static constexpr int Pow2(int y)
+    {
+        return 1 << y;
+    }
 };
