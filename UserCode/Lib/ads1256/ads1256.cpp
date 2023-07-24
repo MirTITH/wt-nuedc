@@ -51,14 +51,14 @@ void Ads1256::Init()
      * 自动校准: 开启 (default: OFF)
      * BUFEN: default: Disable
      */
-    // WriteReg(ADS1256_STATUS, 0x04); // Buffer disable
+    WriteReg(ADS1256_STATUS, 0x04); // Buffer disable
     // WriteReg(ADS1256_STATUS, 0x06); // Buffer enable
 
     /**
      * @brief A/D Data Rate
      * 默认值：30,000SPS
      */
-    SetDataRate(DataRate::SPS_100);
+    SetDataRate(DataRate::SPS_7500);
 
     /**
      * @brief Input Multiplexer Control Register
@@ -133,18 +133,15 @@ int32_t Ads1256::ReadDataNoWait()
 
 void Ads1256::SyncWakeup()
 {
-    // if (n_sync_port_ == nullptr) {
-    //     WriteCmd(ADS1256_CMD_SYNC);
-    //     HPT_DelayUs(kT11_2);
-    //     WriteCmd(ADS1256_CMD_WAKEUP);
-    // } else {
-    //     HAL_GPIO_WritePin(n_sync_port_, n_sync_pin_, GPIO_PIN_RESET);
-    //     HPT_DelayUs(kT16);
-    //     HAL_GPIO_WritePin(n_sync_port_, n_sync_pin_, GPIO_PIN_SET);
-    // }
-    WriteCmd(ADS1256_CMD_SYNC);
-    HPT_DelayUs(kT11_2);
-    WriteCmd(ADS1256_CMD_WAKEUP);
+    if (n_sync_port_ == nullptr) {
+        WriteCmd(ADS1256_CMD_SYNC);
+        HPT_DelayUs(kT11_2);
+        WriteCmd(ADS1256_CMD_WAKEUP);
+    } else {
+        HAL_GPIO_WritePin(n_sync_port_, n_sync_pin_, GPIO_PIN_RESET);
+        HPT_DelayUs(kT16);
+        HAL_GPIO_WritePin(n_sync_port_, n_sync_pin_, GPIO_PIN_SET);
+    }
 }
 
 void Ads1256::EnterRDataCMode()

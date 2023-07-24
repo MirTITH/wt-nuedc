@@ -115,9 +115,9 @@ public: // Public functions
     float Data2Voltage(int32_t data) const
     {
         if (data > 0) {
-            return v_max_ * Pow2(static_cast<int>(pga_.load())) / 0x7FFFFF * data;
+            return (v_max_ / (Pow2(static_cast<int>(pga_.load())) * 0x7FFFFF)) * data;
         } else {
-            return v_max_ * Pow2(static_cast<int>(pga_.load())) / 0x800000 * data;
+            return (v_max_ / (Pow2(static_cast<int>(pga_.load())) * 0x800000)) * data;
         }
     }
 

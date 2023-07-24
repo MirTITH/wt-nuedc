@@ -7,6 +7,19 @@
 #include "freertos_io/os_printf.h"
 #include "ads1256/old/ADS1256.h"
 
+void AdsPrintEntry(void *)
+{
+    extern volatile uint32_t kDrdyIRQDuration;
+    while (true) {
+        for (auto &var : VAds.conv_queue_) {
+            os_printf("%9f, ", VAds.Data2Voltage(var.value));
+        }
+
+        os_printf("0,5,-5,%lu,%d\n", kDrdyIRQDuration, HAL_GPIO_ReadPin(VSync_GPIO_Port, VSync_Pin));
+        vTaskDelay(100);
+    }
+}
+
 void Ads1256Test()
 {
     os_printf("==== Start %s ====\n", __func__);
@@ -64,19 +77,25 @@ void Ads1256Test()
     // os_printf("STATUS: %x\n", ads_reg.STATUS);
 
     // vTaskDelay(2000);
-    VAds.SetConvQueue({0x18});
+    VAds.SetConvQueue({0x08, 0x18, 0x28, 0x38});
+    vTaskDelay(2000);
+
+    xTaskCreate(AdsPrintEntry, "ads_print", 512, nullptr, PriorityNormal, nullptr);
+
+    os_printf(">>>> StartConvQueue\n");
     VAds.StartConvQueue();
+    vTaskDelay(2000);
 
-    extern volatile uint32_t kDrdyIRQDuration;
+    os_printf(">>>> StopConvQueue\n");
+    VAds.StopConvQueue();
+    vTaskDelay(2000);
 
-    while (true) {
-        for (auto &var : VAds.conv_queue_) {
-            os_printf("%9f, ", VAds.Data2Voltage(var.value));
-        }
+    os_printf(">>>> SetGain\n");
+    VAds.SetGain(Ads1256::PGA::Gain2);
+    vTaskDelay(2000);
 
-        os_printf("0,5,-5,%lu,%d\n", kDrdyIRQDuration, HAL_GPIO_ReadPin(VSync_GPIO_Port, VSync_Pin));
-        vTaskDelay(10);
-    }
+    os_printf(">>>> StartConvQueue\n");
+    VAds.StartConvQueue();
 
     os_printf("==== End %s ====\n", __func__);
 }
