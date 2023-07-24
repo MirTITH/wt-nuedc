@@ -108,10 +108,10 @@ uint8_t ADS1256_IsReady()
  */
 void ADS1256_Reset()
 {
-	HAL_GPIO_WritePin(ADS1256_Reset_GPIOx, ADS1256_Reset_GPIO_Pin, GPIO_PIN_RESET);
-	HAL_Delay(10);
-	HAL_GPIO_WritePin(ADS1256_Reset_GPIOx, ADS1256_Reset_GPIO_Pin, GPIO_PIN_SET);
-	HAL_Delay(10);
+	// HAL_GPIO_WritePin(ADS1256_Reset_GPIOx, ADS1256_Reset_GPIO_Pin, GPIO_PIN_RESET);
+	// HAL_Delay(10);
+	// HAL_GPIO_WritePin(ADS1256_Reset_GPIOx, ADS1256_Reset_GPIO_Pin, GPIO_PIN_SET);
+	// HAL_Delay(10);
 }
 
 /**

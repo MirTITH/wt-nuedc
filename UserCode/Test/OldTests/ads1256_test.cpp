@@ -11,7 +11,7 @@ void Ads1256Test()
 {
     os_printf("==== Start %s ====\n", __func__);
 
-    while (false) {
+    while (true) {
         os_printf("===== Init =====\n");
         VAds.Init();
         auto ads_reg = VAds.ReadAllRegs();
@@ -20,7 +20,7 @@ void Ads1256Test()
         os_printf("IO: %x\n", ads_reg.IO);
         os_printf("MUX: %x\n", ads_reg.MUX);
         os_printf("STATUS: %x\n", ads_reg.STATUS);
-        vTaskDelay(1000);
+        vTaskDelay(2000);
 
         os_printf("===== Reset =====\n");
         VAds.Reset();
@@ -30,7 +30,7 @@ void Ads1256Test()
         os_printf("IO: %x\n", ads_reg.IO);
         os_printf("MUX: %x\n", ads_reg.MUX);
         os_printf("STATUS: %x\n", ads_reg.STATUS);
-        vTaskDelay(1000);
+        vTaskDelay(2000);
     }
 
     // 检测 ADS 有没有连接或上电

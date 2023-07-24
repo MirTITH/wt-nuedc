@@ -38,7 +38,6 @@ void Ads1256::Init()
     HPT_DelayMs(100);
 
     Reset();
-    // HPT_DelayMs(100);
 
     /**
      * @brief  A/D Control Register
@@ -72,18 +71,17 @@ void Ads1256::Init()
      * @brief A/D Data Rate
      * 默认值：30,000SPS
      */
-    // WaitForDataReady();
     SetDataRate(DataRate::SPS_100);
 
-    // /**
-    //  * @brief Input Multiplexer Control Register
-    //  * Positive Input Channel: AIN0 (default)
-    //  * Negative Input Channel: AINCOM
-    //  */
+    /**
+     * @brief Input Multiplexer Control Register
+     * Positive Input Channel: AIN0 (default)
+     * Negative Input Channel: AINCOM
+     */
     // WriteReg(ADS1256_MUX, 0x01);
 
-    // WaitForDataReady();
-    WriteCmd(ADS1256_CMD_SELFCAL); // 自校准
+    // 自校准
+    WriteCmd(ADS1256_CMD_SELFCAL);
 
     WaitForDataReady();
 }
@@ -92,13 +90,13 @@ void Ads1256::Reset()
 {
     if (n_reset_port_ != nullptr) {
         HAL_GPIO_WritePin(n_reset_port_, n_reset_pin_, GPIO_PIN_RESET);
-        HPT_DelayMs(10);
+        HPT_DelayMs(1);
         HAL_GPIO_WritePin(n_reset_port_, n_reset_pin_, GPIO_PIN_SET);
-        HPT_DelayMs(10);
+        HPT_DelayMs(1);
         WaitForDataReady();
     } else {
         WriteCmd(ADS1256_CMD_RESET);
-        HPT_DelayMs(10);
+        HPT_DelayMs(1);
         WaitForDataReady();
     }
 }
