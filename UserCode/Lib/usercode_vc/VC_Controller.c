@@ -2,9 +2,10 @@
 
 
 //extern in .h
-float Ud,ia,ib,ic,ua,ub,uc;//直接采样值
+float Udc,ia,ib,ic,ua,ub,uc;//直接采样值
 CT_data_t Sample_i,Sample_u;//储存并处理采样数据
-float amplitude_pll,theta_pll;//采自锁相环
+float amplitude_pll = 0;
+float theta_pll = 0;//采自锁相环
 
 float Ua_ref,Ub_ref,Uc_ref;//SVPWM输入
 float f_ref;
@@ -40,8 +41,9 @@ void User_VC_init()
 //增量式PID算法
 void PID_Calc(PID_t *pid){
 	pid->cur_error = pid->ref - pid->fdb;
-	pid->output += pid->KP * (pid->cur_error - pid->error[1]) + pid->KI * pid->cur_error + pid->KD * (pid->cur_error - 2 * pid->error[1] + pid->error[0]);
-	pid->error[0] = pid->error[1];
+	// pid->output += pid->KP * (pid->cur_error - pid->error[1]) + pid->KI * pid->cur_error + pid->KD * (pid->cur_error - 2 * pid->error[1] + pid->error[0]);
+	pid->output = pid->KP * pid->cur_error;
+    pid->error[0] = pid->error[1];
 	pid->error[1] = pid->ref - pid->fdb;
 	/*设定输出上下限*/
 	if(pid->output > pid->outputMax) pid->output = pid->outputMax;

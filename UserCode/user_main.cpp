@@ -10,6 +10,7 @@
 #include "lvgl/lvgl_thread.h"
 #include "freertos_io/os_printf.h"
 #include "fonts/lvgl_ttf.h"
+#include "usercode_vc/User_VC.h"
 
 using namespace std;
 
@@ -25,6 +26,10 @@ void StartDefaultTask(void const *argument)
     lv_port_disp_init();
     LvglTTF_Init();
     StartLvglThread();
+
+    //vector control
+    // task_vc_start();
+    // task_pll_start();
 
     StartTestThread();
 

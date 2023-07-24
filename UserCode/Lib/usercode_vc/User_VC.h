@@ -12,7 +12,8 @@ extern "C" {
 #include "User_VC_Thread.h"
 #include "VC_Controller.h"
 #include "PLL.h"
-#include " high_precision_time.h"
+#include "HighPrecisionTime/high_precision_time.h"
+#include "freertos_io/os_printf.h"
 
 #define W_VC (2*PI*f_ref)
 

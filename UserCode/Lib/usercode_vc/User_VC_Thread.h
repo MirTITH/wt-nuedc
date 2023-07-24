@@ -6,8 +6,13 @@ extern "C" {
 
 #include "main.h"
 
-void Task_VC();
-void Task_Vc_Loop(TIM_HandleTypeDef *htim);
+extern uint8_t VC_TASK_ENABLE;
+extern uint8_t PLL_ENABLE;
+
+void Task_VC_init();
+void Task_Vc_Loop_Spwm();
+void Task_Vc_Loop_SVpwm(TIM_HandleTypeDef *htim);
+// void task_pll_loop(TIM_HandleTypeDef *htim);
 
 #ifdef __cplusplus
 }
