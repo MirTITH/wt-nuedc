@@ -19,6 +19,7 @@ float Iq_Servo = 0;//对外输入接口
 VC_t hVC;//相当于hDJI
 
 float global_timer = 0;
+float global_test = 0;
 float Gain_u;
 
 void User_VC_init()

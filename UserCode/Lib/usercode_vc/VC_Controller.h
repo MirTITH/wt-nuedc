@@ -17,6 +17,7 @@ extern float f_ref;
 extern float Ud_Servo,Uq_Servo,Id_Servo,Iq_Servo,theta_ref;//对外接口
 
 extern float global_timer;
+extern float global_test;
 extern float Gain_u;
 
 typedef struct{

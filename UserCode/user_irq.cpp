@@ -82,10 +82,10 @@ void MY_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
         TimDuration = HPT_GetUs() - TimStartUs;
     }
 
-    //0.2ms svpwm
-    // Task_Vc_Loop_SVpwm(htim);
-
     global_timer = HPT_GetUs() * 1e-6;
+
+    //0.2ms svpwm
+    Task_Vc_Loop_SVpwm(htim);
 }
 
 void HAL_ADC_ConvCpltCallback(ADC_HandleTypeDef *hadc)

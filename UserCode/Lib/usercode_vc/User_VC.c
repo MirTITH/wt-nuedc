@@ -5,7 +5,8 @@ void vc_loop_start(void *argument)
     (void)argument;
     Task_VC_init();
     while(1) {
-        Task_Vc_Loop_Spwm();
+        // Task_Vc_Loop_Spwm();
+        // Task_Vc_Loop_SVpwm();
         vTaskDelay(1);
     }
     vTaskDelete(NULL); // 删除当前线程

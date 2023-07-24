@@ -52,11 +52,14 @@ void Task_Vc_Loop_SVpwm(TIM_HandleTypeDef *htim) // 0.2ms in timer
 {
     if (VC_TASK_ENABLE) {
         if ((htim->Instance == TIM8) && (htim->Instance->CNT < 10)) {
+            global_test += 0.0006;
+            
             // 伺服
             CurrentServo(&hVC, Id_Servo, Iq_Servo, theta_ref);
 
             Ud_Servo = 10;
             Uq_Servo = 0;
+            Udc = 30;
             theta_ref = W_VC * global_timer;
             if(PLL_ENABLE)
             {
@@ -69,9 +72,37 @@ void Task_Vc_Loop_SVpwm(TIM_HandleTypeDef *htim) // 0.2ms in timer
             __HAL_TIM_SET_COMPARE(&htim8, TIM_CHANNEL_1, Duty_abc.ccRA);
             __HAL_TIM_SET_COMPARE(&htim8, TIM_CHANNEL_2, Duty_abc.ccRB);
             __HAL_TIM_SET_COMPARE(&htim8, TIM_CHANNEL_3, Duty_abc.ccRC);
+            // os_printf("%f,%f\n",global_timer,global_test);
         }
     }
 }
+
+// void Task_Vc_Loop_SVpwm() // 1ms in freertos
+// {
+//     if (VC_TASK_ENABLE) {
+//         // if ((htim->Instance == TIM8) && (htim->Instance->CNT < 10)) {
+//             // 伺服
+//             CurrentServo(&hVC, Id_Servo, Iq_Servo, theta_ref);
+
+//             Ud_Servo = 10;
+//             Uq_Servo = 0;
+//             Udc = 30;
+//             theta_ref = W_VC * global_timer;
+//             if(PLL_ENABLE)
+//             {
+                
+//             }
+//             VoltageServo(&Ua_ref, &Ub_ref, &Uc_ref, Ud_Servo, Uq_Servo, theta_ref);
+
+//             // SPWM输出
+//             Svpwm_Calculate(&Duty_abc, Udc, Ua_ref, Ub_ref, Uc_ref);
+//             __HAL_TIM_SET_COMPARE(&htim8, TIM_CHANNEL_1, Duty_abc.ccRA);
+//             __HAL_TIM_SET_COMPARE(&htim8, TIM_CHANNEL_2, Duty_abc.ccRB);
+//             __HAL_TIM_SET_COMPARE(&htim8, TIM_CHANNEL_3, Duty_abc.ccRC);
+//             // os_printf("%f,%f,%f,%f\n",global_timer,Duty_abc.ccRA,Duty_abc.ccRB,Duty_abc.ccRC);
+//         // }
+//     }
+// }
 
 // void task_pll_loop(TIM_HandleTypeDef *htim)//in timer 0.25ms
 // {

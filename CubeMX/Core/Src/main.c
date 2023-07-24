@@ -30,7 +30,7 @@
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
-
+#include "usercode_vc/User_VC.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
