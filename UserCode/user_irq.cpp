@@ -95,8 +95,12 @@ void LcdFmc_DmaXferCpltCallback(DMA_HandleTypeDef *_hdma)
     LCD.DmaXferCpltCallback();
 }
 
+static uint32_t kDrdyStartUs;
+volatile uint32_t kDrdyIRQDuration;
+
 void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin)
 {
+    kDrdyStartUs = HPT_GetUs();
     switch (GPIO_Pin) {
         case VDrdy_Pin:
             VAds.DRDY_Callback();
@@ -105,4 +109,5 @@ void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin)
         default:
             break;
     }
+    kDrdyIRQDuration = HPT_GetUs() - kDrdyStartUs;
 }

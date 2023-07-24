@@ -11,7 +11,7 @@ void Ads1256Test()
 {
     os_printf("==== Start %s ====\n", __func__);
 
-    while (true) {
+    while (false) {
         os_printf("===== Init =====\n");
         VAds.Init();
         auto ads_reg = VAds.ReadAllRegs();
@@ -19,18 +19,28 @@ void Ads1256Test()
         os_printf("DRATE: %x\n", ads_reg.DRATE);
         os_printf("IO: %x\n", ads_reg.IO);
         os_printf("MUX: %x\n", ads_reg.MUX);
-        os_printf("STATUS: %x\n", ads_reg.STATUS);
+        os_printf("STATUS: %x\n\n", ads_reg.STATUS);
         vTaskDelay(2000);
 
-        os_printf("===== Reset =====\n");
-        VAds.Reset();
-        ads_reg = VAds.ReadAllRegs();
-        os_printf("ADCON: %x\n", ads_reg.ADCON);
-        os_printf("DRATE: %x\n", ads_reg.DRATE);
-        os_printf("IO: %x\n", ads_reg.IO);
-        os_printf("MUX: %x\n", ads_reg.MUX);
-        os_printf("STATUS: %x\n", ads_reg.STATUS);
-        vTaskDelay(2000);
+        while (true) {
+            auto ads_reg = VAds.ReadAllRegs();
+            os_printf("ADCON: %x\n", ads_reg.ADCON);
+            os_printf("DRATE: %x\n", ads_reg.DRATE);
+            os_printf("IO: %x\n", ads_reg.IO);
+            os_printf("MUX: %x\n", ads_reg.MUX);
+            os_printf("STATUS: %x\n\n", ads_reg.STATUS);
+            vTaskDelay(100);
+        }
+
+        // os_printf("===== Reset =====\n");
+        // VAds.Reset();
+        // ads_reg = VAds.ReadAllRegs();
+        // os_printf("ADCON: %x\n", ads_reg.ADCON);
+        // os_printf("DRATE: %x\n", ads_reg.DRATE);
+        // os_printf("IO: %x\n", ads_reg.IO);
+        // os_printf("MUX: %x\n", ads_reg.MUX);
+        // os_printf("STATUS: %x\n", ads_reg.STATUS);
+        // vTaskDelay(2000);
     }
 
     // 检测 ADS 有没有连接或上电
@@ -40,26 +50,29 @@ void Ads1256Test()
     }
 
     VAds.Init();
-    // vTaskDelay(1000);
-    // VAds.Init();
-    // vTaskDelay(1000);
 
-    // auto ads_reg = VAds.ReadAllRegs();
-    // os_printf("ADCON: %x\n", ads_reg.ADCON);
-    // os_printf("DRATE: %x\n", ads_reg.DRATE);
-    // os_printf("IO: %x\n", ads_reg.IO);
-    // os_printf("MUX: %x\n", ads_reg.MUX);
-    // os_printf("STATUS: %x\n", ads_reg.STATUS);
-    // vTaskDelay(1000);
+    auto ads_reg = VAds.ReadAllRegs();
+    os_printf("ADCON: %x\n", ads_reg.ADCON);
+    os_printf("DRATE: %x\n", ads_reg.DRATE);
+    os_printf("IO: %x\n", ads_reg.IO);
+    os_printf("MUX: %x\n", ads_reg.MUX);
+    os_printf("STATUS: %x\n", ads_reg.STATUS);
+    vTaskDelay(2000);
 
-    VAds.SetConvQueue({0x01, 0x18});
+    VAds.SetDataRate(Ads1256::DataRate::SPS_15000);
+    // vTaskDelay(2000);
+
+    VAds.SetConvQueue({0x18});
     VAds.StartConvQueue();
 
+    extern volatile uint32_t kDrdyIRQDuration;
+
     while (true) {
-        os_printf("%10f, %10f, 0, 5, -5\n",
-                  VAds.Data2Voltage(VAds.conv_queue_.at(0).value),
-                  VAds.Data2Voltage(VAds.conv_queue_.at(1).value));
-        // os_printf("%10f, 0, 5, -5\n", VAds.Data2Voltage(VAds.ReadData()));
+        for (auto &var : VAds.conv_queue_) {
+            os_printf("%9f, ", VAds.Data2Voltage(var.value));
+        }
+
+        os_printf("0,5,-5,%lu\n", kDrdyIRQDuration);
         vTaskDelay(10);
     }
 

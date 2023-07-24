@@ -102,6 +102,7 @@ public: // Public functions
 
     /**
      * @brief 设置转换队列
+     * @param muxs 输入通道选择。例如：0x23 表示正输入为 AIN2, 负输入 AIN3，以此类推。AINCOM 用 8 表示
      * @note 之后记得启动转换队列
      */
     void SetConvQueue(const std::vector<uint8_t> &muxs);
@@ -142,7 +143,6 @@ public: // Public functions
     Registers_t ReadAllRegs()
     {
         Registers_t result{};
-        WaitForDataReady();
         ReadReg(0x00, (uint8_t *)(&result), sizeof(result));
         return result;
     }
@@ -161,6 +161,10 @@ public: // Public functions
     {
         return drdy_count_;
     }
+
+    void SelfCalibrateOffsetGain();
+
+    void WakeUp();
 
 private:
     SPI_HandleTypeDef *hspi_;

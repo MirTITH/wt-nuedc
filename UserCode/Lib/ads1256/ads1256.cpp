@@ -23,14 +23,14 @@ static constexpr float kClkin = 7.68; // MHz, 晶振频率
 
 // 延时数据 (page 6)
 // > 50 tclkin, Delay from last SCLK edge for DIN to first SCLK rising edge for DOUT: RDATA, RDATAC, RREG Commands
-static constexpr uint32_t kT6 = 100 / kClkin + 2;
+static constexpr uint32_t kT6 = 50 / kClkin + 2;
 
 // > 8 tclkin, nCS low after final SCLK falling edge
-static constexpr uint32_t kT10 = 16 / kClkin + 2;
+static constexpr uint32_t kT10 = 8 / kClkin + 2;
 
 // Final SCLK falling edge of command to first SCLK rising edge of next command.
-static constexpr uint32_t kT11_1 = 8 / kClkin + 2;  // > 4 tclkin, for RREG, WREG, RDATA
-static constexpr uint32_t kT11_2 = 48 / kClkin + 2; // > 24 tclkin, for RDATAC, SYNC
+static constexpr uint32_t kT11_1 = 4 / kClkin + 2;  // > 4 tclkin, for RREG, WREG, RDATA
+static constexpr uint32_t kT11_2 = 24 / kClkin + 2; // > 24 tclkin, for RDATAC, SYNC
 
 void Ads1256::Init()
 {
@@ -71,7 +71,7 @@ void Ads1256::Init()
      * @brief A/D Data Rate
      * 默认值：30,000SPS
      */
-    SetDataRate(DataRate::SPS_100);
+    // SetDataRate(DataRate::SPS_100);
 
     /**
      * @brief Input Multiplexer Control Register
@@ -81,9 +81,8 @@ void Ads1256::Init()
     // WriteReg(ADS1256_MUX, 0x01);
 
     // 自校准
-    WriteCmd(ADS1256_CMD_SELFCAL);
-
-    WaitForDataReady();
+    SelfCalibrateOffsetGain();
+    HPT_DelayMs(100);
 }
 
 void Ads1256::Reset()
@@ -95,6 +94,14 @@ void Ads1256::Reset()
         HPT_DelayMs(1);
         WaitForDataReady();
     } else {
+        // 先发送几个 WAKEUP 命令，防止 RESET 命令不能正确送达
+        // 原因之一：
+        // ADS 读写指令需要多个 spi 字节周期，如果上一时刻 ADS 正在进行读写指令，
+        // 则此时发送 RESET 可能被 ADS 认为是整个读写过程的一部分，从而不能 RESET
+        for (size_t i = 0; i < 5; i++) {
+            WakeUp();
+        }
+
         WriteCmd(ADS1256_CMD_RESET);
         HPT_DelayMs(1);
         WaitForDataReady();
@@ -150,7 +157,7 @@ void Ads1256::DRDY_Callback()
             case 0:
                 break;
             case 1:
-                conv_queue_.at(0).value.store(ReadDataNoWait());
+                conv_queue_.at(0).value = ReadDataNoWait();
                 break;
 
             default:
@@ -242,17 +249,22 @@ void Ads1256::WriteReg(uint8_t regaddr, const uint8_t *databyte, uint8_t size)
     temp[0] = ADS1256_CMD_WREG | (regaddr & 0x0F);
     temp[1] = size - 1;
 
-    // WaitForDataReady();
     SpiWrite(temp, sizeof(temp));
-
-    // Write reg
     SpiWrite(databyte, size);
+
     HPT_DelayUs(kT11_1);
 }
 
 void Ads1256::WriteReg(uint8_t regaddr, uint8_t databyte)
 {
-    WriteReg(regaddr, &databyte, 1);
+    uint8_t temp[3];
+    temp[0] = ADS1256_CMD_WREG | (regaddr & 0x0F);
+    temp[1] = 0;
+    temp[2] = databyte;
+
+    SpiWrite(temp, sizeof(temp));
+
+    HPT_DelayUs(kT11_1);
 }
 
 void Ads1256::WriteCmd(uint8_t cmd)
@@ -279,6 +291,23 @@ void Ads1256::ReadReg(uint8_t regaddr, uint8_t *databyte, uint8_t size)
     SpiRead(databyte, size);
 
     HPT_DelayUs(kT11_1);
+}
+
+uint8_t Ads1256::ReadReg(uint8_t regaddr)
+{
+    uint8_t result = 0;
+    uint8_t temp[2];
+    temp[0] = ADS1256_CMD_RREG | (regaddr & 0x0F);
+    temp[1] = 0;
+    SpiWrite(temp, sizeof(temp));
+
+    HPT_DelayUs(kT6);
+
+    // Read reg
+    SpiRead(&result, 1);
+
+    HPT_DelayUs(kT11_1);
+    return result;
 }
 
 void Ads1256::SetGain(PGA gain)
@@ -311,9 +340,15 @@ Ads1256::DataRate Ads1256::GetDataRateFromChip()
     return static_cast<DataRate>(reg);
 }
 
-uint8_t Ads1256::ReadReg(uint8_t regaddr)
+void Ads1256::SelfCalibrateOffsetGain()
 {
-    uint8_t result = 0;
-    ReadReg(regaddr, &result, 1);
-    return result;
+    WriteCmd(ADS1256_CMD_SELFCAL);
+    HPT_DelayUs(100);
+    WaitForDataReady();
+}
+
+void Ads1256::WakeUp()
+{
+    WriteCmd(ADS1256_CMD_WAKEUP);
+    HPT_DelayUs(kT11_2); // 手册里没说等多久，按最长时间等
 }
