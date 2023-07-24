@@ -103,6 +103,8 @@ int main(void)
   MX_TIM1_Init();
   MX_SPI2_Init();
   MX_SPI3_Init();
+  MX_TIM2_Init();
+  MX_TIM8_Init();
   /* USER CODE BEGIN 2 */
 
   /* USER CODE END 2 */
