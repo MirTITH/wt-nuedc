@@ -1,23 +1,9 @@
-/**
- * @file ads1256.cpp
- * @author X. Y.
- * @brief ADS1256 的驱动程序
- * @version 0.3
- * @date 2023-07-23
- *
- * @copyright Copyright (c) 2023
- *
- * 本驱动在 ADS1256 时钟频率为 7.68 MHz 下测试
- *
- * SPI 频率范围： 3K ~ 1.92M
- *
- */
-
 #include "ads1256.hpp"
 #include "ads1256_cmd_define.h"
 #include "HighPrecisionTime/high_precision_time.h"
 #include "FreeRTOS.h"
 #include "task.h"
+#include "freertos_io/os_printf.h"
 
 static constexpr float kClkin = 7.68; // MHz, 晶振频率
 
@@ -32,12 +18,21 @@ static constexpr uint32_t kT10 = 8 / kClkin + 2;
 static constexpr uint32_t kT11_1 = 4 / kClkin + 2;  // > 4 tclkin, for RREG, WREG, RDATA
 static constexpr uint32_t kT11_2 = 24 / kClkin + 2; // > 24 tclkin, for RDATAC, SYNC
 
+// RESET, SYNC/PDWN, pulse width
+static constexpr uint32_t kT16 = 8 / kClkin + 2; // > 4 tclkin
+
 void Ads1256::Init()
 {
     // 等待电源稳定
-    HPT_DelayMs(100);
+    vTaskDelay(100);
 
     Reset();
+
+    if (CheckForReset() == false) {
+        os_printf("CheckForReset failed\n");
+    }
+
+    InitAdsGpio();
 
     /**
      * @brief  A/D Control Register
@@ -50,28 +45,20 @@ void Ads1256::Init()
     SetGain(PGA::Gain1);
 
     /**
-     * @brief GPIO Control Register
-     * default value: 0xE0
-     * 全部设为输出 (default: 全部设为输入)
-     * 引脚电平全部设为低 (default: 全部设为低)
-     */
-    // WriteReg(ADS1256_IO, 0x00);
-
-    /**
      * @brief STATUS REGISTER
      * default value: 0xX1 (X 为 ID，未知)
      * ORDER: Most Significant Bit First (default: MSB)
      * 自动校准: 开启 (default: OFF)
      * BUFEN: default: Disable
      */
-    WriteReg(ADS1256_STATUS, 0x04); // Buffer disable
+    // WriteReg(ADS1256_STATUS, 0x04); // Buffer disable
     // WriteReg(ADS1256_STATUS, 0x06); // Buffer enable
 
     /**
      * @brief A/D Data Rate
      * 默认值：30,000SPS
      */
-    // SetDataRate(DataRate::SPS_100);
+    SetDataRate(DataRate::SPS_100);
 
     /**
      * @brief Input Multiplexer Control Register
@@ -82,11 +69,12 @@ void Ads1256::Init()
 
     // 自校准
     SelfCalibrateOffsetGain();
-    HPT_DelayMs(100);
+    vTaskDelay(100);
 }
 
 void Ads1256::Reset()
 {
+    ExitPowerDownMode();
     if (n_reset_port_ != nullptr) {
         HAL_GPIO_WritePin(n_reset_port_, n_reset_pin_, GPIO_PIN_RESET);
         HPT_DelayMs(1);
@@ -98,9 +86,10 @@ void Ads1256::Reset()
         // 原因之一：
         // ADS 读写指令需要多个 spi 字节周期，如果上一时刻 ADS 正在进行读写指令，
         // 则此时发送 RESET 可能被 ADS 认为是整个读写过程的一部分，从而不能 RESET
-        for (size_t i = 0; i < 5; i++) {
-            WakeUp();
-        }
+        // for (size_t i = 0; i < 5; i++) {
+        //     WriteCmd(ADS1256_CMD_WAKEUP);
+        //     HPT_DelayUs(kT6); // 手册里没说等多久，按最长时间等
+        // }
 
         WriteCmd(ADS1256_CMD_RESET);
         HPT_DelayMs(1);
@@ -144,9 +133,57 @@ int32_t Ads1256::ReadDataNoWait()
 
 void Ads1256::SyncWakeup()
 {
+    // if (n_sync_port_ == nullptr) {
+    //     WriteCmd(ADS1256_CMD_SYNC);
+    //     HPT_DelayUs(kT11_2);
+    //     WriteCmd(ADS1256_CMD_WAKEUP);
+    // } else {
+    //     HAL_GPIO_WritePin(n_sync_port_, n_sync_pin_, GPIO_PIN_RESET);
+    //     HPT_DelayUs(kT16);
+    //     HAL_GPIO_WritePin(n_sync_port_, n_sync_pin_, GPIO_PIN_SET);
+    // }
     WriteCmd(ADS1256_CMD_SYNC);
     HPT_DelayUs(kT11_2);
     WriteCmd(ADS1256_CMD_WAKEUP);
+}
+
+void Ads1256::EnterRDataCMode()
+{
+    WaitForDataReady();
+    WriteCmd(ADS1256_CMD_RDATAC);
+    HPT_DelayUs(kT6);
+    ReadDataCNoWait();
+    is_in_rdatac_mode_ = true;
+}
+
+void Ads1256::ExitRDataCMode()
+{
+    WaitForDataReady();
+    WriteCmd(ADS1256_CMD_SDATAC);
+    HPT_DelayUs(kT6); // 手册里没写，按最大时间延时
+    is_in_rdatac_mode_ = false;
+}
+
+int32_t Ads1256::ReadDataCNoWait()
+{
+    uint8_t data[3];
+    SpiRead(data, 3);
+
+    // 将读取的三段数据拼接
+    int32_t result = (static_cast<uint32_t>(data[0]) << 16) |
+                     (static_cast<uint32_t>(data[1]) << 8) |
+                     static_cast<uint32_t>(data[2]);
+
+    // 处理负数
+    if (result & 0x800000) {
+        result |= 0xFF000000;
+    }
+    return result;
+}
+
+void Ads1256::InitAdsGpio()
+{
+    WriteReg(ADS1256_IO, kIO_REG_INIT_VALUE);
 }
 
 void Ads1256::DRDY_Callback()
@@ -157,7 +194,12 @@ void Ads1256::DRDY_Callback()
             case 0:
                 break;
             case 1:
-                conv_queue_.at(0).value = ReadDataNoWait();
+                if (is_in_rdatac_mode_) {
+                    conv_queue_.at(0).value = ReadDataCNoWait();
+                } else {
+                    conv_queue_.at(0).value = ReadDataNoWait();
+                }
+
                 break;
 
             default:
@@ -185,13 +227,14 @@ int32_t Ads1256::ReadData()
     return ReadDataNoWait();
 }
 
-bool Ads1256::SpiRead(uint8_t *pData, uint16_t Size, uint32_t Timeout)
+void Ads1256::SpiRead(uint8_t *pData, uint16_t Size, uint32_t Timeout)
 {
-    if (HAL_SPI_Receive(hspi_, pData, Size, Timeout) == HAL_OK) {
-        return true;
-    } else {
-        return false;
-    }
+    HAL_SPI_Receive(hspi_, pData, Size, Timeout);
+}
+
+void Ads1256::SpiWrite(const uint8_t *pData, uint16_t Size, uint32_t Timeout)
+{
+    HAL_SPI_Transmit(hspi_, (uint8_t *)pData, Size, Timeout);
 }
 
 void Ads1256::SetConvQueue(const std::vector<uint8_t> &muxs)
@@ -219,22 +262,26 @@ void Ads1256::StartConvQueue()
         SetMux(conv_queue_.at(0).mux);
     }
 
+    // ReadDataC 有问题，不启用
+    // if (conv_queue_.size() == 1) {
+    //     EnterRDataCMode();
+    // }
+
     use_conv_queue_ = true;
+}
+
+void Ads1256::StopConvQueue()
+{
+    use_conv_queue_ = false;
+    if (is_in_rdatac_mode_) {
+        ExitRDataCMode();
+    }
 }
 
 void Ads1256::SetMux(uint8_t mux)
 {
     WriteReg(ADS1256_MUX, mux);
     SyncWakeup();
-}
-
-bool Ads1256::SpiWrite(const uint8_t *pData, uint16_t Size, uint32_t Timeout)
-{
-    if (HAL_SPI_Transmit(hspi_, (uint8_t *)pData, Size, Timeout) == HAL_OK) {
-        return true;
-    } else {
-        return false;
-    }
 }
 
 void Ads1256::WriteReg(uint8_t regaddr, const uint8_t *databyte, uint8_t size)
@@ -347,8 +394,42 @@ void Ads1256::SelfCalibrateOffsetGain()
     WaitForDataReady();
 }
 
-void Ads1256::WakeUp()
+bool Ads1256::CheckForReset()
 {
-    WriteCmd(ADS1256_CMD_WAKEUP);
-    HPT_DelayUs(kT11_2); // 手册里没说等多久，按最长时间等
+    auto io_reg = ReadReg(ADS1256_IO);
+
+    // IO 寄存器的 bit7 ~ bit4 为输入输出方向，Reset Value = 0xE0
+    if ((io_reg & 0xF0) == 0xE0) {
+        return true;
+    }
+
+    return false;
+}
+
+bool Ads1256::CheckForPresent()
+{
+    auto status_reg = ReadReg(ADS1256_STATUS);
+
+    // ADS1256 的 STATUS REGISTER 的 bit7~bit4 为 Factory Programmed Identification Bits.
+    // datasheet 中未给出，实测该值为 0x3
+    if ((status_reg & 0xF0) != 0x30) {
+        return false;
+    }
+
+    return true;
+}
+
+void Ads1256::EnterPowerDownMode()
+{
+    // Holding the SYNC/PDWN pin low for 20 DRDY cycles activates the Power-Down mode.
+    HAL_GPIO_WritePin(n_sync_port_, n_sync_pin_, GPIO_PIN_RESET);
+}
+
+void Ads1256::ExitPowerDownMode()
+{
+    // To exit Power-Down mode, take the SYNC/PDWN pin high.
+    // Upon exiting from Power-Down mode, the ADS1255/6 crystal oscillator typically requires 30ms to wake up.
+    // If using an external clock source, 8192 CLKIN cycles are needed before conversions begin.
+    HAL_GPIO_WritePin(n_sync_port_, n_sync_pin_, GPIO_PIN_SET);
+    vTaskDelay(100);
 }

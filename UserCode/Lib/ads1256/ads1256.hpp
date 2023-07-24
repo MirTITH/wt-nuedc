@@ -1,4 +1,23 @@
+/**
+ * @file ads1256.cpp
+ * @author X. Y.
+ * @brief ADS1256 的驱动程序
+ * @version 0.4
+ * @date 2023-07-24
+ *
+ * @copyright Copyright (c) 2023
+ *
+ * 本驱动在 ADS1256 时钟频率为 7.68 MHz 下测试
+ *
+ * SPI 频率范围： 3K ~ 1.92M
+ *
+ * ADS 的 IO 口必须浮空或者上下拉，不能直接与 VCC 或 GND 相连
+ * 因为程序里给 IO 口配置为输出，并且通过读取 IO 口状态判断是否 reset 成功
+ *
+ */
+
 #pragma once
+
 #include "main.h"
 #include "spi.h"
 #include <vector>
@@ -62,10 +81,12 @@ public: // Public functions
     Ads1256(SPI_HandleTypeDef *hspi,
             GPIO_TypeDef *n_drdy_port, uint16_t n_drdy_pin,
             GPIO_TypeDef *n_reset_port = nullptr, uint16_t n_reset_pin = 0,
+            GPIO_TypeDef *n_sync_port = nullptr, uint16_t n_sync_pin = 0,
             float vref = 2.5)
         : hspi_(hspi),
           n_drdy_port_(n_drdy_port), n_drdy_pin_(n_drdy_pin),
           n_reset_port_(n_reset_port), n_reset_pin_(n_reset_pin),
+          n_sync_port_(n_sync_port), n_sync_pin_(n_sync_pin),
           v_max_(2 * vref){};
 
     /**
@@ -117,10 +138,7 @@ public: // Public functions
      * @brief 停止转换队列
      *
      */
-    void StopConvQueue()
-    {
-        use_conv_queue_ = false;
-    }
+    void StopConvQueue();
 
     /**
      * @brief 获取转换队列状态
@@ -132,13 +150,6 @@ public: // Public functions
     {
         return use_conv_queue_;
     }
-
-    /**
-     * @brief 设置多路选择器
-     *
-     * @param mux 输入通道选择。例如：0x23 表示正输入为 AIN2, 负输入 AIN3，以此类推。AINCOM 用 8 表示
-     */
-    void SetMux(uint8_t mux);
 
     Registers_t ReadAllRegs()
     {
@@ -164,7 +175,20 @@ public: // Public functions
 
     void SelfCalibrateOffsetGain();
 
-    void WakeUp();
+    /**
+     * @brief 检查 Reset 是否成功
+     *
+     */
+    bool CheckForReset();
+
+    /**
+     * @brief 检查 ADS 是否成功连接
+     *
+     */
+    bool CheckForPresent();
+
+    void EnterPowerDownMode();
+    void ExitPowerDownMode();
 
 private:
     SPI_HandleTypeDef *hspi_;
@@ -175,6 +199,9 @@ private:
     GPIO_TypeDef *n_reset_port_;
     uint16_t n_reset_pin_;
 
+    GPIO_TypeDef *n_sync_port_;
+    uint16_t n_sync_pin_;
+
     std::atomic<PGA> pga_;
 
     const float v_max_; // 2 * vref
@@ -183,16 +210,21 @@ private:
     std::atomic<size_t> conv_queue_index_{0};
     uint32_t drdy_count_{0};
 
+    std::atomic<bool> is_in_rdatac_mode_{false};
+
+    // 初始化时将 ADS 的 GPIO Control Register 设为此值。
+    // 当 ADS reset 成功后，这个寄存器会被恢复为默认值，读取此寄存器可以判断是否重置成功
+    // 这也意味着 D0~D3 必须浮空或者上下拉，不能强接地
+    constexpr static uint8_t kIO_REG_INIT_VALUE = 0x0A;
+
     /**
      * @brief 从 SPI 读取
      *
      * @param pData
      * @param Size
      * @param Timeout
-     * @return true 读取成功
-     * @return false 读取失败
      */
-    bool SpiRead(uint8_t *pData, uint16_t Size, uint32_t Timeout = HAL_MAX_DELAY);
+    void SpiRead(uint8_t *pData, uint16_t Size, uint32_t Timeout = HAL_MAX_DELAY);
 
     /**
      * @brief 从 SPI 写入
@@ -200,10 +232,8 @@ private:
      * @param pData
      * @param Size
      * @param Timeout
-     * @return true 写入成功
-     * @return false 写入失败
      */
-    bool SpiWrite(const uint8_t *pData, uint16_t Size, uint32_t Timeout = HAL_MAX_DELAY);
+    void SpiWrite(const uint8_t *pData, uint16_t Size, uint32_t Timeout = HAL_MAX_DELAY);
 
     /**
      * @brief 写入寄存器
@@ -232,9 +262,36 @@ private:
     void ReadReg(uint8_t regaddr, uint8_t *databyte, uint8_t size);
     uint8_t ReadReg(uint8_t regaddr);
 
+    /**
+     * @brief 设置多路选择器
+     *
+     * @param mux 输入通道选择。例如：0x23 表示正输入为 AIN2, 负输入 AIN3，以此类推。AINCOM 用 8 表示
+     */
+    void SetMux(uint8_t mux);
+
     int32_t ReadDataNoWait();
 
     void SyncWakeup();
+
+    /**
+     * @brief 进入连续读取模式
+     *
+     */
+    void EnterRDataCMode();
+
+    /**
+     * @brief 退出连续读取模式
+     *
+     */
+    void ExitRDataCMode();
+
+    int32_t ReadDataCNoWait();
+
+    /**
+     * @brief 将 ADS 自带的 D0 ~ D3 GPIO 设为 kIO_REG_INIT_VALUE
+     * @note 重要：在 Reset 后调用此函数，因为本库用这个寄存器检测是否 Reset 成功
+     */
+    void InitAdsGpio();
 
     /**
      * @brief 2^y
