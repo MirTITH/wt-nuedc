@@ -9,17 +9,17 @@ static constexpr float kClkin = 7.68; // MHz, 晶振频率
 
 // 延时数据 (page 6)
 // > 50 tclkin, Delay from last SCLK edge for DIN to first SCLK rising edge for DOUT: RDATA, RDATAC, RREG Commands
-static constexpr uint32_t kT6 = 50 / kClkin + 2;
+static constexpr uint32_t kT6 = 50 / kClkin + 1;
 
 // > 8 tclkin, nCS low after final SCLK falling edge
-static constexpr uint32_t kT10 = 8 / kClkin + 2;
+static constexpr uint32_t kT10 = 8 / kClkin + 1;
 
 // Final SCLK falling edge of command to first SCLK rising edge of next command.
-static constexpr uint32_t kT11_1 = 4 / kClkin + 2;  // > 4 tclkin, for RREG, WREG, RDATA
-static constexpr uint32_t kT11_2 = 24 / kClkin + 2; // > 24 tclkin, for RDATAC, SYNC
+static constexpr uint32_t kT11_1 = 4 / kClkin + 1;  // > 4 tclkin, for RREG, WREG, RDATA
+static constexpr uint32_t kT11_2 = 24 / kClkin + 1; // > 24 tclkin, for RDATAC, SYNC
 
 // RESET, SYNC/PDWN, pulse width
-static constexpr uint32_t kT16 = 8 / kClkin + 2; // > 4 tclkin
+static constexpr uint32_t kT16 = 4 / kClkin + 1; // > 4 tclkin
 
 void Ads1256::Init()
 {
@@ -58,7 +58,7 @@ void Ads1256::Init()
      * @brief A/D Data Rate
      * 默认值：30,000SPS
      */
-    SetDataRate(DataRate::SPS_7500);
+    SetDataRate(DataRate::SPS_30000);
 
     /**
      * @brief Input Multiplexer Control Register
@@ -183,40 +183,6 @@ void Ads1256::InitAdsGpio()
     WriteReg(ADS1256_IO, kIO_REG_INIT_VALUE);
 }
 
-void Ads1256::DRDY_Callback()
-{
-    drdy_count_++;
-    if (use_conv_queue_) {
-        switch (conv_queue_.size()) {
-            case 0:
-                break;
-            case 1:
-                if (is_in_rdatac_mode_) {
-                    conv_queue_.at(0).value = ReadDataCNoWait();
-                } else {
-                    conv_queue_.at(0).value = ReadDataNoWait();
-                }
-
-                break;
-
-            default:
-                auto now_index = conv_queue_index_.load();
-
-                // 下一个通道
-                conv_queue_index_++;
-                if (conv_queue_index_ >= conv_queue_.size()) {
-                    conv_queue_index_ = 0;
-                }
-
-                // 开始转换下一个通道
-                SetMux(conv_queue_.at(conv_queue_index_).mux);
-
-                // 上一个通道转换完成，读取它的值
-                conv_queue_.at(now_index).value = ReadDataNoWait();
-                break;
-        }
-    }
-}
 
 int32_t Ads1256::ReadData()
 {

@@ -93,7 +93,40 @@ public: // Public functions
      * @brief 请在 DRDY 中断中调用此函数
      *
      */
-    void DRDY_Callback();
+    void DRDY_Callback()
+    {
+        drdy_count_++;
+        if (use_conv_queue_) {
+            switch (conv_queue_.size()) {
+                case 0:
+                    break;
+                case 1:
+                    if (is_in_rdatac_mode_) {
+                        conv_queue_.at(0).value = ReadDataCNoWait();
+                    } else {
+                        conv_queue_.at(0).value = ReadDataNoWait();
+                    }
+
+                    break;
+
+                default:
+                    auto now_index = conv_queue_index_.load();
+
+                    // 下一个通道
+                    conv_queue_index_++;
+                    if (conv_queue_index_ >= conv_queue_.size()) {
+                        conv_queue_index_ = 0;
+                    }
+
+                    // 开始转换下一个通道
+                    SetMux(conv_queue_.at(conv_queue_index_).mux);
+
+                    // 上一个通道转换完成，读取它的值
+                    conv_queue_.at(now_index).value = ReadDataNoWait();
+                    break;
+            }
+        }
+    }
 
     void Init();
 
