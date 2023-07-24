@@ -28,7 +28,7 @@ void StartDefaultTask(void const *argument)
     StartLvglThread();
 
     //vector control
-    // task_vc_start();
+    task_vc_start();
     // task_pll_start();
 
     StartTestThread();

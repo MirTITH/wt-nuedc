@@ -23,13 +23,18 @@ void Task_VC_init()
 // SPWM占空比调整线程
 void Task_Vc_Loop_Spwm() // in freertos 1ms
 {
-    if (VC_TASK_ENABLE == 1) {
+    if (VC_TASK_ENABLE) {
         if (1) {
             // 伺服
             CurrentServo(&hVC, Id_Servo, Iq_Servo, theta_ref);
 
             Ud_Servo = 10;
             Uq_Servo = 0;
+            theta_ref = W_VC * global_timer;
+            if(PLL_ENABLE)
+            {
+
+            }
             VoltageServo(&Ua_ref, &Ub_ref, &Uc_ref, Ud_Servo, Uq_Servo, theta_ref);
 
             // SPWM输出
@@ -37,6 +42,7 @@ void Task_Vc_Loop_Spwm() // in freertos 1ms
             __HAL_TIM_SET_COMPARE(&htim8, TIM_CHANNEL_1, Duty_abc.ccRA);
             __HAL_TIM_SET_COMPARE(&htim8, TIM_CHANNEL_2, Duty_abc.ccRB);
             __HAL_TIM_SET_COMPARE(&htim8, TIM_CHANNEL_3, Duty_abc.ccRC);
+            os_printf("%f,%f,%f\n",Duty_abc.ccRA,Duty_abc.ccRB,Duty_abc.ccRC);
         }
     }
 }
@@ -44,13 +50,18 @@ void Task_Vc_Loop_Spwm() // in freertos 1ms
 // SVPWM占空比调整线程
 void Task_Vc_Loop_SVpwm(TIM_HandleTypeDef *htim) // 0.2ms in timer
 {
-    if (VC_TASK_ENABLE == 1) {
+    if (VC_TASK_ENABLE) {
         if ((htim->Instance == TIM8) && (htim->Instance->CNT < 10)) {
             // 伺服
             CurrentServo(&hVC, Id_Servo, Iq_Servo, theta_ref);
 
             Ud_Servo = 10;
             Uq_Servo = 0;
+            theta_ref = W_VC * global_timer;
+            if(PLL_ENABLE)
+            {
+                
+            }
             VoltageServo(&Ua_ref, &Ub_ref, &Uc_ref, Ud_Servo, Uq_Servo, theta_ref);
 
             // SPWM输出

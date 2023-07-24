@@ -8,7 +8,7 @@ float amplitude_pll = 0;
 float theta_pll = 0;//采自锁相环
 
 float Ua_ref,Ub_ref,Uc_ref;//SVPWM输入
-float f_ref;
+float f_ref = 50;
 
 float theta_ref;
 float Ud_Servo = 0;

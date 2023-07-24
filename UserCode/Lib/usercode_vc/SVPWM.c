@@ -4,7 +4,7 @@
 
 #include "Coordinate_Trans.h"
 
-float TIM1_ARR=200-1;
+float TIM_ARR=200-1;
 
 Svpwm_t Duty_abc;//SVPWM输出
 
@@ -63,9 +63,9 @@ void Svpwm_Calculate(Svpwm_t *Svpwm,float Ud,float Ua_ref,float Ub_ref,float Uc_
             t2 = t2/(t1+t2);
         }
         //计算每相占空比
-        Svpwm->ccRA = TIM1_ARR*(t1+t2);
-        Svpwm->ccRB = TIM1_ARR*(t1);
-        Svpwm->ccRC = TIM1_ARR*(0);
+        Svpwm->ccRA = TIM_ARR*(t1+t2);
+        Svpwm->ccRB = TIM_ARR*(t1);
+        Svpwm->ccRC = TIM_ARR*(0);
     }
     else if(region == 2)
     {
@@ -79,9 +79,9 @@ void Svpwm_Calculate(Svpwm_t *Svpwm,float Ud,float Ua_ref,float Ub_ref,float Uc_
             t2 = t2/(t1+t2);
         }  
         //计算每相占空比
-        Svpwm->ccRA = TIM1_ARR*(t2);
-        Svpwm->ccRB = TIM1_ARR*(t1+t2);
-        Svpwm->ccRC = TIM1_ARR*(0);
+        Svpwm->ccRA = TIM_ARR*(t2);
+        Svpwm->ccRB = TIM_ARR*(t1+t2);
+        Svpwm->ccRC = TIM_ARR*(0);
     }
     else if(region == 3)
     {
@@ -95,9 +95,9 @@ void Svpwm_Calculate(Svpwm_t *Svpwm,float Ud,float Ua_ref,float Ub_ref,float Uc_
             t2 = t2/(t1+t2);
         }  
         //计算每相占空比
-        Svpwm->ccRA = TIM1_ARR*(0);
-        Svpwm->ccRB = TIM1_ARR*(t1+t2);
-        Svpwm->ccRC = TIM1_ARR*(t1);
+        Svpwm->ccRA = TIM_ARR*(0);
+        Svpwm->ccRB = TIM_ARR*(t1+t2);
+        Svpwm->ccRC = TIM_ARR*(t1);
     }
     else if(region == 6)
     {
@@ -111,9 +111,9 @@ void Svpwm_Calculate(Svpwm_t *Svpwm,float Ud,float Ua_ref,float Ub_ref,float Uc_
             t2 = t2/(t1+t2);
         }  
         //计算每相占空比
-        Svpwm->ccRA = TIM1_ARR*(t1+t2);
-        Svpwm->ccRB = TIM1_ARR*(0);
-        Svpwm->ccRC = TIM1_ARR*(t2);
+        Svpwm->ccRA = TIM_ARR*(t1+t2);
+        Svpwm->ccRB = TIM_ARR*(0);
+        Svpwm->ccRC = TIM_ARR*(t2);
     }
     else if(region == 5)
     {
@@ -127,9 +127,9 @@ void Svpwm_Calculate(Svpwm_t *Svpwm,float Ud,float Ua_ref,float Ub_ref,float Uc_
             t2 = t2/(t1+t2);
         }  
         //计算每相占空比
-        Svpwm->ccRA = TIM1_ARR*(t1);
-        Svpwm->ccRB = TIM1_ARR*(0);
-        Svpwm->ccRC = TIM1_ARR*(t1+t2);
+        Svpwm->ccRA = TIM_ARR*(t1);
+        Svpwm->ccRB = TIM_ARR*(0);
+        Svpwm->ccRC = TIM_ARR*(t1+t2);
     }
     else //if(region == 4)
     {
@@ -143,15 +143,15 @@ void Svpwm_Calculate(Svpwm_t *Svpwm,float Ud,float Ua_ref,float Ub_ref,float Uc_
             t2 = t2/(t1+t2);
         }  
         //计算每相占空比
-        Svpwm->ccRA = TIM1_ARR*(0);
-        Svpwm->ccRB = TIM1_ARR*(t2);
-        Svpwm->ccRC = TIM1_ARR*(t1+t2);
+        Svpwm->ccRA = TIM_ARR*(0);
+        Svpwm->ccRB = TIM_ARR*(t2);
+        Svpwm->ccRC = TIM_ARR*(t1+t2);
     }
 }
 
 void Spwm_Calculate(Svpwm_t *Svpwm,float GAIN,float Ua_ref,float Ub_ref,float Uc_ref)
 {
-    Svpwm->ccRA = TIM1_ARR/2 + ((Ua_ref)*(GAIN));
-    Svpwm->ccRB = TIM1_ARR/2 + ((Ub_ref)*(GAIN));
-    Svpwm->ccRC = TIM1_ARR/2 + ((Uc_ref)*(GAIN));
+    Svpwm->ccRA = TIM_ARR/2 + ((Ua_ref)*(GAIN));
+    Svpwm->ccRB = TIM_ARR/2 + ((Ub_ref)*(GAIN));
+    Svpwm->ccRC = TIM_ARR/2 + ((Uc_ref)*(GAIN));
 }
