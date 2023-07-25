@@ -15,8 +15,8 @@ void AdsPrintEntry(void *)
             os_printf("%9f, ", voltage);
         }
 
-        os_printf("0,5,-5,%lu\n", kDrdyIRQDuration);
-        vTaskDelay(10);
+        os_printf("0,5,%lu,%lu\n", kDrdyIRQDuration, VAds.dma_busy_count_);
+        vTaskDelay(100);
     }
 }
 

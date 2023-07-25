@@ -2,7 +2,7 @@
  * @file ads1256.cpp
  * @author X. Y.
  * @brief ADS1256 的驱动程序
- * @version 0.5
+ * @version 0.6
  * @date 2023-07-25
  *
  * @copyright Copyright (c) 2023
@@ -27,7 +27,7 @@
  * 因为程序里给 IO 口配置为输出，并且通过读取 IO 口状态判断是否 reset 成功
  *
  * 保证 DRDY 的中断优先级低于 SPI DMA 的中断优先级
- * 
+ *
  */
 
 #pragma once
@@ -39,6 +39,7 @@
 #include <atomic>
 #include "atom_wrapper.hpp"
 #include <limits>
+#include <cassert>
 
 class Ads1256
 {
@@ -84,24 +85,13 @@ public: // Type defines
 
     typedef struct
     {
-        uint8_t mux;         // 输入通道选择。例如：0x23 表示正输入为 AIN2, 负输入 AIN3，以此类推。AINCOM 用 8 表示
-        uint8_t raw_data[3]; // 原始的 24 bit 数据
-
-        int32_t ToInt32() const
-        {
-            int32_t result = (static_cast<uint32_t>(raw_data[0]) << 16) |
-                             (static_cast<uint32_t>(raw_data[1]) << 8) |
-                             static_cast<uint32_t>(raw_data[2]);
-
-            // 处理负数
-            if (result & 0x800000) {
-                result |= 0xFF000000;
-            }
-            return result;
-        }
+        uint8_t mux;                // 输入通道选择。例如：0x23 表示正输入为 AIN2, 负输入 AIN3，以此类推。AINCOM 用 8 表示
+        atom_wrapper<int32_t> data; // 转换为 int32_t 后的数据
     } ConvInfo_t;
 
     using ConvQueue_t = std::vector<ConvInfo_t>;
+
+    uint32_t dma_busy_count_{0};
 
 public: // Public functions
     Ads1256(SPI_HandleTypeDef *hspi,
@@ -123,6 +113,8 @@ public: // Public functions
 
     void SPI_TxRxCpltCallback()
     {
+        conv_queue_.at(dma_transfer_index_).data = RawDataToInt32(dma_rx_buffer_);
+
         dma_transfer_index_ = 0xff;
     }
 
@@ -136,18 +128,6 @@ public: // Public functions
     }
 
     bool WaitForDataReady(uint32_t timeout_us = std::numeric_limits<uint32_t>::max()) const;
-
-    /**
-     * @brief 等待 DMA 传输完成
-     *
-     */
-    void WaitForDmaCplt() const;
-
-    /**
-     * @brief 等待 DMA 对转换队列中下标为 index 的元素传输完成
-     *
-     */
-    void WaitForDmaCplt(uint8_t index) const;
 
     /**
      * @brief 直接从 ADS 读取数据
@@ -206,21 +186,19 @@ public: // Public functions
         std::vector<float> result(size);
 
         for (size_t i = 0; i < size; i++) {
-            WaitForDmaCplt(i);
-            result.at(i) = Data2Voltage(conv_queue_.at(i).ToInt32());
+            result.at(i) = Data2Voltage(conv_queue_.at(i).data);
         }
-
         return result;
     }
 
     float GetVoltage(uint8_t index) const
     {
-        WaitForDmaCplt(index);
-        return Data2Voltage(conv_queue_.at(index).ToInt32());
+        return Data2Voltage(conv_queue_.at(index).data);
     }
 
     Registers_t ReadAllRegs()
     {
+        assert(GetConvQueueState() == false); // 转换队列启动时不要读寄存器
         Registers_t result{};
         ReadReg(0x00, (uint8_t *)(&result), sizeof(result));
         return result;
@@ -263,6 +241,20 @@ public: // Public functions
         return hspi_;
     }
 
+    constexpr int32_t RawDataToInt32(uint8_t data[3]) const
+    {
+        // 将读取的三段数据拼接
+        int32_t result = (static_cast<uint32_t>(data[0]) << 16) |
+                         (static_cast<uint32_t>(data[1]) << 8) |
+                         static_cast<uint32_t>(data[2]);
+
+        // 处理负数
+        if (result & 0x800000) {
+            result |= 0xFF000000;
+        }
+        return result;
+    }
+
 private:
     SPI_HandleTypeDef *hspi_;
 
@@ -279,14 +271,15 @@ private:
 
     const float v_max_; // 2 * vref
 
+    uint32_t drdy_count_{0};
+
+    ConvQueue_t conv_queue_;
     std::atomic<bool> use_conv_queue_{false};
     std::atomic<size_t> conv_queue_index_{0};
-    uint32_t drdy_count_{0};
-    ConvQueue_t conv_queue_;
-    // DMA 正在传输的 ConvQueue_t 序号, 0xff 表示全部传输完成
-    std::atomic<uint8_t> dma_transfer_index_ = 0xff;
+    std::atomic<uint8_t> dma_transfer_index_{0xff}; // DMA 正在接收的 ConvQueue_t 序号，0xff 表示没有正在进行的 DMA 接收
+    uint8_t dma_rx_buffer_[3];
 
-    std::atomic<bool> is_in_rdatac_mode_{false};
+    std::atomic<bool> is_in_rdatac_mode_{false}; // 是否在连续读取模式
 
     // 初始化时将 ADS 的 GPIO Control Register 设为此值。
     // 当 ADS reset 成功后，这个寄存器会被恢复为默认值，读取此寄存器可以判断是否重置成功
@@ -301,7 +294,7 @@ private:
      * @param Timeout
      */
     void SpiRead(uint8_t *rx_data, uint16_t Size, uint32_t Timeout = HAL_MAX_DELAY);
-    void SpiReadDma(uint8_t *rx_data, uint16_t Size);
+    bool SpiReadDma(uint8_t *rx_data, uint16_t Size);
 
     /**
      * @brief 从 SPI 写入
@@ -346,7 +339,8 @@ private:
      */
     void SetMux(uint8_t mux);
 
-    void ReadDataNoWait(uint8_t *data);
+    void ReadDataToQueueDma(uint8_t queue_index);
+    void ReadDataContinousToQueueDma(uint8_t queue_index);
 
     void SyncWakeup();
 
@@ -354,15 +348,26 @@ private:
      * @brief 进入连续读取模式
      *
      */
-    void EnterRDataCMode();
+    void EnterReadDataContinousMode();
 
     /**
      * @brief 退出连续读取模式
      *
      */
-    void ExitRDataCMode();
+    void ExitReadDataContinousMode();
 
-    void ReadDataCNoWait(uint8_t *data);
+    bool IsDmaCplt() const
+    {
+        if (dma_transfer_index_ == 0xff) {
+            return true;
+        }
+        return false;
+    }
+
+    void WaitForDmaCplt()
+    {
+        while (dma_transfer_index_ != 0xff) {}
+    }
 
     /**
      * @brief 将 ADS 自带的 D0 ~ D3 GPIO 设为 kIO_REG_INIT_VALUE

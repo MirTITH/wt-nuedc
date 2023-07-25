@@ -17,11 +17,11 @@ static constexpr uint32_t kT6 = 50 / kClkin + 1;
 static constexpr uint32_t kT10 = 8 / kClkin + 1;
 
 // Final SCLK falling edge of command to first SCLK rising edge of next command.
-static constexpr uint32_t kT11_1 = 4 / kClkin + 2;  // > 4 tclkin, for RREG, WREG, RDATA
+static constexpr uint32_t kT11_1 = 4 / kClkin + 1;  // > 4 tclkin, for RREG, WREG, RDATA
 static constexpr uint32_t kT11_2 = 24 / kClkin + 1; // > 24 tclkin, for RDATAC, SYNC
 
 // RESET, SYNC/PDWN, pulse width
-static constexpr uint32_t kT16 = 4 / kClkin + 2; // > 4 tclkin
+static constexpr uint32_t kT16 = 4 / kClkin + 1; // > 4 tclkin
 
 static const uint8_t zeros_[3]{};
 
@@ -29,18 +29,19 @@ void Ads1256::DRDY_Callback()
 {
     drdy_count_++;
     if (use_conv_queue_) {
+        if (IsDmaCplt() == false) {
+            dma_busy_count_++;
+            return;
+        }
+
         switch (conv_queue_.size()) {
             case 0:
                 break;
             case 1:
                 if (is_in_rdatac_mode_) {
-                    WaitForDmaCplt();
-                    dma_transfer_index_ = 0;
-                    ReadDataCNoWait(conv_queue_.at(0).raw_data);
+                    ReadDataContinousToQueueDma(0);
                 } else {
-                    WaitForDmaCplt();
-                    dma_transfer_index_ = 0;
-                    ReadDataNoWait(conv_queue_.at(0).raw_data);
+                    ReadDataToQueueDma(0);
                 }
                 break;
 
@@ -54,14 +55,11 @@ void Ads1256::DRDY_Callback()
                 }
                 conv_queue_index_ = next_index;
 
-                WaitForDmaCplt();
-
                 // 开始转换下一个通道
                 SetMux(conv_queue_.at(next_index).mux);
 
                 // 上一个通道转换完成，读取它的值
-                dma_transfer_index_ = now_index;
-                ReadDataNoWait(conv_queue_.at(now_index).raw_data);
+                ReadDataToQueueDma(now_index);
                 break;
         }
     }
@@ -121,6 +119,9 @@ void Ads1256::Init()
 void Ads1256::Reset()
 {
     ExitPowerDownMode();
+    StopConvQueue();
+    WaitForDmaCplt();
+
     if (n_reset_port_ != nullptr) {
         HAL_GPIO_WritePin(n_reset_port_, n_reset_pin_, GPIO_PIN_RESET);
         vTaskDelay(10);
@@ -154,22 +155,14 @@ bool Ads1256::WaitForDataReady(uint32_t timeout_us) const
     return true;
 }
 
-void Ads1256::WaitForDmaCplt() const
-{
-    while (dma_transfer_index_ != 0xff) {};
-}
-
-void Ads1256::WaitForDmaCplt(uint8_t index) const
-{
-    while (dma_transfer_index_ == index) {};
-}
-
-void Ads1256::ReadDataNoWait(uint8_t *data)
+void Ads1256::ReadDataToQueueDma(uint8_t queue_index)
 {
     WriteCmd(ADS1256_CMD_RDATA);
     HPT_DelayUs(kT6);
 
-    SpiReadDma(data, 3);
+    if (SpiReadDma(dma_rx_buffer_, 3) == true) {
+        dma_transfer_index_ = queue_index;
+    }
 }
 
 void Ads1256::SyncWakeup()
@@ -185,14 +178,14 @@ void Ads1256::SyncWakeup()
     }
 }
 
-void Ads1256::EnterRDataCMode()
+void Ads1256::EnterReadDataContinousMode()
 {
     WaitForDataReady();
     WriteCmd(ADS1256_CMD_RDATAC);
     is_in_rdatac_mode_ = true;
 }
 
-void Ads1256::ExitRDataCMode()
+void Ads1256::ExitReadDataContinousMode()
 {
     WaitForDataReady();
     WriteCmd(ADS1256_CMD_SDATAC);
@@ -200,9 +193,11 @@ void Ads1256::ExitRDataCMode()
     is_in_rdatac_mode_ = false;
 }
 
-void Ads1256::ReadDataCNoWait(uint8_t *data)
+void Ads1256::ReadDataContinousToQueueDma(uint8_t queue_index)
 {
-    SpiReadDma(data, 3);
+    if (SpiReadDma(dma_rx_buffer_, 3) == true) {
+        dma_transfer_index_ = queue_index;
+    }
 }
 
 void Ads1256::InitAdsGpio()
@@ -221,17 +216,7 @@ int32_t Ads1256::ReadData()
     uint8_t data[3];
     SpiRead(data, 3);
 
-    // 将读取的三段数据拼接
-    int32_t result = (static_cast<uint32_t>(data[0]) << 16) |
-                     (static_cast<uint32_t>(data[1]) << 8) |
-                     static_cast<uint32_t>(data[2]);
-
-    // 处理负数
-    if (result & 0x800000) {
-        result |= 0xFF000000;
-    }
-
-    return result;
+    return RawDataToInt32(data);
 }
 
 void Ads1256::SpiRead(uint8_t *rx_data, uint16_t Size, uint32_t Timeout)
@@ -239,9 +224,13 @@ void Ads1256::SpiRead(uint8_t *rx_data, uint16_t Size, uint32_t Timeout)
     HAL_SPI_TransmitReceive(hspi_, (uint8_t *)zeros_, rx_data, Size, Timeout);
 }
 
-void Ads1256::SpiReadDma(uint8_t *rx_data, uint16_t Size)
+bool Ads1256::SpiReadDma(uint8_t *rx_data, uint16_t Size)
 {
-    HAL_SPI_TransmitReceive_DMA(hspi_, (uint8_t *)zeros_, rx_data, Size);
+    if (HAL_SPI_TransmitReceive_DMA(hspi_, (uint8_t *)zeros_, rx_data, Size) == HAL_OK) {
+        return true;
+    }
+
+    return false;
 }
 
 void Ads1256::SpiWrite(const uint8_t *tx_data, uint16_t Size, uint32_t Timeout)
@@ -266,8 +255,8 @@ void Ads1256::SetConvQueue(const std::vector<uint8_t> &muxs)
     auto size = muxs.size();
     conv_queue_.resize(size);
     for (size_t i = 0; i < size; i++) {
-        conv_queue_.at(i).mux = muxs.at(i);
-        memset(conv_queue_.at(i).raw_data, 0, 3);
+        conv_queue_.at(i).mux  = muxs.at(i);
+        conv_queue_.at(i).data = 0;
     }
 
     if (in_isr) {
@@ -286,7 +275,7 @@ void Ads1256::StartConvQueue()
     }
 
     if (conv_queue_.size() == 1) {
-        EnterRDataCMode();
+        EnterReadDataContinousMode();
     }
 
     use_conv_queue_ = true;
@@ -295,8 +284,9 @@ void Ads1256::StartConvQueue()
 void Ads1256::StopConvQueue()
 {
     use_conv_queue_ = false;
+    WaitForDmaCplt();
     if (is_in_rdatac_mode_) {
-        ExitRDataCMode();
+        ExitReadDataContinousMode();
     }
 }
 
@@ -381,6 +371,8 @@ uint8_t Ads1256::ReadReg(uint8_t regaddr)
 
 void Ads1256::SetGain(PGA gain)
 {
+    assert(GetConvQueueState() == false); // 转换队列启动时不要读写 ADS
+
     // 实际上 ADCON 的 bit[2-0] 控制增益，其他 bit 控制时钟输出和传感器检测
     // 这里将时钟输出和传感器检测都关闭
     WriteReg(ADS1256_ADCON, (uint8_t)gain);
@@ -389,6 +381,8 @@ void Ads1256::SetGain(PGA gain)
 
 Ads1256::PGA Ads1256::GetGainFromChip()
 {
+    assert(GetConvQueueState() == false); // 转换队列启动时不要读写 ADS
+
     auto reg       = ReadReg(ADS1256_ADCON);
     uint8_t result = reg & 0x7;
     if (result == 0x7) {
@@ -400,6 +394,7 @@ Ads1256::PGA Ads1256::GetGainFromChip()
 
 void Ads1256::SetDataRate(DataRate rate)
 {
+    assert(GetConvQueueState() == false); // 转换队列启动时不要读写 ADS
     WriteReg(ADS1256_DRATE, (uint8_t)rate);
 }
 
@@ -411,6 +406,7 @@ Ads1256::DataRate Ads1256::GetDataRateFromChip()
 
 void Ads1256::SelfCalibrateOffsetGain()
 {
+    assert(GetConvQueueState() == false); // 转换队列启动时不要读写 ADS
     WriteCmd(ADS1256_CMD_SELFCAL);
     HPT_DelayUs(100);
     WaitForDataReady();
@@ -418,6 +414,8 @@ void Ads1256::SelfCalibrateOffsetGain()
 
 bool Ads1256::CheckForReset()
 {
+    assert(GetConvQueueState() == false); // 转换队列启动时不要读写 ADS
+
     auto io_reg = ReadReg(ADS1256_IO);
 
     // IO 寄存器的 bit7 ~ bit4 为输入输出方向，Reset Value = 0xE0
@@ -430,6 +428,8 @@ bool Ads1256::CheckForReset()
 
 bool Ads1256::CheckForPresent()
 {
+    assert(GetConvQueueState() == false); // 转换队列启动时不要读写 ADS
+
     WaitForDataReady(1000 * 1000);
     auto status_reg = ReadReg(ADS1256_STATUS);
 
