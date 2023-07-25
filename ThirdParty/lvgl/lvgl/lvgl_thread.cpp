@@ -58,15 +58,18 @@ static void LvAdsMonitor(void *argument)
 {
     auto ads = static_cast<Ads1256 *>(argument);
 
-    const uint32_t period = 500;
+    const uint32_t period = 250;
 
     LvglLock();
-    lv_obj_t *spinner = lv_spinner_create(lv_scr_act(), 1000, 60);
-    lv_obj_set_size(spinner, 100, 100);
-    lv_obj_center(spinner);
     auto label = lv_label_create(lv_scr_act());
     lv_obj_add_style(label, &Style_NormalFont, 0);
+    lv_label_set_text_fmt(label, "DRDY 频率：");
     lv_obj_align(label, LV_ALIGN_LEFT_MID, 0, 0);
+
+    auto label_figure = lv_label_create(lv_scr_act());
+    lv_obj_add_style(label_figure, &Style_LargeFont, 0);
+    lv_label_set_text_fmt(label_figure, "0");
+    lv_obj_align_to(label_figure, label, LV_ALIGN_OUT_RIGHT_MID, 20, 0);
     LvglUnlock();
 
     auto last_count = ads->drdy_count_;
@@ -76,7 +79,7 @@ static void LvAdsMonitor(void *argument)
         auto now_count = ads->drdy_count_;
 
         LvglLock();
-        lv_label_set_text_fmt(label, "DRDY 频率：%lu Hz", (now_count - last_count) * 1000 / period);
+        lv_label_set_text_fmt(label_figure, "%lu", (now_count - last_count) * 1000 / period);
         LvglUnlock();
 
         last_count = now_count;
@@ -92,11 +95,13 @@ static void LvglThreadEntry(void *argument)
     lv_style_set_text_font(&Style_LargeFont, LvglTTF_GetLargeFont());
     lv_style_set_text_font(&Style_SmallFont, LvglTTF_GetSmallFont());
 
-    LvglThreadStartSem.unlock(); // 线程初始化完毕，解锁信号量
+    lv_obj_t *spinner = lv_spinner_create(lv_scr_act(), 1000, 60);
+    lv_obj_set_size(spinner, 30, 30);
+    lv_obj_set_style_arc_width(spinner, 3, LV_PART_MAIN);
+    lv_obj_set_style_arc_width(spinner, 3, LV_PART_INDICATOR);
+    lv_obj_align(spinner, LV_ALIGN_BOTTOM_RIGHT, -70, 0);
 
-    // LvglLock();
-    // // lv_example_freetype_1();
-    // LvglUnlock();
+    LvglThreadStartSem.unlock(); // 线程初始化完毕，解锁信号量
 
     uint32_t PreviousWakeTime = xTaskGetTickCount();
 
