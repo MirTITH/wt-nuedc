@@ -33,6 +33,7 @@ void HAL_UARTEx_RxEventCallback(UART_HandleTypeDef *huart, uint16_t Size);
 void MY_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim);
 void HAL_ADC_ConvCpltCallback(ADC_HandleTypeDef *hadc);
 void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin);
+void HAL_SPI_TxRxCpltCallback(SPI_HandleTypeDef *hspi);
 
 #ifdef __cplusplus
 }
@@ -110,4 +111,13 @@ void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin)
             break;
     }
     kDrdyIRQDuration = HPT_GetUs() - kDrdyStartUs;
+}
+
+void HAL_SPI_TxRxCpltCallback(SPI_HandleTypeDef *hspi)
+{
+    if (hspi->Instance == VAds.GetSpiHandle()->Instance) {
+        VAds.SPI_TxRxCpltCallback();
+    } else if (hspi->Instance == IAds.GetSpiHandle()->Instance) {
+        IAds.SPI_TxRxCpltCallback();
+    }
 }

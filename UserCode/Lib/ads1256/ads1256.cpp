@@ -4,6 +4,8 @@
 #include "FreeRTOS.h"
 #include "task.h"
 #include "freertos_io/os_printf.h"
+#include <string.h>
+#include "in_handle_mode.h"
 
 static constexpr float kClkin = 7.68; // MHz, 晶振频率
 
@@ -15,11 +17,55 @@ static constexpr uint32_t kT6 = 50 / kClkin + 1;
 static constexpr uint32_t kT10 = 8 / kClkin + 1;
 
 // Final SCLK falling edge of command to first SCLK rising edge of next command.
-static constexpr uint32_t kT11_1 = 4 / kClkin + 1;  // > 4 tclkin, for RREG, WREG, RDATA
+static constexpr uint32_t kT11_1 = 4 / kClkin + 2;  // > 4 tclkin, for RREG, WREG, RDATA
 static constexpr uint32_t kT11_2 = 24 / kClkin + 1; // > 24 tclkin, for RDATAC, SYNC
 
 // RESET, SYNC/PDWN, pulse width
-static constexpr uint32_t kT16 = 4 / kClkin + 1; // > 4 tclkin
+static constexpr uint32_t kT16 = 4 / kClkin + 2; // > 4 tclkin
+
+static const uint8_t zeros_[3]{};
+
+void Ads1256::DRDY_Callback()
+{
+    drdy_count_++;
+    if (use_conv_queue_) {
+        switch (conv_queue_.size()) {
+            case 0:
+                break;
+            case 1:
+                if (is_in_rdatac_mode_) {
+                    WaitForDmaCplt();
+                    dma_transfer_index_ = 0;
+                    ReadDataCNoWait(conv_queue_.at(0).raw_data);
+                } else {
+                    WaitForDmaCplt();
+                    dma_transfer_index_ = 0;
+                    ReadDataNoWait(conv_queue_.at(0).raw_data);
+                }
+                break;
+
+            default:
+                size_t now_index = conv_queue_index_;
+
+                // 下一个通道
+                size_t next_index = now_index + 1;
+                if (next_index >= conv_queue_.size()) {
+                    next_index = 0;
+                }
+                conv_queue_index_ = next_index;
+
+                WaitForDmaCplt();
+
+                // 开始转换下一个通道
+                SetMux(conv_queue_.at(next_index).mux);
+
+                // 上一个通道转换完成，读取它的值
+                dma_transfer_index_ = now_index;
+                ReadDataNoWait(conv_queue_.at(now_index).raw_data);
+                break;
+        }
+    }
+}
 
 void Ads1256::Init()
 {
@@ -77,24 +123,22 @@ void Ads1256::Reset()
     ExitPowerDownMode();
     if (n_reset_port_ != nullptr) {
         HAL_GPIO_WritePin(n_reset_port_, n_reset_pin_, GPIO_PIN_RESET);
-        HPT_DelayMs(1);
+        vTaskDelay(10);
         HAL_GPIO_WritePin(n_reset_port_, n_reset_pin_, GPIO_PIN_SET);
-        HPT_DelayMs(1);
-        WaitForDataReady();
     } else {
-        // 先发送几个 WAKEUP 命令，防止 RESET 命令不能正确送达
+        // 多发送几个 RESET 命令，防止 RESET 命令不能正确送达
+        // 尽管如此，ADS 还是有可能不能成功 RESET，建议使用 RESET 引脚
         // 原因之一：
         // ADS 读写指令需要多个 spi 字节周期，如果上一时刻 ADS 正在进行读写指令，
         // 则此时发送 RESET 可能被 ADS 认为是整个读写过程的一部分，从而不能 RESET
-        // for (size_t i = 0; i < 5; i++) {
-        //     WriteCmd(ADS1256_CMD_WAKEUP);
-        //     HPT_DelayUs(kT6); // 手册里没说等多久，按最长时间等
-        // }
-
-        WriteCmd(ADS1256_CMD_RESET);
-        HPT_DelayMs(1);
-        WaitForDataReady();
+        for (size_t i = 0; i < 5; i++) {
+            WaitForDataReady();
+            WriteCmd(ADS1256_CMD_RESET);
+            HPT_DelayMs(100);
+        }
     }
+
+    vTaskDelay(100);
 }
 
 bool Ads1256::WaitForDataReady(uint32_t timeout_us) const
@@ -110,25 +154,22 @@ bool Ads1256::WaitForDataReady(uint32_t timeout_us) const
     return true;
 }
 
-int32_t Ads1256::ReadDataNoWait()
+void Ads1256::WaitForDmaCplt() const
+{
+    while (dma_transfer_index_ != 0xff) {};
+}
+
+void Ads1256::WaitForDmaCplt(uint8_t index) const
+{
+    while (dma_transfer_index_ == index) {};
+}
+
+void Ads1256::ReadDataNoWait(uint8_t *data)
 {
     WriteCmd(ADS1256_CMD_RDATA);
     HPT_DelayUs(kT6);
 
-    uint8_t data[3];
-    SpiRead(data, 3);
-
-    // 将读取的三段数据拼接
-    int32_t result = (static_cast<uint32_t>(data[0]) << 16) |
-                     (static_cast<uint32_t>(data[1]) << 8) |
-                     static_cast<uint32_t>(data[2]);
-
-    // 处理负数
-    if (result & 0x800000) {
-        result |= 0xFF000000;
-    }
-
-    return result;
+    SpiReadDma(data, 3);
 }
 
 void Ads1256::SyncWakeup()
@@ -148,8 +189,6 @@ void Ads1256::EnterRDataCMode()
 {
     WaitForDataReady();
     WriteCmd(ADS1256_CMD_RDATAC);
-    HPT_DelayUs(kT6);
-    ReadDataCNoWait();
     is_in_rdatac_mode_ = true;
 }
 
@@ -161,8 +200,24 @@ void Ads1256::ExitRDataCMode()
     is_in_rdatac_mode_ = false;
 }
 
-int32_t Ads1256::ReadDataCNoWait()
+void Ads1256::ReadDataCNoWait(uint8_t *data)
 {
+    SpiReadDma(data, 3);
+}
+
+void Ads1256::InitAdsGpio()
+{
+    WriteReg(ADS1256_IO, kIO_REG_INIT_VALUE);
+}
+
+int32_t Ads1256::ReadData()
+{
+    assert(GetConvQueueState() == false); // 如果启动了转换队列，请不要使用这个函数，否则会导致 SPI 读写冲突
+    WaitForDataReady();
+
+    WriteCmd(ADS1256_CMD_RDATA);
+    HPT_DelayUs(kT6);
+
     uint8_t data[3];
     SpiRead(data, 3);
 
@@ -175,60 +230,64 @@ int32_t Ads1256::ReadDataCNoWait()
     if (result & 0x800000) {
         result |= 0xFF000000;
     }
+
     return result;
 }
 
-void Ads1256::InitAdsGpio()
+void Ads1256::SpiRead(uint8_t *rx_data, uint16_t Size, uint32_t Timeout)
 {
-    WriteReg(ADS1256_IO, kIO_REG_INIT_VALUE);
+    HAL_SPI_TransmitReceive(hspi_, (uint8_t *)zeros_, rx_data, Size, Timeout);
 }
 
-
-int32_t Ads1256::ReadData()
+void Ads1256::SpiReadDma(uint8_t *rx_data, uint16_t Size)
 {
-    WaitForDataReady();
-    return ReadDataNoWait();
+    HAL_SPI_TransmitReceive_DMA(hspi_, (uint8_t *)zeros_, rx_data, Size);
 }
 
-void Ads1256::SpiRead(uint8_t *pData, uint16_t Size, uint32_t Timeout)
+void Ads1256::SpiWrite(const uint8_t *tx_data, uint16_t Size, uint32_t Timeout)
 {
-    HAL_SPI_Receive(hspi_, pData, Size, Timeout);
-}
-
-void Ads1256::SpiWrite(const uint8_t *pData, uint16_t Size, uint32_t Timeout)
-{
-    HAL_SPI_Transmit(hspi_, (uint8_t *)pData, Size, Timeout);
+    HAL_SPI_TransmitReceive(hspi_, (uint8_t *)tx_data, (uint8_t *)zeros_, Size, Timeout);
 }
 
 void Ads1256::SetConvQueue(const std::vector<uint8_t> &muxs)
 {
-    auto prev_use_conv_queue = GetConvQueueState();
-    StopConvQueue();
+    assert(GetConvQueueState() == false); // 请先关闭转换队列
+
+    auto in_isr = InHandlerMode();
+    UBaseType_t uxSavedInterruptStatus;
+    if (in_isr) {
+        uxSavedInterruptStatus = taskENTER_CRITICAL_FROM_ISR();
+    } else {
+        taskENTER_CRITICAL();
+    }
 
     conv_queue_index_ = 0;
 
     auto size = muxs.size();
     conv_queue_.resize(size);
     for (size_t i = 0; i < size; i++) {
-        conv_queue_.at(i).mux   = muxs.at(i);
-        conv_queue_.at(i).value = 0;
+        conv_queue_.at(i).mux = muxs.at(i);
+        memset(conv_queue_.at(i).raw_data, 0, 3);
     }
 
-    if (prev_use_conv_queue) {
-        StartConvQueue();
+    if (in_isr) {
+        taskEXIT_CRITICAL_FROM_ISR(uxSavedInterruptStatus);
+    } else {
+        taskEXIT_CRITICAL();
     }
 }
 
 void Ads1256::StartConvQueue()
 {
+    assert(use_conv_queue_ == false); // 开启后不要再次开启
+
     if (conv_queue_.size() != 0) {
         SetMux(conv_queue_.at(0).mux);
     }
 
-    // ReadDataC 有问题，不启用
-    // if (conv_queue_.size() == 1) {
-    //     EnterRDataCMode();
-    // }
+    if (conv_queue_.size() == 1) {
+        EnterRDataCMode();
+    }
 
     use_conv_queue_ = true;
 }
@@ -371,6 +430,7 @@ bool Ads1256::CheckForReset()
 
 bool Ads1256::CheckForPresent()
 {
+    WaitForDataReady(1000 * 1000);
     auto status_reg = ReadReg(ADS1256_STATUS);
 
     // ADS1256 的 STATUS REGISTER 的 bit7~bit4 为 Factory Programmed Identification Bits.

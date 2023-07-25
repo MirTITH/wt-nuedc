@@ -11,12 +11,12 @@ void AdsPrintEntry(void *)
 {
     extern volatile uint32_t kDrdyIRQDuration;
     while (true) {
-        for (auto &var : VAds.conv_queue_) {
-            os_printf("%9f, ", VAds.Data2Voltage(var.value));
+        for (auto &voltage : VAds.GetVoltage()) {
+            os_printf("%9f, ", voltage);
         }
 
-        os_printf("0,5,-5,%lu,%d\n", kDrdyIRQDuration, HAL_GPIO_ReadPin(VSync_GPIO_Port, VSync_Pin));
-        vTaskDelay(100);
+        os_printf("0,5,-5,%lu\n", kDrdyIRQDuration);
+        vTaskDelay(10);
     }
 }
 
@@ -58,14 +58,17 @@ void Ads1256Test()
         vTaskDelay(2000);
     }
 
+    os_printf(">>> 等待电源稳定\n");
     vTaskDelay(1000);
     // 检测 ADS 有没有连接或上电
+    os_printf(">>> 检测 VAds 是否成功连接\n");
     while (VAds.CheckForPresent() != true) {
         os_printf("==== Error. CheckForPresent failed. Retrying %s ====\n", __func__);
         VAds.Reset();
-        vTaskDelay(1000);
+        vTaskDelay(500);
     }
 
+    os_printf(">>> 初始化 ADS\n");
     VAds.Init();
 
     // vTaskDelay(2000);
@@ -76,26 +79,37 @@ void Ads1256Test()
     // os_printf("MUX: %x\n", ads_reg.MUX);
     // os_printf("STATUS: %x\n", ads_reg.STATUS);
 
-    // vTaskDelay(2000);
-    VAds.SetConvQueue({0x08, 0x18, 0x28, 0x38});
-    vTaskDelay(2000);
+    // vTaskDelay(2000)
 
     xTaskCreate(AdsPrintEntry, "ads_print", 512, nullptr, PriorityNormal, nullptr);
 
-    os_printf(">>>> StartConvQueue\n");
+    VAds.SetConvQueue({0x01});
     VAds.StartConvQueue();
-    vTaskDelay(2000);
 
-    os_printf(">>>> StopConvQueue\n");
-    VAds.StopConvQueue();
-    vTaskDelay(2000);
+    while (true) {
+        // os_printf(">>>> 转换队列设为只有一个元素，会自动使用连续读取\n");
+        VAds.StopConvQueue();
+        VAds.SetConvQueue({0x01});
+        VAds.StartConvQueue();
+        vTaskDelay(5000);
 
-    os_printf(">>>> SetGain\n");
-    VAds.SetGain(Ads1256::PGA::Gain2);
-    vTaskDelay(2000);
+        // os_printf(">>>> 转换队列设为有 4 个元素，会切换通道读取\n");
+        VAds.StopConvQueue();
+        VAds.SetConvQueue({0x0f, 0x1f, 0x2f, 0x3f});
+        VAds.StartConvQueue();
+        vTaskDelay(5000);
+    }
 
-    os_printf(">>>> StartConvQueue\n");
-    VAds.StartConvQueue();
+    // os_printf(">>>> StopConvQueue\n");
+    // VAds.StopConvQueue();
+    // vTaskDelay(5000);
+
+    // // os_printf(">>>> SetGain\n");
+    // // VAds.SetGain(Ads1256::PGA::Gain2);
+    // // vTaskDelay(2000);
+
+    // os_printf(">>>> StartConvQueue\n");
+    // VAds.StartConvQueue();
 
     os_printf("==== End %s ====\n", __func__);
 }

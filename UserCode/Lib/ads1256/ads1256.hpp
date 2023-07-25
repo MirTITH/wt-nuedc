@@ -2,18 +2,32 @@
  * @file ads1256.cpp
  * @author X. Y.
  * @brief ADS1256 的驱动程序
- * @version 0.4
- * @date 2023-07-24
+ * @version 0.5
+ * @date 2023-07-25
  *
  * @copyright Copyright (c) 2023
  *
  * 本驱动在 ADS1256 时钟频率为 7.68 MHz 下测试
  *
- * SPI 频率范围： 3K ~ 1.92M
+ * SPI 配置：
+ *      Frame Format: Motorola
+ *      Data Size: 8 Bits
+ *      First Bit: MSB
+ *
+ *      Baud Rate： 3K ~ 1.92M（实测超一点也没关系，甚至能够缩短 mcu 中断执行时间）
+ *      CPOL: Low
+ *      CPHA: 2 Edge
+ *
+ *      CRC: Disabled
+ *
+ * SPI DMA:
+ * 使能 SPI 的 DMA_TX DMA_RX
  *
  * ADS 的 IO 口必须浮空或者上下拉，不能直接与 VCC 或 GND 相连
  * 因为程序里给 IO 口配置为输出，并且通过读取 IO 口状态判断是否 reset 成功
  *
+ * 保证 DRDY 的中断优先级低于 SPI DMA 的中断优先级
+ * 
  */
 
 #pragma once
@@ -29,6 +43,7 @@
 class Ads1256
 {
 public: // Type defines
+    // 可编程增益器
     enum class PGA {
         Gain1 = 0,
         Gain2,
@@ -39,6 +54,7 @@ public: // Type defines
         Gain64
     };
 
+    // 转换速率 (SPS)
     enum class DataRate {
         SPS_2p5   = 0x03, // 2.5 SPS
         SPS_5     = 0x13,
@@ -68,14 +84,24 @@ public: // Type defines
 
     typedef struct
     {
-        atom_wrapper<uint8_t> mux; // 输入通道选择。例如：0x23 表示正输入为 AIN2, 负输入 AIN3，以此类推。AINCOM 用 8 表示
-        atom_wrapper<int32_t> value;
+        uint8_t mux;         // 输入通道选择。例如：0x23 表示正输入为 AIN2, 负输入 AIN3，以此类推。AINCOM 用 8 表示
+        uint8_t raw_data[3]; // 原始的 24 bit 数据
+
+        int32_t ToInt32() const
+        {
+            int32_t result = (static_cast<uint32_t>(raw_data[0]) << 16) |
+                             (static_cast<uint32_t>(raw_data[1]) << 8) |
+                             static_cast<uint32_t>(raw_data[2]);
+
+            // 处理负数
+            if (result & 0x800000) {
+                result |= 0xFF000000;
+            }
+            return result;
+        }
     } ConvInfo_t;
 
     using ConvQueue_t = std::vector<ConvInfo_t>;
-
-public: // Public vars
-    ConvQueue_t conv_queue_;
 
 public: // Public functions
     Ads1256(SPI_HandleTypeDef *hspi,
@@ -93,39 +119,11 @@ public: // Public functions
      * @brief 请在 DRDY 中断中调用此函数
      *
      */
-    void DRDY_Callback()
+    void DRDY_Callback();
+
+    void SPI_TxRxCpltCallback()
     {
-        drdy_count_++;
-        if (use_conv_queue_) {
-            switch (conv_queue_.size()) {
-                case 0:
-                    break;
-                case 1:
-                    if (is_in_rdatac_mode_) {
-                        conv_queue_.at(0).value = ReadDataCNoWait();
-                    } else {
-                        conv_queue_.at(0).value = ReadDataNoWait();
-                    }
-
-                    break;
-
-                default:
-                    auto now_index = conv_queue_index_.load();
-
-                    // 下一个通道
-                    conv_queue_index_++;
-                    if (conv_queue_index_ >= conv_queue_.size()) {
-                        conv_queue_index_ = 0;
-                    }
-
-                    // 开始转换下一个通道
-                    SetMux(conv_queue_.at(conv_queue_index_).mux);
-
-                    // 上一个通道转换完成，读取它的值
-                    conv_queue_.at(now_index).value = ReadDataNoWait();
-                    break;
-            }
-        }
+        dma_transfer_index_ = 0xff;
     }
 
     void Init();
@@ -139,10 +137,28 @@ public: // Public functions
 
     bool WaitForDataReady(uint32_t timeout_us = std::numeric_limits<uint32_t>::max()) const;
 
+    /**
+     * @brief 等待 DMA 传输完成
+     *
+     */
+    void WaitForDmaCplt() const;
+
+    /**
+     * @brief 等待 DMA 对转换队列中下标为 index 的元素传输完成
+     *
+     */
+    void WaitForDmaCplt(uint8_t index) const;
+
+    /**
+     * @brief 直接从 ADS 读取数据
+     * @note 如果启动了转换队列，请不要使用这个函数，否则会导致 SPI 读写冲突
+     *
+     * @return 转换成 int32_t 后的数据
+     */
     int32_t ReadData();
 
     /**
-     * @brief 将 原始数据转换为电压 (V)
+     * @brief 将 int32_t 数据转换为电压 (V)
      *
      */
     float Data2Voltage(int32_t data) const
@@ -157,7 +173,7 @@ public: // Public functions
     /**
      * @brief 设置转换队列
      * @param muxs 输入通道选择。例如：0x23 表示正输入为 AIN2, 负输入 AIN3，以此类推。AINCOM 用 8 表示
-     * @note 之后记得启动转换队列
+     * @note 设置前转换队列必须是停止状态，之后记得启动转换队列
      */
     void SetConvQueue(const std::vector<uint8_t> &muxs);
 
@@ -182,6 +198,25 @@ public: // Public functions
     bool GetConvQueueState() const
     {
         return use_conv_queue_;
+    }
+
+    std::vector<float> GetVoltage() const
+    {
+        auto size = conv_queue_.size();
+        std::vector<float> result(size);
+
+        for (size_t i = 0; i < size; i++) {
+            WaitForDmaCplt(i);
+            result.at(i) = Data2Voltage(conv_queue_.at(i).ToInt32());
+        }
+
+        return result;
+    }
+
+    float GetVoltage(uint8_t index) const
+    {
+        WaitForDmaCplt(index);
+        return Data2Voltage(conv_queue_.at(index).ToInt32());
     }
 
     Registers_t ReadAllRegs()
@@ -223,6 +258,11 @@ public: // Public functions
     void EnterPowerDownMode();
     void ExitPowerDownMode();
 
+    SPI_HandleTypeDef *GetSpiHandle() const
+    {
+        return hspi_;
+    }
+
 private:
     SPI_HandleTypeDef *hspi_;
 
@@ -242,6 +282,9 @@ private:
     std::atomic<bool> use_conv_queue_{false};
     std::atomic<size_t> conv_queue_index_{0};
     uint32_t drdy_count_{0};
+    ConvQueue_t conv_queue_;
+    // DMA 正在传输的 ConvQueue_t 序号, 0xff 表示全部传输完成
+    std::atomic<uint8_t> dma_transfer_index_ = 0xff;
 
     std::atomic<bool> is_in_rdatac_mode_{false};
 
@@ -253,20 +296,21 @@ private:
     /**
      * @brief 从 SPI 读取
      *
-     * @param pData
+     * @param rx_data
      * @param Size
      * @param Timeout
      */
-    void SpiRead(uint8_t *pData, uint16_t Size, uint32_t Timeout = HAL_MAX_DELAY);
+    void SpiRead(uint8_t *rx_data, uint16_t Size, uint32_t Timeout = HAL_MAX_DELAY);
+    void SpiReadDma(uint8_t *rx_data, uint16_t Size);
 
     /**
      * @brief 从 SPI 写入
      *
-     * @param pData
+     * @param tx_data
      * @param Size
      * @param Timeout
      */
-    void SpiWrite(const uint8_t *pData, uint16_t Size, uint32_t Timeout = HAL_MAX_DELAY);
+    void SpiWrite(const uint8_t *tx_data, uint16_t Size, uint32_t Timeout = HAL_MAX_DELAY);
 
     /**
      * @brief 写入寄存器
@@ -302,7 +346,7 @@ private:
      */
     void SetMux(uint8_t mux);
 
-    int32_t ReadDataNoWait();
+    void ReadDataNoWait(uint8_t *data);
 
     void SyncWakeup();
 
@@ -318,7 +362,7 @@ private:
      */
     void ExitRDataCMode();
 
-    int32_t ReadDataCNoWait();
+    void ReadDataCNoWait(uint8_t *data);
 
     /**
      * @brief 将 ADS 自带的 D0 ~ D3 GPIO 设为 kIO_REG_INIT_VALUE
