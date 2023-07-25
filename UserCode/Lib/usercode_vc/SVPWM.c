@@ -20,9 +20,9 @@ void Svpwm_Calculate(Svpwm_t *Svpwm,float Ud,float Ua_ref,float Ub_ref,float Uc_
     // svpwm_ref.abc_value.c = Uc_ref/sqrt(2/3) ;
     // CT_get_AlphaBeta(&svpwm_ref,svpwm_ref.abc_value.a,svpwm_ref.abc_value.b,svpwm_ref.abc_value.c);
     svpwm_ref.AlphaBeta_value.alpha
-    =  ((1)*Ua_ref - (1/2)*Ub_ref - (1/2)*Uc_ref)/(Ud);
+    =  (Ua_ref - (0.5f)*Ub_ref - (0.5f)*Uc_ref)/(Ud);
     svpwm_ref.AlphaBeta_value.beta
-    =  ((0)*Ua_ref + (sqrt(3)/2)*Ub_ref - (sqrt(3)/2)*Uc_ref)/(Ud);
+    =  ((sqrtf(0.75f))*Ub_ref - (sqrtf(0.75f))*Uc_ref)/(Ud);
 
     //判断矢量扇区
     uint8_t region;
@@ -165,7 +165,7 @@ void Svpwm_Calculate(Svpwm_t *Svpwm,float Ud,float Ua_ref,float Ub_ref,float Uc_
         Svpwm->ccRB = TIM_ARR*(t1);
         Svpwm->ccRC = TIM_ARR*(t1+t2);
     }
-    // os_printf("%f,%f\n",svpwm_ref.AlphaBeta_value.alpha,svpwm_ref.AlphaBeta_value.beta);
+    // os_printf("%f,%f,%f\n",svpwm_ref.AlphaBeta_value.alpha,svpwm_ref.AlphaBeta_value.beta,theta);
     os_printf("%f,%f,%f\n",Svpwm->ccRA,Svpwm->ccRB,Svpwm->ccRC);
 }
 

@@ -37,6 +37,8 @@ void User_VC_init()
     hVC.iq_pid.outputMin = 0;
 
     Gain_u = 10;
+    Udc = 30;
+    f_ref = 5;
 }
 
 //增量式PID算法

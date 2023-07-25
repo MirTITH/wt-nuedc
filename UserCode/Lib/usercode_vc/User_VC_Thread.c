@@ -42,7 +42,7 @@ void Task_Vc_Loop_Spwm() // in freertos 1ms
             __HAL_TIM_SET_COMPARE(&htim8, TIM_CHANNEL_1, Duty_abc.ccRA);
             __HAL_TIM_SET_COMPARE(&htim8, TIM_CHANNEL_2, Duty_abc.ccRB);
             __HAL_TIM_SET_COMPARE(&htim8, TIM_CHANNEL_3, Duty_abc.ccRC);
-            os_printf("%f,%f,%f\n",Duty_abc.ccRA,Duty_abc.ccRB,Duty_abc.ccRC);
+            // os_printf("%f,%f,%f\n",Duty_abc.ccRA,Duty_abc.ccRB,Duty_abc.ccRC);
         }
     }
 }
