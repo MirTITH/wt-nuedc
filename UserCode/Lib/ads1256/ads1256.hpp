@@ -43,7 +43,7 @@
 
 class Ads1256
 {
-public: // Type defines
+    // Type defines
     // 可编程增益器
     enum class PGA {
         Gain1 = 0,
@@ -85,13 +85,15 @@ public: // Type defines
 
     typedef struct
     {
-        uint8_t mux;                // 输入通道选择。例如：0x23 表示正输入为 AIN2, 负输入 AIN3，以此类推。AINCOM 用 8 表示
+        uint8_t mux;                // 输入通道选择。例如：0x23 表示正输入为 AIN2, 负输入 AIN3，以此类推。AINCOM 用 f 表示
         atom_wrapper<int32_t> data; // 转换为 int32_t 后的数据
     } ConvInfo_t;
 
     using ConvQueue_t = std::vector<ConvInfo_t>;
 
+public: // 统计变量
     uint32_t dma_busy_count_{0};
+    uint32_t drdy_count_{0};
 
 public: // Public functions
     Ads1256(SPI_HandleTypeDef *hspi,
@@ -99,11 +101,10 @@ public: // Public functions
             GPIO_TypeDef *n_reset_port = nullptr, uint16_t n_reset_pin = 0,
             GPIO_TypeDef *n_sync_port = nullptr, uint16_t n_sync_pin = 0,
             float vref = 2.5)
-        : hspi_(hspi),
+        : v_max_(2 * vref), hspi_(hspi),
           n_drdy_port_(n_drdy_port), n_drdy_pin_(n_drdy_pin),
           n_reset_port_(n_reset_port), n_reset_pin_(n_reset_pin),
-          n_sync_port_(n_sync_port), n_sync_pin_(n_sync_pin),
-          v_max_(2 * vref){};
+          n_sync_port_(n_sync_port), n_sync_pin_(n_sync_pin){};
 
     /**
      * @brief 请在 DRDY 中断中调用此函数
@@ -144,15 +145,15 @@ public: // Public functions
     float Data2Voltage(int32_t data) const
     {
         if (data > 0) {
-            return (v_max_ / (Pow2(static_cast<int>(pga_.load())) * 0x7FFFFF)) * data;
+            return (v_max_ / (Pow2(static_cast<int>(pga_)) * 0x7FFFFF)) * data;
         } else {
-            return (v_max_ / (Pow2(static_cast<int>(pga_.load())) * 0x800000)) * data;
+            return (v_max_ / (Pow2(static_cast<int>(pga_)) * 0x800000)) * data;
         }
     }
 
     /**
      * @brief 设置转换队列
-     * @param muxs 输入通道选择。例如：0x23 表示正输入为 AIN2, 负输入 AIN3，以此类推。AINCOM 用 8 表示
+     * @param muxs 输入通道选择。例如：0x23 表示正输入为 AIN2, 负输入 AIN3，以此类推。AINCOM 用 f 表示
      * @note 设置前转换队列必须是停止状态，之后记得启动转换队列
      */
     void SetConvQueue(const std::vector<uint8_t> &muxs);
@@ -211,13 +212,18 @@ public: // Public functions
     }
     PGA GetGainFromChip();
 
+    void SetInputBufferAndAutoCalibration(bool input_buffer, bool auto_calibration);
+    bool GetInputBufferStatus() const
+    {
+        return enable_input_buffer_;
+    }
+    bool GetAutoCalibrationStatus() const
+    {
+        return enable_auto_calibration_;
+    }
+
     void SetDataRate(DataRate rate);
     DataRate GetDataRateFromChip();
-
-    uint32_t GetDrdyCount() const
-    {
-        return drdy_count_;
-    }
 
     void SelfCalibrateOffsetGain();
 
@@ -232,6 +238,12 @@ public: // Public functions
      *
      */
     bool CheckForPresent();
+
+    /**
+     * @brief 检查是否配置成功
+     *
+     */
+    bool CheckForConfig();
 
     void EnterPowerDownMode();
     void ExitPowerDownMode();
@@ -255,37 +267,45 @@ public: // Public functions
         return result;
     }
 
-private:
-    SPI_HandleTypeDef *hspi_;
-
-    GPIO_TypeDef *n_drdy_port_;
-    uint16_t n_drdy_pin_;
-
-    GPIO_TypeDef *n_reset_port_;
-    uint16_t n_reset_pin_;
-
-    GPIO_TypeDef *n_sync_port_;
-    uint16_t n_sync_pin_;
-
-    std::atomic<PGA> pga_;
+private: // ADS 配置
+    PGA pga_;
+    DataRate data_rate_;
+    bool enable_auto_calibration_;
+    bool enable_input_buffer_;
 
     const float v_max_; // 2 * vref
-
-    uint32_t drdy_count_{0};
-
-    ConvQueue_t conv_queue_;
-    std::atomic<bool> use_conv_queue_{false};
-    std::atomic<size_t> conv_queue_index_{0};
-    std::atomic<uint8_t> dma_transfer_index_{0xff}; // DMA 正在接收的 ConvQueue_t 序号，0xff 表示没有正在进行的 DMA 接收
-    uint8_t dma_rx_buffer_[3];
-
-    std::atomic<bool> is_in_rdatac_mode_{false}; // 是否在连续读取模式
 
     // 初始化时将 ADS 的 GPIO Control Register 设为此值。
     // 当 ADS reset 成功后，这个寄存器会被恢复为默认值，读取此寄存器可以判断是否重置成功
     // 这也意味着 D0~D3 必须浮空或者上下拉，不能强接地
     constexpr static uint8_t kIO_REG_INIT_VALUE = 0x0A;
 
+    // STATUS REGISTER 的 ID3, ID2, ID1, ID0 (Factory Programmed Identification Bits)
+    // datasheet 中未给出，实测为 0x3
+    constexpr static uint8_t kADS1256_ID = 0x3;
+
+private: // 引脚配置
+    SPI_HandleTypeDef *const hspi_;
+
+    GPIO_TypeDef *const n_drdy_port_;
+    const uint16_t n_drdy_pin_;
+
+    GPIO_TypeDef *const n_reset_port_;
+    const uint16_t n_reset_pin_;
+
+    GPIO_TypeDef *const n_sync_port_;
+    const uint16_t n_sync_pin_;
+
+private: // 转换队列实现
+    ConvQueue_t conv_queue_;
+    std::atomic<bool> use_conv_queue_{false};
+    std::atomic<size_t> conv_queue_index_{0};
+    std::atomic<uint8_t> dma_transfer_index_{0xff}; // DMA 正在接收的 ConvQueue_t 序号，0xff 表示没有正在进行的 DMA 接收
+    uint8_t dma_rx_buffer_[3];
+
+    std::atomic<bool> is_in_rdatac_mode_{false}; // 是否处于连续读取模式
+
+private: // 私有函数
     /**
      * @brief 从 SPI 读取
      *
@@ -335,7 +355,7 @@ private:
     /**
      * @brief 设置多路选择器
      *
-     * @param mux 输入通道选择。例如：0x23 表示正输入为 AIN2, 负输入 AIN3，以此类推。AINCOM 用 8 表示
+     * @param mux 输入通道选择。例如：0x23 表示正输入为 AIN2, 负输入 AIN3，以此类推。AINCOM 用 f 表示
      */
     void SetMux(uint8_t mux);
 

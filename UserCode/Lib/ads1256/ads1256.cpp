@@ -95,8 +95,9 @@ void Ads1256::Init()
      * 自动校准: 开启 (default: OFF)
      * BUFEN: default: Disable
      */
-    WriteReg(ADS1256_STATUS, 0x04); // Buffer disable
+    // WriteReg(ADS1256_STATUS, 0x04); // Buffer disable
     // WriteReg(ADS1256_STATUS, 0x06); // Buffer enable
+    SetInputBufferAndAutoCalibration(false, true);
 
     /**
      * @brief A/D Data Rate
@@ -135,7 +136,7 @@ void Ads1256::Reset()
         for (size_t i = 0; i < 5; i++) {
             WaitForDataReady();
             WriteCmd(ADS1256_CMD_RESET);
-            HPT_DelayMs(100);
+            vTaskDelay(100);
         }
     }
 
@@ -392,10 +393,19 @@ Ads1256::PGA Ads1256::GetGainFromChip()
     return static_cast<PGA>(result);
 }
 
+void Ads1256::SetInputBufferAndAutoCalibration(bool input_buffer, bool auto_calibration)
+{
+    uint8_t value = (input_buffer << 1) | (auto_calibration << 2);
+    WriteReg(ADS1256_STATUS, value);
+    enable_input_buffer_     = input_buffer;
+    enable_auto_calibration_ = auto_calibration;
+}
+
 void Ads1256::SetDataRate(DataRate rate)
 {
     assert(GetConvQueueState() == false); // 转换队列启动时不要读写 ADS
     WriteReg(ADS1256_DRATE, (uint8_t)rate);
+    data_rate_ = rate;
 }
 
 Ads1256::DataRate Ads1256::GetDataRateFromChip()
@@ -433,9 +443,33 @@ bool Ads1256::CheckForPresent()
     WaitForDataReady(1000 * 1000);
     auto status_reg = ReadReg(ADS1256_STATUS);
 
-    // ADS1256 的 STATUS REGISTER 的 bit7~bit4 为 Factory Programmed Identification Bits.
-    // datasheet 中未给出，实测该值为 0x3
-    if ((status_reg & 0xF0) != 0x30) {
+    if ((status_reg & 0xF0) != (kADS1256_ID << 4)) {
+        return false;
+    }
+
+    return true;
+}
+
+bool Ads1256::CheckForConfig()
+{
+    auto regs = ReadAllRegs();
+
+    if ((regs.IO) != kIO_REG_INIT_VALUE) {
+        return false;
+    }
+
+    if (regs.DRATE != (uint8_t)data_rate_) {
+        return false;
+    }
+
+    if ((regs.ADCON & 0x7) != (uint8_t)pga_) {
+        return false;
+    }
+
+    uint8_t exp_value = (kADS1256_ID << 4) |
+                        (enable_input_buffer_ << 1) |
+                        (enable_auto_calibration_ << 2);
+    if ((regs.STATUS & 0xFE) != exp_value) {
         return false;
     }
 

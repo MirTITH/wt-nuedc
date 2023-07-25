@@ -16,7 +16,7 @@ void AdsPrintEntry(void *)
         }
 
         os_printf("0,5,%lu,%lu\n", kDrdyIRQDuration, VAds.dma_busy_count_);
-        vTaskDelay(100);
+        vTaskDelay(10);
     }
 }
 
@@ -24,6 +24,7 @@ void Ads1256Test()
 {
     os_printf("==== Start %s ====\n", __func__);
 
+    // 循环初始化测试
     while (false) {
         os_printf("===== Init =====\n");
         VAds.Init();
@@ -63,7 +64,7 @@ void Ads1256Test()
     // 检测 ADS 有没有连接或上电
     os_printf(">>> 检测 VAds 是否成功连接\n");
     while (VAds.CheckForPresent() != true) {
-        os_printf("==== Error. CheckForPresent failed. Retrying %s ====\n", __func__);
+        os_printf("==== Error. CheckForPresent failed. Retrying\n");
         VAds.Reset();
         vTaskDelay(500);
     }
@@ -71,34 +72,41 @@ void Ads1256Test()
     os_printf(">>> 初始化 ADS\n");
     VAds.Init();
 
-    // vTaskDelay(2000);
-    // auto ads_reg = VAds.ReadAllRegs();
-    // os_printf("ADCON: %x\n", ads_reg.ADCON);
-    // os_printf("DRATE: %x\n", ads_reg.DRATE);
-    // os_printf("IO: %x\n", ads_reg.IO);
-    // os_printf("MUX: %x\n", ads_reg.MUX);
-    // os_printf("STATUS: %x\n", ads_reg.STATUS);
+    if (VAds.CheckForConfig() == true) {
+        os_printf(">>> 初始化 ADS 验证成功\n");
+    } else {
+        os_printf(">>> 初始化 ADS 验证失败\n");
+        auto ads_reg = VAds.ReadAllRegs();
+        os_printf("ADCON: %x\n", ads_reg.ADCON);
+        os_printf("DRATE: %x\n", ads_reg.DRATE);
+        os_printf("IO: %x\n", ads_reg.IO);
+        os_printf("MUX: %x\n", ads_reg.MUX);
+        os_printf("STATUS: %x\n", ads_reg.STATUS);
+    }
 
-    // vTaskDelay(2000)
+    TaskHandle_t ads_print_task_handle;
 
-    xTaskCreate(AdsPrintEntry, "ads_print", 512, nullptr, PriorityNormal, nullptr);
+    xTaskCreate(AdsPrintEntry, "ads_print", 512, nullptr, PriorityNormal, &ads_print_task_handle);
 
     VAds.SetConvQueue({0x01});
     VAds.StartConvQueue();
 
-    while (true) {
-        // os_printf(">>>> 转换队列设为只有一个元素，会自动使用连续读取\n");
-        VAds.StopConvQueue();
-        VAds.SetConvQueue({0x01});
-        VAds.StartConvQueue();
-        vTaskDelay(5000);
+    // os_printf(">>>> 转换队列设为只有一个元素，会自动使用连续读取\n");
+    VAds.StopConvQueue();
+    VAds.SetConvQueue({0x01});
+    VAds.StartConvQueue();
+    vTaskDelay(5000);
 
-        // os_printf(">>>> 转换队列设为有 4 个元素，会切换通道读取\n");
-        VAds.StopConvQueue();
-        VAds.SetConvQueue({0x0f, 0x1f, 0x2f, 0x3f});
-        VAds.StartConvQueue();
-        vTaskDelay(5000);
-    }
+    // os_printf(">>>> 转换队列设为有多个元素，会切换通道读取\n");
+    VAds.StopConvQueue();
+    VAds.SetConvQueue({0x0f, 0x1f, 0x2f, 0x3f});
+    VAds.StartConvQueue();
+    vTaskDelay(5000);
+
+    VAds.StopConvQueue();
+    VAds.SetConvQueue({0x0f, 0x1f, 0x2f, 0x3f, 0x4f, 0x5f, 0x6f, 0x7f});
+    VAds.StartConvQueue();
+    vTaskDelay(5000);
 
     // os_printf(">>>> StopConvQueue\n");
     // VAds.StopConvQueue();
@@ -110,6 +118,12 @@ void Ads1256Test()
 
     // os_printf(">>>> StartConvQueue\n");
     // VAds.StartConvQueue();
+
+    while (true) {
+        vTaskDelay(1000);
+    }
+
+    vTaskDelete(ads_print_task_handle);
 
     os_printf("==== End %s ====\n", __func__);
 }
