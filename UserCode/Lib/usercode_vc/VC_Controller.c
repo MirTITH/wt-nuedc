@@ -38,7 +38,7 @@ void User_VC_init()
 
     Gain_u = 10;
     Udc = 30;
-    f_ref = 5;
+    f_ref = 50;
 }
 
 //增量式PID算法
