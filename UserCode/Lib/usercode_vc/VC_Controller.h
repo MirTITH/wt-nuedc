@@ -47,6 +47,8 @@ void CurrentServo(VC_t* hVC_in,float ud_ref,float uq_ref,float theta_pll);
 
 void PID_Calc(PID_t *pid);
 
+void User_VC_init();
+
 #ifdef __cplusplus
 }
 #endif
