@@ -1,5 +1,6 @@
 #pragma once
 
+#include "FreeRTOS.h"
 #include "semphr.h"
 #include "in_handle_mode.h"
 
@@ -51,17 +52,14 @@ public:
 
     bool lock_from_isr()
     {
-        bool result;
         BaseType_t xHigherPriorityTaskWoken = pdFALSE;
 
-        if (xSemaphoreTakeFromISR(sem_, &xHigherPriorityTaskWoken) == pdTRUE) {
-            result = true;
-        } else {
-            result = false;
+        if (xSemaphoreTakeFromISR(sem_, &xHigherPriorityTaskWoken) == pdFALSE) {
+            return false;
         }
 
         portYIELD_FROM_ISR(xHigherPriorityTaskWoken);
-        return result;
+        return true;
     }
 
     bool unlock_from_thread()
@@ -75,17 +73,14 @@ public:
 
     bool unlock_from_isr()
     {
-        bool result;
         BaseType_t xHigherPriorityTaskWoken = pdFALSE;
 
-        if (xSemaphoreGiveFromISR(sem_, &xHigherPriorityTaskWoken) == pdTRUE) {
-            result = true;
-        } else {
-            result = false;
+        if (xSemaphoreGiveFromISR(sem_, &xHigherPriorityTaskWoken) == pdFALSE) {
+            return false;
         }
 
         portYIELD_FROM_ISR(xHigherPriorityTaskWoken);
-        return result;
+        return true;
     }
 };
 } // namespace freertos_lock_internal

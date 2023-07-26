@@ -92,10 +92,10 @@ void HighPrecisionTimeTest()
     using namespace hpt_test;
     os_printf("==== Start %s ====\n", __func__);
 
-    os_printf("Start HPT_TestGetTotalSysTick...\n");
-    HPT_TestGetTotalSysTick(5000);
     os_printf("Start HPT_TestGetUs...\n");
-    HPT_TestGetUs(5000);
+    HPT_TestGetUs(10000);
+    os_printf("Start HPT_TestGetTotalSysTick...\n");
+    HPT_TestGetTotalSysTick(10000);
 
     vTaskDelay(1);
     PrecisionTest1(1);
@@ -129,4 +129,3 @@ void HighPrecisionTimeTest()
 
     os_printf("==== End %s ====\n", __func__);
 }
-

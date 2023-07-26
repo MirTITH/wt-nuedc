@@ -61,8 +61,10 @@ void Error_Handler(void);
 #define ISync_GPIO_Port GPIOB
 #define IDrdy_Pin GPIO_PIN_11
 #define IDrdy_GPIO_Port GPIOD
+#define IDrdy_EXTI_IRQn EXTI15_10_IRQn
 #define VDrdy_Pin GPIO_PIN_15
 #define VDrdy_GPIO_Port GPIOA
+#define VDrdy_EXTI_IRQn EXTI15_10_IRQn
 #define VSync_Pin GPIO_PIN_3
 #define VSync_GPIO_Port GPIOB
 

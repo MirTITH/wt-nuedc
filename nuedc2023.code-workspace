@@ -82,7 +82,8 @@
             "variant": "cpp",
             "cassert": "cpp",
             "list": "cpp",
-            "forward_list": "cpp"
+            "forward_list": "cpp",
+            "cinttypes": "cpp"
         },
         "[yaml]": {
             "editor.insertSpaces": true,
