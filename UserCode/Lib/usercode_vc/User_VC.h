@@ -14,6 +14,7 @@ extern "C" {
 #include "PLL.h"
 #include "HighPrecisionTime/high_precision_time.h"
 #include "freertos_io/os_printf.h"
+#include "arm_math.h"
 
 #define W_VC (2*PI*f_ref)
 

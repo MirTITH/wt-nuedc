@@ -27,7 +27,9 @@ void StartDefaultTask(void const *argument)
     LvglTTF_Init();
     StartLvglThread();
 
-    //vector control
+    HAL_TIM_Base_Start_IT(&htim6);
+
+    // vector control
     task_vc_start();
     // task_pll_start();
 

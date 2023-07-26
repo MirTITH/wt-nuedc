@@ -51,7 +51,7 @@ void PID_Calc(PID_t *pid){
 	/*设定输出上下限*/
 	if(pid->output > pid->outputMax) pid->output = pid->outputMax;
 	if(pid->output < -pid->outputMax) pid->output = -pid->outputMax;
-    if(fabs(pid->output)<pid->outputMin) pid->output=0;
+    if(fabsf(pid->output)<pid->outputMin) pid->output=0;
 }
 
 void VoltageServo(float* Ua_out,float* Ub_out,float* Uc_out,float ud_ref,float uq_ref,float theta_pll)

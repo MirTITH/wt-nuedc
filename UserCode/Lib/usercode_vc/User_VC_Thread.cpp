@@ -3,6 +3,7 @@
 #include "FreeRTOS.h"
 #include "task.h"
 
+
 #include "User_VC.h"
 
 uint8_t VC_TASK_ENABLE = 0;
@@ -12,7 +13,7 @@ uint8_t PLL_ENABLE     = 0;
 void Task_VC_init()
 {
     VC_TASK_ENABLE = 1;
-    HAL_TIM_Base_Start_IT(&htim2);
+    // HAL_TIM_Base_Start_IT(&htim2);
     HAL_TIM_Base_Start_IT(&htim8); // 开启定时器
     HAL_TIM_PWM_Start(&htim8, TIM_CHANNEL_1);
     HAL_TIM_PWM_Start(&htim8, TIM_CHANNEL_2);
@@ -21,21 +22,26 @@ void Task_VC_init()
 }
 
 // SPWM占空比调整线程
-void Task_Vc_Loop_Spwm() // in freertos 1ms
+void Task_Vc_Loop_Spwm() // in timer 0.2ms
 {
     if (VC_TASK_ENABLE) {
         if (1) {
             // 伺服
-            CurrentServo(&hVC, Id_Servo, Iq_Servo, theta_ref);
+            // CurrentServo(&hVC, Id_Servo, Iq_Servo, theta_ref);
 
-            Ud_Servo = 10;
-            Uq_Servo = 0;
+            Ud_Servo  = 10;
+            Uq_Servo  = 0;
             theta_ref = W_VC * global_timer;
-            if(PLL_ENABLE)
-            {
+            // if(PLL_ENABLE)
+            // {
 
-            }
+            // }
             VoltageServo(&Ua_ref, &Ub_ref, &Uc_ref, Ud_Servo, Uq_Servo, theta_ref);
+            // static const float PI_2_3 = 2 * PI / 3;
+
+            // Ua_ref = arm_cos_f32(theta_ref) * Ud_Servo - arm_sin_f32(theta_ref) * Uq_Servo;
+            // Ub_ref = arm_cos_f32(theta_ref - PI_2_3) * Ud_Servo - arm_sin_f32(theta_ref - PI_2_3) * Uq_Servo;
+            // Uc_ref = arm_cos_f32(theta_ref + PI_2_3) * Ud_Servo - arm_sin_f32(theta_ref + PI_2_3) * Uq_Servo;
 
             // SPWM输出
             Spwm_Calculate(&Duty_abc, Gain_u, Ua_ref, Ub_ref, Uc_ref);
@@ -47,24 +53,26 @@ void Task_Vc_Loop_Spwm() // in freertos 1ms
     }
 }
 
+
 // SVPWM占空比调整线程
 void Task_Vc_Loop_SVpwm(TIM_HandleTypeDef *htim) // 0.2ms in timer
 {
     if (VC_TASK_ENABLE) {
         if ((htim->Instance == TIM8) && (htim->Instance->CNT < 10)) {
-            global_test += 0.0006;
-            
-            // 伺服
-            CurrentServo(&hVC, Id_Servo, Iq_Servo, theta_ref);
+            // global_test += 0.0006;
 
-            Ud_Servo = 10;
-            Uq_Servo = 0;
-            Udc = 30;
+            // 伺服
+            // CurrentServo(&hVC, Id_Servo, Iq_Servo, theta_ref);
+            extern uint32_t kTimCount;
+            kTimCount++;
+
+            Ud_Servo  = 10;
+            Uq_Servo  = 0;
+            Udc       = 30;
             theta_ref = W_VC * global_timer;
-            if(PLL_ENABLE)
-            {
-                
-            }
+            // if (PLL_ENABLE) {
+
+            // }
             VoltageServo(&Ua_ref, &Ub_ref, &Uc_ref, Ud_Servo, Uq_Servo, theta_ref);
 
             // SPWM输出
@@ -90,7 +98,7 @@ void Task_Vc_Loop_SVpwm(TIM_HandleTypeDef *htim) // 0.2ms in timer
 //             theta_ref = W_VC * global_timer;
 //             if(PLL_ENABLE)
 //             {
-                
+
 //             }
 //             VoltageServo(&Ua_ref, &Ub_ref, &Uc_ref, Ud_Servo, Uq_Servo, theta_ref);
 

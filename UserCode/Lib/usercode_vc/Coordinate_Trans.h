@@ -4,8 +4,6 @@
 extern "C" {
 #endif
 
-#define PI 3.141592653589793
-
 typedef struct
 {
     float a;

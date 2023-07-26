@@ -68,16 +68,33 @@ void HAL_UARTEx_RxEventCallback(UART_HandleTypeDef *huart, uint16_t Size)
     }
 }
 
+uint32_t kTaskVcStartUs, kTaskVcDuration;
+uint32_t kTimCount;
 void MY_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
 {
     if (htim->Instance == TIM3) {
         /* code */
-    }
+    } else if (htim->Instance == TIM6) {
+        // kTaskVcStartUs = HPT_GetUs();
+        
 
-    global_timer = HPT_GetUs() * 1e-6;
+        // global_timer = HPT_GetUs() * 1e-6;
 
-    // 0.2ms svpwm
-    Task_Vc_Loop_SVpwm(htim);
+        // // 0.2ms spwm
+        // Task_Vc_Loop_Spwm();
+
+        // kTaskVcDuration = HPT_GetUs() - kTaskVcStartUs;
+    } else if (htim->Instance == TIM8) {
+        kTaskVcStartUs = HPT_GetUs();
+        
+
+        global_timer = HPT_GetUs() * 1e-6;
+
+        // 0.2ms spwm
+        Task_Vc_Loop_SVpwm(htim);
+
+        kTaskVcDuration = HPT_GetUs() - kTaskVcStartUs;
+    } 
 }
 
 void HAL_ADC_ConvCpltCallback(ADC_HandleTypeDef *hadc)
