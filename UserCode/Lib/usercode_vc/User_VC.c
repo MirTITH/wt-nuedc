@@ -11,7 +11,7 @@ void vc_loop_start(void *argument)
         // Task_Vc_Loop_Spwm();
         // Task_Vc_Loop_SVpwm();
         uint32_t now_count = kTimCount;
-        os_printf("%lu,%lu\n", kTaskVcDuration, now_count - last_count);
+        // os_printf("%lu,%lu\n", kTaskVcDuration, now_count - last_count);
         last_count = now_count;
         vTaskDelay(100);
     }

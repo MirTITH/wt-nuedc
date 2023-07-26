@@ -40,6 +40,8 @@
 #include "atom_wrapper.hpp"
 #include <limits>
 #include <cassert>
+#include "FreeRTOS.h"
+#include "task.h"
 
 class Ads1256
 {
@@ -118,6 +120,10 @@ public: // Public functions
         conv_queue_.at(dma_transfer_index_).data = RawDataToInt32(dma_rx_buffer_);
 
         dma_transfer_index_ = 0xff;
+        extern TaskHandle_t pll_task_handle;
+        BaseType_t xHigherPriorityTaskWoken = pdFALSE;
+        vTaskNotifyGiveFromISR(pll_task_handle, &xHigherPriorityTaskWoken);
+        portYIELD_FROM_ISR(xHigherPriorityTaskWoken);
     }
 
     void Init(DataRate data_rate = DataRate::SPS_3750, PGA gain = PGA::Gain1, bool input_buffer = false, bool auto_calibration = true);

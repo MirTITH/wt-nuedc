@@ -5,18 +5,32 @@
 #include "task.h"
 #include "ads1256/ads1256_device.hpp"
 #include "freertos_io/os_printf.h"
+#include "control_system/pll.hpp"
+
+control_system::Pll<float> kPll(1.0 / 3750.0);
+
+void PllTask(void *)
+{
+    while (true) {
+        ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
+        kPll.Step(VAds.GetVoltage(0));
+    }
+}
 
 void AdsPrintEntry(void *)
 {
+    vTaskDelay(1000);
     while (true) {
         for (auto &voltage : VAds.GetVoltage()) {
             os_printf("%9f, ", voltage);
         }
 
-        os_printf("0,5,%lu\n", VAds.dma_busy_count_);
-        vTaskDelay(10);
+        os_printf("%f, %f, %f\n", kPll.omega_, kPll.d_, kPll.phase_);
+        vTaskDelay(1);
     }
 }
+
+TaskHandle_t pll_task_handle;
 
 void Ads1256Test()
 {
@@ -87,28 +101,30 @@ void Ads1256Test()
     xTaskCreate(AdsPrintEntry, "ads_print", 512, nullptr, PriorityNormal, &ads_print_task_handle);
 
     // os_printf(">>>> 转换队列设为只有一个元素，会自动使用连续读取\n");
-    VAds.SetConvQueue({0x01});
+    VAds.SetConvQueue({0x0f});
     VAds.StartConvQueue();
-    vTaskDelay(5000);
+
+    xTaskCreate(PllTask, "pll_task", 512, nullptr, PriorityAboveNormal, &pll_task_handle);
+    // vTaskDelay(5000);
 
     // os_printf(">>>> 转换队列设为有多个元素，会切换通道读取\n");
-    VAds.StopConvQueue();
-    VAds.SetConvQueue({0x01, 0x23, 0x45, 0x67}); // 差分模式
-    VAds.StartConvQueue();
-    vTaskDelay(5000);
+    // VAds.StopConvQueue();
+    // VAds.SetConvQueue({0x01, 0x23, 0x45, 0x67}); // 差分模式
+    // VAds.StartConvQueue();
+    // vTaskDelay(5000);
 
-    VAds.StopConvQueue();
-    VAds.SetConvQueue({0x0f, 0x1f, 0x2f, 0x3f, 0x4f, 0x5f, 0x6f, 0x7f}); // 8 通道单端
-    VAds.StartConvQueue();
-    vTaskDelay(5000);
+    // VAds.StopConvQueue();
+    // VAds.SetConvQueue({0x0f, 0x1f, 0x2f, 0x3f, 0x4f, 0x5f, 0x6f, 0x7f}); // 8 通道单端
+    // VAds.StartConvQueue();
+    // vTaskDelay(5000);
 
     // os_printf(">>>> StopConvQueue\n");
     // VAds.StopConvQueue();
     // vTaskDelay(5000);
 
-    // // os_printf(">>>> SetGain\n");
-    // // VAds.SetGain(Ads1256::PGA::Gain2);
-    // // vTaskDelay(2000);
+    // os_printf(">>>> SetGain\n");
+    // VAds.SetGain(Ads1256::PGA::Gain2);
+    // vTaskDelay(2000);
 
     // os_printf(">>>> StartConvQueue\n");
     // VAds.StartConvQueue();

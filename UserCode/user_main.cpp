@@ -31,7 +31,7 @@ void StartDefaultTask(void const *argument)
 
     // vector control
     task_vc_start();
-    // task_pll_start();
+    task_pll_start();
 
     StartTestThread();
 

@@ -3,7 +3,7 @@
 #include "FreeRTOS.h"
 #include "task.h"
 
-
+#include "control_system/pll.hpp"
 #include "User_VC.h"
 
 uint8_t VC_TASK_ENABLE = 0;
@@ -30,14 +30,15 @@ void Task_Vc_Loop_Spwm() // in timer 0.2ms
             // CurrentServo(&hVC, Id_Servo, Iq_Servo, theta_ref);
             extern uint32_t kTimCount;
             kTimCount++;
+            extern control_system::Pll<float> kPll;
 
             Ud_Servo  = 10;
             Uq_Servo  = 0;
             theta_ref = W_VC * global_timer;
-            // if(PLL_ENABLE)
-            // {
-
-            // }
+            if(PLL_ENABLE)
+            {
+                theta_ref = kPll.phase_;
+            }
             VoltageServo(&Ua_ref, &Ub_ref, &Uc_ref, Ud_Servo, Uq_Servo, theta_ref);
             // static const float PI_2_3 = 2 * PI / 3;
 
