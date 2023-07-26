@@ -97,7 +97,7 @@ public:
         static_assert(std::is_floating_point<T>::value,
                       "'T' must be floating point type. And note that 'Ts' is sampling period, not frequency.");
 
-        assert(Ts < 1); // 注意，Ts 是采样周期，不是采样频率
+        assert(Ts <= 1); // 注意，Ts 是采样周期，不是采样频率
 
         InitGqGd(k, wc);
 
