@@ -166,7 +166,7 @@ void Svpwm_Calculate(Svpwm_t *Svpwm,float Ud,float Ua_ref,float Ub_ref,float Uc_
         Svpwm->ccRC = TIM_ARR*(t1+t2);
     }
     // os_printf("%f,%f,%f\n",svpwm_ref.AlphaBeta_value.alpha,svpwm_ref.AlphaBeta_value.beta,theta);
-    os_printf("%f,%f,%f\n",Svpwm->ccRA,Svpwm->ccRB,Svpwm->ccRC);
+    // os_printf("%f,%f,%f\n",Svpwm->ccRA,Svpwm->ccRB,Svpwm->ccRC);
 }
 
 void Spwm_Calculate(Svpwm_t *Svpwm,float GAIN,float Ua_ref,float Ub_ref,float Uc_ref)
