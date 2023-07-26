@@ -9,17 +9,8 @@
 
 control_system::Pll<float> kPll(1.0 / 3750.0);
 
-void PllTask(void *)
-{
-    while (true) {
-        ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
-        kPll.Step(VAds.GetVoltage(0));
-    }
-}
-
 void AdsPrintEntry(void *)
 {
-    vTaskDelay(1000);
     while (true) {
         for (auto &voltage : VAds.GetVoltage()) {
             os_printf("%9f, ", voltage);
@@ -29,8 +20,6 @@ void AdsPrintEntry(void *)
         vTaskDelay(1);
     }
 }
-
-TaskHandle_t pll_task_handle;
 
 void Ads1256Test()
 {
@@ -100,11 +89,13 @@ void Ads1256Test()
     TaskHandle_t ads_print_task_handle;
     xTaskCreate(AdsPrintEntry, "ads_print", 512, nullptr, PriorityNormal, &ads_print_task_handle);
 
+    // 设置转换队列完成后的回调函数
+    VAds.SetConvQueueCpltCallback([](Ads1256 *ads) { kPll.Step(ads->GetVoltage(0)); });
+
     // os_printf(">>>> 转换队列设为只有一个元素，会自动使用连续读取\n");
     VAds.SetConvQueue({0x0f});
     VAds.StartConvQueue();
 
-    xTaskCreate(PllTask, "pll_task", 512, nullptr, PriorityAboveNormal, &pll_task_handle);
     // vTaskDelay(5000);
 
     // os_printf(">>>> 转换队列设为有多个元素，会切换通道读取\n");

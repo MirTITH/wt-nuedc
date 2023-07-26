@@ -2,7 +2,7 @@
  * @file ads1256.cpp
  * @author X. Y.
  * @brief ADS1256 的驱动程序
- * @version 0.7
+ * @version 0.8
  * @date 2023-07-26
  *
  * @copyright Copyright (c) 2023
@@ -40,8 +40,7 @@
 #include "atom_wrapper.hpp"
 #include <limits>
 #include <cassert>
-#include "FreeRTOS.h"
-#include "task.h"
+#include <functional>
 
 class Ads1256
 {
@@ -98,6 +97,10 @@ public: // 统计变量
     uint32_t dma_busy_count_{0};
     uint32_t drdy_count_{0};
 
+public:
+    using CallbackFunc_t = std::function<void(Ads1256 *)>;
+    CallbackFunc_t conv_queue_cplt_callback_; // 队列转换完成后会调用这个函数
+
 public: // Public functions
     Ads1256(SPI_HandleTypeDef *hspi,
             GPIO_TypeDef *n_drdy_port, uint16_t n_drdy_pin,
@@ -117,13 +120,16 @@ public: // Public functions
 
     void SPI_TxRxCpltCallback()
     {
-        conv_queue_.at(dma_transfer_index_).data = RawDataToInt32(dma_rx_buffer_);
+        auto index                 = dma_transfer_index_.load();
+        conv_queue_.at(index).data = RawDataToInt32(dma_rx_buffer_);
+        dma_transfer_index_        = 0xff;
 
-        dma_transfer_index_ = 0xff;
-        extern TaskHandle_t pll_task_handle;
-        BaseType_t xHigherPriorityTaskWoken = pdFALSE;
-        vTaskNotifyGiveFromISR(pll_task_handle, &xHigherPriorityTaskWoken);
-        portYIELD_FROM_ISR(xHigherPriorityTaskWoken);
+        // 调用用户的回调函数
+        if (index == conv_queue_.size() - 1) {
+            if (conv_queue_cplt_callback_ != nullptr) {
+                conv_queue_cplt_callback_(this);
+            }
+        }
     }
 
     void Init(DataRate data_rate = DataRate::SPS_3750, PGA gain = PGA::Gain1, bool input_buffer = false, bool auto_calibration = true);
@@ -176,6 +182,17 @@ public: // Public functions
      *
      */
     void StopConvQueue();
+
+    /**
+     * @brief 设置队列全部转换完毕后的回调函数
+     *
+     * @param callback_func 回调函数
+     * @note 用法示例: Ads.SetConvQueueCpltCallback([](Ads1256 *ads) { kPll.Step(ads->GetVoltage(0)); });
+     */
+    void SetConvQueueCpltCallback(CallbackFunc_t callback_func)
+    {
+        conv_queue_cplt_callback_ = callback_func;
+    }
 
     /**
      * @brief 获取转换队列状态
