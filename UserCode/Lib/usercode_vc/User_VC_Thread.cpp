@@ -28,6 +28,8 @@ void Task_Vc_Loop_Spwm() // in timer 0.2ms
         if (1) {
             // 伺服
             // CurrentServo(&hVC, Id_Servo, Iq_Servo, theta_ref);
+            extern uint32_t kTimCount;
+            kTimCount++;
 
             Ud_Servo  = 10;
             Uq_Servo  = 0;
