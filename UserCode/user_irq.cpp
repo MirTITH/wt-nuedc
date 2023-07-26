@@ -68,24 +68,15 @@ void HAL_UARTEx_RxEventCallback(UART_HandleTypeDef *huart, uint16_t Size)
     }
 }
 
-float TimPllInput = 0;
-uint32_t TimStartUs, TimDuration;
-control_system::Pll<float> pll(1.0 / 5000, 2 * M_PI * 50, 2);
-control_system::SineGenerator<float> sine(2 * M_PI * 50, 1.0 / 5000.0, M_PI);
-
 void MY_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
 {
     if (htim->Instance == TIM3) {
-        HAL_DAC_SetValue(&hdac, DAC_CHANNEL_1, DAC_ALIGN_12B_R, (sine.Step() + 1) * (4095.0 / 3.3));
-        TimStartUs  = HPT_GetUs();
-        TimPllInput = Adc1.GetVoltage(3);
-        pll.Step(TimPllInput);
-        TimDuration = HPT_GetUs() - TimStartUs;
+        /* code */
     }
 
     global_timer = HPT_GetUs() * 1e-6;
 
-    //0.2ms svpwm
+    // 0.2ms svpwm
     Task_Vc_Loop_SVpwm(htim);
 }
 
@@ -102,12 +93,8 @@ void LcdFmc_DmaXferCpltCallback(DMA_HandleTypeDef *_hdma)
     LCD.DmaXferCpltCallback();
 }
 
-static uint32_t kDrdyStartUs;
-volatile uint32_t kDrdyIRQDuration;
-
 void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin)
 {
-    kDrdyStartUs = HPT_GetUs();
     switch (GPIO_Pin) {
         case VDrdy_Pin:
             VAds.DRDY_Callback();
@@ -116,7 +103,6 @@ void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin)
         default:
             break;
     }
-    kDrdyIRQDuration = HPT_GetUs() - kDrdyStartUs;
 }
 
 void HAL_SPI_TxRxCpltCallback(SPI_HandleTypeDef *hspi)

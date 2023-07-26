@@ -161,8 +161,9 @@ void Ads1256::ReadDataToQueueDma(uint8_t queue_index)
     WriteCmd(ADS1256_CMD_RDATA);
     HPT_DelayUs(kT6);
 
-    if (SpiReadDma(dma_rx_buffer_, 3) == true) {
-        dma_transfer_index_ = queue_index;
+    dma_transfer_index_ = queue_index;
+    if (SpiReadDma(dma_rx_buffer_, 3) == false) {
+        dma_transfer_index_ = 0xff;
     }
 }
 
@@ -196,8 +197,9 @@ void Ads1256::ExitReadDataContinousMode()
 
 void Ads1256::ReadDataContinousToQueueDma(uint8_t queue_index)
 {
-    if (SpiReadDma(dma_rx_buffer_, 3) == true) {
-        dma_transfer_index_ = queue_index;
+    dma_transfer_index_ = queue_index;
+    if (SpiReadDma(dma_rx_buffer_, 3) == false) {
+        dma_transfer_index_ = 0xff;
     }
 }
 

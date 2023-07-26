@@ -5,17 +5,15 @@
 #include "task.h"
 #include "ads1256/ads1256_device.hpp"
 #include "freertos_io/os_printf.h"
-#include "ads1256/old/ADS1256.h"
 
 void AdsPrintEntry(void *)
 {
-    extern volatile uint32_t kDrdyIRQDuration;
     while (true) {
         for (auto &voltage : VAds.GetVoltage()) {
             os_printf("%9f, ", voltage);
         }
 
-        os_printf("0,5,%lu,%lu\n", kDrdyIRQDuration, VAds.dma_busy_count_);
+        os_printf("0,5,%lu\n", VAds.dma_busy_count_);
         vTaskDelay(10);
     }
 }
@@ -61,6 +59,7 @@ void Ads1256Test()
 
     os_printf(">>> 等待电源稳定\n");
     vTaskDelay(1000);
+
     // 检测 ADS 有没有连接或上电
     os_printf(">>> 检测 VAds 是否成功连接\n");
     while (VAds.CheckForPresent() != true) {
@@ -85,26 +84,21 @@ void Ads1256Test()
     }
 
     TaskHandle_t ads_print_task_handle;
-
     xTaskCreate(AdsPrintEntry, "ads_print", 512, nullptr, PriorityNormal, &ads_print_task_handle);
 
-    VAds.SetConvQueue({0x01});
-    VAds.StartConvQueue();
-
     // os_printf(">>>> 转换队列设为只有一个元素，会自动使用连续读取\n");
-    VAds.StopConvQueue();
     VAds.SetConvQueue({0x01});
     VAds.StartConvQueue();
     vTaskDelay(5000);
 
     // os_printf(">>>> 转换队列设为有多个元素，会切换通道读取\n");
     VAds.StopConvQueue();
-    VAds.SetConvQueue({0x0f, 0x1f, 0x2f, 0x3f});
+    VAds.SetConvQueue({0x01, 0x23, 0x45, 0x67}); // 差分模式
     VAds.StartConvQueue();
     vTaskDelay(5000);
 
     VAds.StopConvQueue();
-    VAds.SetConvQueue({0x0f, 0x1f, 0x2f, 0x3f, 0x4f, 0x5f, 0x6f, 0x7f});
+    VAds.SetConvQueue({0x0f, 0x1f, 0x2f, 0x3f, 0x4f, 0x5f, 0x6f, 0x7f}); // 8 通道单端
     VAds.StartConvQueue();
     vTaskDelay(5000);
 
