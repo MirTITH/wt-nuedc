@@ -75,15 +75,15 @@ void MY_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
     if (htim->Instance == TIM3) {
         /* code */
     } else if (htim->Instance == TIM6) {//spwm
-        kTaskVcStartUs = HPT_GetUs();
+        // kTaskVcStartUs = HPT_GetUs();
         
 
-        global_timer = HPT_GetUs() * 1e-6;
+        // global_timer = HPT_GetUs() * 1e-6;
 
-        // 0.2ms spwm
-        Task_Vc_Loop_Spwm();
+        // // 0.2ms spwm
+        // Task_Vc_Loop_Spwm();
 
-        kTaskVcDuration = HPT_GetUs() - kTaskVcStartUs;
+        // kTaskVcDuration = HPT_GetUs() - kTaskVcStartUs;
     } else if (htim->Instance == TIM8) {//svpwm
         // kTaskVcStartUs = HPT_GetUs();
         

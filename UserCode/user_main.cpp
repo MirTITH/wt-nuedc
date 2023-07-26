@@ -30,8 +30,8 @@ void StartDefaultTask(void const *argument)
     HAL_TIM_Base_Start_IT(&htim6);
 
     // vector control
-    task_vc_start();
-    task_pll_start();
+    // task_vc_start();
+    // task_pll_start();
 
     StartTestThread();
 
