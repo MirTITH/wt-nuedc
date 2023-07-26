@@ -70,7 +70,7 @@ void Ads1256Test()
     }
 
     os_printf(">>> 初始化 ADS\n");
-    VAds.Init();
+    VAds.Init(Ads1256::DataRate::SPS_3750);
 
     if (VAds.CheckForConfig() == true) {
         os_printf(">>> 初始化 ADS 验证成功\n");

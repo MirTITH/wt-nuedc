@@ -65,7 +65,7 @@ void Ads1256::DRDY_Callback()
     }
 }
 
-void Ads1256::Init()
+void Ads1256::Init(DataRate data_rate, PGA gain, bool input_buffer, bool auto_calibration)
 {
     // 等待电源稳定
     vTaskDelay(100);
@@ -86,7 +86,7 @@ void Ads1256::Init()
      * Programmable Gain Amplifier Setting = 1 (default: 1)
      */
     // WriteReg(ADS1256_ADCON, 0x00);
-    SetGain(PGA::Gain1);
+    SetGain(gain);
 
     /**
      * @brief STATUS REGISTER
@@ -97,13 +97,13 @@ void Ads1256::Init()
      */
     // WriteReg(ADS1256_STATUS, 0x04); // Buffer disable
     // WriteReg(ADS1256_STATUS, 0x06); // Buffer enable
-    SetInputBufferAndAutoCalibration(false, true);
+    SetInputBufferAndAutoCalibration(input_buffer, auto_calibration);
 
     /**
      * @brief A/D Data Rate
      * 默认值：30,000SPS
      */
-    SetDataRate(DataRate::SPS_30000);
+    SetDataRate(data_rate);
 
     /**
      * @brief Input Multiplexer Control Register

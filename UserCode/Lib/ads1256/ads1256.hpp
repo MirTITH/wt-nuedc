@@ -2,8 +2,8 @@
  * @file ads1256.cpp
  * @author X. Y.
  * @brief ADS1256 的驱动程序
- * @version 0.6
- * @date 2023-07-25
+ * @version 0.7
+ * @date 2023-07-26
  *
  * @copyright Copyright (c) 2023
  *
@@ -43,6 +43,7 @@
 
 class Ads1256
 {
+public:
     // Type defines
     // 可编程增益器
     enum class PGA {
@@ -119,7 +120,7 @@ public: // Public functions
         dma_transfer_index_ = 0xff;
     }
 
-    void Init();
+    void Init(DataRate data_rate = DataRate::SPS_3750, PGA gain = PGA::Gain1, bool input_buffer = false, bool auto_calibration = true);
 
     void Reset();
 
