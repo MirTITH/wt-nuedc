@@ -21,14 +21,12 @@ void TestSvpwm()
     uint32_t duration = 0;
 
     while (true) {
-        sy.Calc(phase, 6.28); // 相位和最大占空比
-
         auto start_us = HPT_GetUs();
-        // os_printf("%f,%f,%f,%lu\n", sy.duty_[0], sy.duty_[1], sy.duty_[2], duration);
-        JFStream << sy.duty_ << phase << duration << EndJFStream;
+        sy.Calc(phase, 0.5); // 相位和最大占空比
         duration = HPT_GetUs() - start_us;
 
-        // os_printf("%f,%lu\n", phase, duration);
+        // os_printf("%f,%f,%f,%lu\n", sy.duty_[0], sy.duty_[1], sy.duty_[2], duration);
+        JFStream << sy.duty_ << phase << duration << EndJFStream;
 
         // 走完一个周期让相角归 0，防止数字过大造成精度丢失
         phase += 2 * M_PI / 360;

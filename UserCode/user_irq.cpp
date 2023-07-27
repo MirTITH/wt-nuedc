@@ -23,6 +23,7 @@
 #include "Lcd/lcd_device.hpp"
 #include "ads1256/ads1256_device.hpp"
 #include "usercode_vc/User_VC.h"
+#include "Vofa/just_float.hpp"
 
 #ifdef __cplusplus
 extern "C" {
@@ -74,9 +75,8 @@ void MY_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
 {
     if (htim->Instance == TIM3) {
         /* code */
-    } else if (htim->Instance == TIM6) {//spwm
+    } else if (htim->Instance == TIM6) { // spwm
         // kTaskVcStartUs = HPT_GetUs();
-        
 
         // global_timer = HPT_GetUs() * 1e-6;
 
@@ -84,9 +84,8 @@ void MY_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
         // Task_Vc_Loop_Spwm();
 
         // kTaskVcDuration = HPT_GetUs() - kTaskVcStartUs;
-    } else if (htim->Instance == TIM8) {//svpwm
+    } else if (htim->Instance == TIM8) { // svpwm
         // kTaskVcStartUs = HPT_GetUs();
-        
 
         // global_timer = HPT_GetUs() * 1e-6;
 
@@ -94,7 +93,7 @@ void MY_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
         // Task_Vc_Loop_SVpwm(htim);
 
         // kTaskVcDuration = HPT_GetUs() - kTaskVcStartUs;
-    } 
+    }
 }
 
 void HAL_ADC_ConvCpltCallback(ADC_HandleTypeDef *hadc)
