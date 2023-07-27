@@ -31,7 +31,7 @@ void TestSvpwm()
         // os_printf("%lu\n", duration);
         // MainUart.Write(str);
         // vofa::SendFloats(sy.duty_);
-        MainUart.uart_device.Write(str.data(), str.size());
+        MainUart.Write(str.data(), str.size());
         duration = HPT_GetUs() - start_us;
         str      = std::to_string(duration).append("\n");
 

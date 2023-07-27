@@ -1,10 +1,10 @@
-#include "uart_thread.hpp"
+#include "async_uart.hpp"
 #include "thread_priority_def.h"
 #include "in_handle_mode.h"
 
 void UartDaemonEntry(void *argument)
 {
-    auto this_class       = (UartThread *)argument;
+    auto this_class       = (AsyncUart *)argument;
     auto &uart_device     = this_class->uart_device;
     auto &ring_buffer_    = this_class->ring_buffer_;
     auto &task_to_notify_ = this_class->task_to_notify_;
@@ -44,14 +44,14 @@ void UartDaemonEntry(void *argument)
     }
 }
 
-UartThread::UartThread(freertos_io::Uart &uart, const char *thread_name)
+AsyncUart::AsyncUart(freertos_io::Uart &uart, const char *thread_name)
     : uart_device(uart)
 {
-    // 优先级高于或等于 UartThread 的线程，由于在调用 Write 时不会发生线程切换（除非缓冲区不够），可以获得最快的 Write 速度
+    // 优先级高于或等于 AsyncUart 的线程，由于在调用 Write 时不会发生线程切换（除非缓冲区不够），可以获得最快的 Write 速度
     xTaskCreate(UartDaemonEntry, thread_name, 256, this, PriorityBelowNormal, &task_handle_);
 }
 
-void UartThread::Write(const char *data, size_t size)
+void AsyncUart::Write(const char *data, size_t size)
 {
     if (InHandlerMode()) {
         // 在中断中。如果缓冲区剩余空间不足 size，舍弃多出来的 data

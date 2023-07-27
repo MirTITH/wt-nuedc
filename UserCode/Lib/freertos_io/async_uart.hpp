@@ -6,7 +6,7 @@
 #include "uart_io.hpp"
 #include "freertos_lock/freertos_lock.hpp"
 
-class UartThread
+class AsyncUart
 {
 private:
     TaskHandle_t task_handle_;
@@ -17,7 +17,7 @@ private:
 public:
     freertos_io::Uart &uart_device;
 
-    UartThread(freertos_io::Uart &uart, const char *thread_name);
+    AsyncUart(freertos_io::Uart &uart, const char *thread_name);
 
     void Write(const char *data, size_t size);
     void Write(const std::string &str)

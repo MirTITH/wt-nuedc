@@ -1,6 +1,6 @@
 #pragma once
 
 #include "uart_io.hpp"
-#include "uart_thread.hpp"
+#include "async_uart.hpp"
 
-extern UartThread MainUart;
+extern AsyncUart MainUart;
