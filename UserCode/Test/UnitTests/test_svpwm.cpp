@@ -21,14 +21,11 @@ void TestSvpwm()
     uint32_t duration = 0;
 
     while (true) {
-
-        sy.Calc(phase, 0.5); // 相位和最大占空比
+        sy.Calc(phase, 6.28); // 相位和最大占空比
 
         auto start_us = HPT_GetUs();
         // os_printf("%f,%f,%f,%lu\n", sy.duty_[0], sy.duty_[1], sy.duty_[2], duration);
-        // os_printf("%lu\n", duration);
-
-        JFStream << sy.duty_ << duration << EndJFStream;
+        JFStream << sy.duty_ << phase << duration << EndJFStream;
         duration = HPT_GetUs() - start_us;
 
         // os_printf("%f,%lu\n", phase, duration);
@@ -38,6 +35,6 @@ void TestSvpwm()
         if (phase >= 2 * M_PI) {
             phase -= 2 * M_PI;
         }
-        vTaskDelay(10);
+        vTaskDelay(1);
     }
 }

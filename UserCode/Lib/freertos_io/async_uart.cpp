@@ -54,41 +54,50 @@ AsyncUart::AsyncUart(freertos_io::Uart &uart, const char *thread_name)
 void AsyncUart::Write(const char *data, size_t size)
 {
     if (InHandlerMode()) {
-        // 在中断中。如果缓冲区剩余空间不足 size，舍弃多出来的 data
-        UBaseType_t uxSavedInterruptStatus = taskENTER_CRITICAL_FROM_ISR();
-        ring_buffer_.push_data_back((const uint8_t *)data, size);
-        taskEXIT_CRITICAL_FROM_ISR(uxSavedInterruptStatus);
-
-        // 通知守护线程传输
-        BaseType_t xHigherPriorityTaskWoken = pdFALSE;
-        vTaskNotifyGiveFromISR(task_handle_, &xHigherPriorityTaskWoken);
-        portYIELD_FROM_ISR(xHigherPriorityTaskWoken);
+        WriteInIsr(data, size);
     } else {
-        // 在线程中。如果缓冲区剩余大小不足 size，则分多次传输
-        lock_.lock_from_thread(); // 上锁，防止其他线程操作
-
-        size_t written_size; // 已写入缓冲区的数据大小
-        while (true) {
-            taskENTER_CRITICAL();
-            written_size = ring_buffer_.push_data_back((const uint8_t *)data, size); // 写入缓冲区
-            taskEXIT_CRITICAL();
-
-            if (written_size < size) {
-                size -= written_size; // 剩余传输大小
-                data += written_size;
-
-                task_to_notify_ = xTaskGetCurrentTaskHandle(); // 告诉守护线程，传输完成后要通知当前线程
-                xTaskNotifyGive(task_handle_);                 // 通知守护线程开始传输
-
-                // 等待守护线程通知传输完成
-                ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
-            } else {
-                // 全部 data 已写入缓冲区
-                xTaskNotifyGive(task_handle_); // 通知守护线程开始传输
-                break;                         // 退出循环。由于所有数据都已在缓冲区，不用等待
-            }
-        }
-
+        // 上锁，防止其他线程操作
+        lock_.lock_from_thread();
+        WriteInThreadWithoutLock(data, size);
         lock_.unlock_from_thread();
     }
+}
+
+void AsyncUart::WriteInThreadWithoutLock(const char *data, size_t size)
+{
+    // 在线程中。如果缓冲区剩余大小不足 size，则分多次传输
+    size_t written_size; // 已写入缓冲区的数据大小
+    while (true) {
+        taskENTER_CRITICAL();
+        written_size = ring_buffer_.push_data_back((const uint8_t *)data, size); // 写入缓冲区
+        taskEXIT_CRITICAL();
+
+        if (written_size < size) {
+            size -= written_size; // 剩余传输大小
+            data += written_size;
+
+            task_to_notify_ = xTaskGetCurrentTaskHandle(); // 告诉守护线程，传输完成后要通知当前线程
+            xTaskNotifyGive(task_handle_);                 // 通知守护线程开始传输
+
+            // 等待守护线程通知传输完成
+            ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
+        } else {
+            // 全部 data 已写入缓冲区
+            xTaskNotifyGive(task_handle_); // 通知守护线程开始传输
+            break;                         // 退出循环。由于所有数据都已在缓冲区，不用等待
+        }
+    }
+}
+
+void AsyncUart::WriteInIsr(const char *data, size_t size)
+{
+    // 在中断中。如果缓冲区剩余空间不足 size，舍弃多出来的 data
+    UBaseType_t uxSavedInterruptStatus = taskENTER_CRITICAL_FROM_ISR();
+    ring_buffer_.push_data_back((const uint8_t *)data, size);
+    taskEXIT_CRITICAL_FROM_ISR(uxSavedInterruptStatus);
+
+    // 通知守护线程传输
+    BaseType_t xHigherPriorityTaskWoken = pdFALSE;
+    vTaskNotifyGiveFromISR(task_handle_, &xHigherPriorityTaskWoken);
+    portYIELD_FROM_ISR(xHigherPriorityTaskWoken);
 }

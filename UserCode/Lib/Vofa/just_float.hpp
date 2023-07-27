@@ -5,6 +5,7 @@
 #include <cstdint>
 #include <type_traits>
 #include <array>
+#include "in_handle_mode.h"
 
 namespace vofa
 {
@@ -19,6 +20,53 @@ class JustFloatStream
 {
 protected:
     AsyncUart &uart_;
+    bool is_locked_ = false;
+
+private:
+    void Write(const float *value, size_t size)
+    {
+        bool is_in_handle_mode = InHandlerMode();
+
+        if (is_in_handle_mode) {
+            if (is_locked_ == false) {
+                uart_.lock_.lock_from_isr();
+                is_locked_ = true;
+            }
+
+            uart_.WriteInIsr((const char *)value, size * sizeof(float));
+        } else {
+            if (is_locked_ == false) {
+                uart_.lock_.lock_from_thread();
+                is_locked_ = true;
+            }
+
+            uart_.WriteInThreadWithoutLock((const char *)value, size * sizeof(float));
+        }
+    }
+
+    void SendEndMarkAndUnlock()
+    {
+        bool is_in_handle_mode = InHandlerMode();
+
+        if (is_in_handle_mode) {
+            if (is_locked_ == false) {
+                uart_.lock_.lock_from_isr();
+                is_locked_ = true;
+            }
+
+            uart_.WriteInIsr(vofa_internal::kTail, sizeof(vofa_internal::kTail));
+            uart_.lock_.unlock_from_isr();
+        } else {
+            if (is_locked_ == false) {
+                uart_.lock_.lock_from_thread();
+                is_locked_ = true;
+            }
+
+            uart_.WriteInThreadWithoutLock(vofa_internal::kTail, sizeof(vofa_internal::kTail));
+            uart_.lock_.unlock_from_thread();
+        }
+        is_locked_ = false;
+    }
 
 public:
     JustFloatStream(AsyncUart &uart = MainUart)
@@ -28,13 +76,13 @@ public:
     friend JustFloatStream &operator<<(JustFloatStream &jfo, const std::array<T, array_size> &values)
     {
         if (std::is_same_v<T, float>) {
-            jfo.uart_.Write((const char *)values.data(), array_size * sizeof(float));
+            jfo.Write(values.data(), array_size);
         } else {
             std::array<float, array_size> buffer;
             for (size_t i = 0; i < array_size; i++) {
                 buffer[i] = values[i];
             }
-            jfo.uart_.Write((const char *)buffer.data(), array_size * sizeof(float));
+            jfo.Write(buffer.data(), array_size);
         }
         return jfo;
     }
@@ -44,13 +92,13 @@ public:
     {
         size_t size = values.size();
         if (std::is_same_v<T, float>) {
-            jfo.uart_.Write((const char *)values.data(), size * sizeof(float));
+            jfo.Write(values.data(), size);
         } else {
             std::vector<float> buffer(size);
             for (size_t i = 0; i < size; i++) {
                 buffer[i] = values[i];
             }
-            jfo.uart_.Write((const char *)buffer.data(), size * sizeof(float));
+            jfo.Write(buffer.data(), size);
         }
         return jfo;
     }
@@ -59,7 +107,7 @@ public:
     friend JustFloatStream &operator<<(JustFloatStream &jfo, const T &value)
     {
         float data = value;
-        jfo.uart_.Write((const char *)&data, sizeof(float));
+        jfo.Write(&data, 1);
         return jfo;
     }
 
