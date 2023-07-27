@@ -17,10 +17,8 @@ void TestSvpwm()
     // 也可以不指定，默认使用 std::cos
     // control_system::Sypwm<float> sy;
 
-    float phase = 0;
-
+    float phase       = 0;
     uint32_t duration = 0;
-    std::string str;
 
     while (true) {
 
@@ -29,11 +27,9 @@ void TestSvpwm()
         auto start_us = HPT_GetUs();
         // os_printf("%f,%f,%f,%lu\n", sy.duty_[0], sy.duty_[1], sy.duty_[2], duration);
         // os_printf("%lu\n", duration);
-        // MainUart.Write(str);
-        // vofa::SendFloats(sy.duty_);
-        MainUart.Write(str.data(), str.size());
+
+        JFStream << sy.duty_ << duration << EndJFStream;
         duration = HPT_GetUs() - start_us;
-        str      = std::to_string(duration).append("\n");
 
         // os_printf("%f,%lu\n", phase, duration);
 
