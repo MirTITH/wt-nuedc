@@ -17,7 +17,17 @@
 namespace control_system
 {
 
-template <typename T>
+/**
+ * @brief SYPWM
+ *
+ * @tparam T 数据类型，如 float, double
+ * @tparam cos_func 用于计算三角函数的方法。默认为 std::cos，可以指定为 std::sin 或其他快速三角函数
+ *
+ * @example control_system::Sypwm<float>
+ * @example control_system::Sypwm<float, std::sin>
+ * @example control_system::Sypwm<float, arm_cos_f32>
+ */
+template <typename T, T (*cos_func)(T) = std::cos>
 class Sypwm
 {
 private:
@@ -27,12 +37,21 @@ private:
 public:
     std::array<T, 3> duty_; // 占空比
 
-    void Calc(T phase)
+    /**
+     * @brief 计算 SYPWM，结果存放在 duty_ 中
+     *
+     * @param phase 相位 (rad)
+     * @param max_duty 最大占空比
+     */
+    void Calc(T phase, T max_duty = 1)
     {
+        // 检查 T 的类型，必须是浮点类型
+        static_assert(std::is_floating_point<T>::value, "'T' must be floating point type. ");
+
         std::array<T, 3> volt;
-        volt[0] = std::cos(phase);
-        volt[1] = std::cos(phase + 2 * PI_ / 3);
-        volt[2] = std::cos(phase + 4 * PI_ / 3);
+        volt[0] = cos_func(phase);
+        volt[1] = cos_func(phase + 2 * PI_ / 3);
+        volt[2] = cos_func(phase - 2 * PI_ / 3);
 
         // 找最大值和最小值
         T min = volt[0];
@@ -49,7 +68,7 @@ public:
         T e = (max + min) / 2; // 注入的谐波
 
         for (size_t i = 0; i < 3; i++) {
-            duty_[i] = kGain_ * (volt[i] - e) + 0.5f;
+            duty_[i] = max_duty * (kGain_ * (volt[i] - e) + 0.5);
         }
     }
 };
