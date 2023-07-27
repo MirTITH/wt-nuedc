@@ -22,7 +22,7 @@ public:
     void Write(const char *data, size_t size);
     void Write(const std::string &str)
     {
-        Write(str.c_str(), str.size());
+        Write(str.data(), str.size());
     }
 
     template <typename T>

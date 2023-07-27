@@ -17,8 +17,6 @@ private:
     uint16_t read_to_idle_size = 0;
 
 public:
-    uint32_t total_tx_size = 0;
-
     using uart_port::uart_port;
 
     /**
@@ -59,15 +57,13 @@ public:
     auto Write(const std::string &str, uint32_t Timeout = HAL_MAX_DELAY)
     {
         lk_guard lock(write_lock_);
-        total_tx_size += str.size();
-        return uart_port::Write((const uint8_t *)str.c_str(), str.size(), Timeout);
+        return uart_port::Write((const uint8_t *)str.data(), str.size(), Timeout);
     }
 
     template <typename T>
     auto Write(const T *pData, uint16_t Size, uint32_t Timeout = HAL_MAX_DELAY)
     {
         lk_guard lock(write_lock_);
-        total_tx_size += Size;
         return uart_port::Write((const uint8_t *)pData, Size, Timeout);
     }
 
@@ -83,7 +79,6 @@ public:
     template <typename T>
     auto WriteDirectly(const T *pData, uint16_t Size, uint32_t Timeout = HAL_MAX_DELAY)
     {
-        total_tx_size += Size;
         return uart_port::Write((const uint8_t *)pData, Size, Timeout);
     }
 
@@ -102,7 +97,6 @@ public:
         }
 
         write_lock_.lock();
-        total_tx_size += Size;
 
         if (UseDmaTx() && IsAddressValidForDma(pData)) {
             return WriteDma((const uint8_t *)pData, Size);
@@ -113,19 +107,7 @@ public:
 
     auto WriteNonBlock(const std::string &str)
     {
-        if (str.size() == 0) {
-            return HAL_OK;
-        }
-
-        write_lock_.lock();
-
-        total_tx_size += str.size();
-
-        if (UseDmaTx() && IsAddressValidForDma(str.c_str())) {
-            return WriteDma((const uint8_t *)str.c_str(), str.size());
-        }
-
-        return WriteIt((const uint8_t *)str.c_str(), str.size());
+        return WriteNonBlock(str.data(), str.size());
     }
 
     template <typename T>
