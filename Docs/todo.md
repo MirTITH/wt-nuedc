@@ -4,7 +4,6 @@
 
 ## 高优先级
 
-- [ ] vofa just float 输出函数
 - [ ] 数据延迟模块
 - [ ] 键盘驱动
 
@@ -27,6 +26,7 @@
 - [X] lvgl
 - [X] freetype
 - [X] ADS1256 驱动
+- [X] vofa just float 输出函数
 
 ## 已放弃
 
