@@ -15,7 +15,8 @@
 // #include "OldTests/ads1256_test.cpp"
 // #include "UnitTests/test_lvgl.cpp"
 // #include "UnitTests/test_atomic.cpp"
-#include "UnitTests/test_svpwm.cpp"
+// #include "UnitTests/test_svpwm.cpp"
+#include "UnitTests/test_pwm_rec.cpp"
 
 void TestThread(void *argument)
 {
@@ -33,7 +34,8 @@ void TestThread(void *argument)
     // Ads1256Test();
     // TestLvgl();
     // StartTestAtomic();
-    TestSvpwm();
+    // TestSvpwm();
+    TestPwmRec();
 
     vTaskDelete(nullptr);
 }

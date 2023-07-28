@@ -27,7 +27,8 @@
  * DMA Setting 配置：
  * Circular, Half Word
  * 推荐：Use Fifo, Threshold 根据 ADC 的 Number of Conversion 选择，使得 Fifo 中的大小刚好是一个转换序列的大小。
- * （DMA Fifo 总容量为 4 Words (即 32 Bytes)，因此 Half Full = 16 Bytes，以此类推。
+ *   如果 Resolution 是 12 bit，则数据为 uint16_t （因为 uint8_t 放不下，但又没有 uint12_t）
+ *   DMA Fifo 总容量为 4 Words (即 16 Bytes, 8 个 uint16_t), 因此 Half Full = 4 个 uint16_t
  */
 
 class Adc
