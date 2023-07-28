@@ -20,7 +20,6 @@
 #include "main.h"
 #include "cmsis_os.h"
 #include "adc.h"
-#include "dac.h"
 #include "dma.h"
 #include "spi.h"
 #include "tim.h"
@@ -96,16 +95,16 @@ int main(void)
   MX_GPIO_Init();
   MX_DMA_Init();
   MX_ADC1_Init();
-  MX_DAC_Init();
   MX_TIM3_Init();
   MX_USART1_UART_Init();
   MX_FSMC_Init();
   MX_TIM1_Init();
   MX_SPI2_Init();
   MX_SPI3_Init();
-  MX_TIM2_Init();
   MX_TIM8_Init();
   MX_TIM6_Init();
+  MX_ADC2_Init();
+  MX_ADC3_Init();
   /* USER CODE BEGIN 2 */
 
   /* USER CODE END 2 */

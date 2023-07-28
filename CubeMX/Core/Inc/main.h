@@ -62,6 +62,8 @@ void Error_Handler(void);
 #define IDrdy_Pin GPIO_PIN_11
 #define IDrdy_GPIO_Port GPIOD
 #define IDrdy_EXTI_IRQn EXTI15_10_IRQn
+#define LcdBacklight_Pin GPIO_PIN_8
+#define LcdBacklight_GPIO_Port GPIOA
 #define VDrdy_Pin GPIO_PIN_15
 #define VDrdy_GPIO_Port GPIOA
 #define VDrdy_EXTI_IRQn EXTI15_10_IRQn

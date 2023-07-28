@@ -83,7 +83,6 @@ public:
     void InitBacklight()
     {
         LcdBacklight::Init();
-        // SetBacklight(0.3);
     }
 
     void RegisterExternalWriteScreenDmaCpltCallback(void (*ExternalWriteDataDmaCpltCallback)(LcdSt7796 *lcd))

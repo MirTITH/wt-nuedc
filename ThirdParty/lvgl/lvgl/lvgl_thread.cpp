@@ -5,6 +5,7 @@
 #include "freertos_lock/freertos_lock.hpp"
 #include "fonts/lvgl_ttf.h"
 #include "ads1256/ads1256_device.hpp"
+#include "Lcd/lcd_device.hpp"
 
 freertos_lock::RecursiveMutex LvglMutex;
 freertos_lock::BinarySemphr LvglThreadStartSem; // LvglThread 启动后会解锁这个信号量
@@ -118,6 +119,7 @@ void StartLvglThread()
 {
     // freetype 要的栈空间实在是太大了 qwq
     xTaskCreate(LvglThreadEntry, "lvgl_thread", 1024 * 2, nullptr, PriorityBelowNormal, nullptr);
+    LCD.SetBacklight(0.5);
     LvglThreadStartSem.lock(); // 等待 lvgl_thread 启动完毕
     xTaskCreate(LvAdsMonitor, "ads_monitor", 1024 * 2, &VAds, PriorityBelowNormal, nullptr);
 }
