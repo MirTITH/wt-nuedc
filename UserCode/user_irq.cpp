@@ -24,6 +24,8 @@
 #include "ads1256/ads1256_device.hpp"
 #include "usercode_vc/User_VC.h"
 #include "Vofa/just_float.hpp"
+#include <atomic>
+#include "pwm_rec/pwm_rec.hpp"
 
 #ifdef __cplusplus
 extern "C" {
@@ -71,19 +73,25 @@ void HAL_UARTEx_RxEventCallback(UART_HandleTypeDef *huart, uint16_t Size)
 
 uint32_t kTaskVcStartUs, kTaskVcDuration;
 uint32_t kTimCount;
+control_system::Pll<float> pll(1.0 / 5000.0);
 void MY_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
 {
     if (htim->Instance == TIM3) {
         /* code */
     } else if (htim->Instance == TIM6) { // spwm
-        // kTaskVcStartUs = HPT_GetUs();
+        extern std::atomic<bool> kStartPwmRec;
+        extern std::atomic<float> kMod;
+        extern std::atomic<float> kDuty;
+        extern UnipolarSpwm kSpwm;
 
-        // global_timer = HPT_GetUs() * 1e-6;
+        if (kStartPwmRec) {
+            auto ac_volt = Adc2.GetVoltage(0);
+            pll.Step(ac_volt);
+            kDuty = (kMod * std::cos(pll.phase_) + 1) / 2;
+            kSpwm.SetDuty(kDuty);
+            JFStream << ac_volt << pll.phase_ << kDuty << EndJFStream;
+        }
 
-        // // 0.2ms spwm
-        // Task_Vc_Loop_Spwm();
-
-        // kTaskVcDuration = HPT_GetUs() - kTaskVcStartUs;
     } else if (htim->Instance == TIM8) { // svpwm
         // kTaskVcStartUs = HPT_GetUs();
 
@@ -98,8 +106,12 @@ void MY_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
 
 void HAL_ADC_ConvCpltCallback(ADC_HandleTypeDef *hadc)
 {
-    if (hadc->Instance == Adc1.hadc_->Instance) {
+    if (hadc->Instance == ADC1) {
         Adc1.ConvCpltCallback();
+    } else if (hadc->Instance == ADC2) {
+        Adc2.ConvCpltCallback();
+    } else if (hadc->Instance == ADC3) {
+        Adc3.ConvCpltCallback();
     }
 }
 

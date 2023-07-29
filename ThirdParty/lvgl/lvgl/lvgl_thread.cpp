@@ -6,6 +6,7 @@
 #include "fonts/lvgl_ttf.h"
 #include "ads1256/ads1256_device.hpp"
 #include "Lcd/lcd_device.hpp"
+#include "Adc/adc_class_device.hpp"
 
 freertos_lock::RecursiveMutex LvglMutex;
 freertos_lock::BinarySemphr LvglThreadStartSem; // LvglThread 启动后会解锁这个信号量
@@ -24,37 +25,6 @@ void LvglUnlock()
     LvglMutex.unlock();
 }
 
-void lv_example_freetype_1(void)
-{
-    /*Create style with the new font*/
-    static lv_style_t style;
-    lv_style_init(&style);
-    lv_style_set_text_align(&style, LV_TEXT_ALIGN_CENTER);
-    lv_style_set_width(&style, lv_pct(90));
-
-    /*Create a label with the new style*/
-    lv_obj_t *label0 = lv_label_create(lv_scr_act());
-    lv_obj_add_style(label0, &style, 0);
-    lv_obj_add_style(label0, &Style_NormalFont, 0);
-    lv_label_set_long_mode(label0, LV_LABEL_LONG_WRAP);
-    lv_label_set_text(label0, "正常大小字体\nThis is normal sized font");
-    lv_obj_align(label0, LV_ALIGN_TOP_MID, 0, 20);
-
-    lv_obj_t *label = lv_label_create(lv_scr_act());
-    lv_obj_add_style(label, &style, 0);
-    lv_obj_add_style(label, &Style_LargeFont, 0);
-    lv_label_set_long_mode(label, LV_LABEL_LONG_WRAP);
-    lv_label_set_text(label, "大就是好！\nBigger!");
-    lv_obj_center(label);
-
-    lv_obj_t *label2 = lv_label_create(lv_scr_act());
-    lv_obj_add_style(label2, &style, 0);
-    lv_obj_add_style(label2, &Style_SmallFont, 0);
-    lv_label_set_long_mode(label2, LV_LABEL_LONG_WRAP);
-    lv_label_set_text(label2, "Tiny qute font\nThis does not support 中文");
-    lv_obj_align(label2, LV_ALIGN_BOTTOM_MID, 0, -50);
-}
-
 static void LvAdsMonitor(void *argument)
 {
     auto ads = static_cast<Ads1256 *>(argument);
@@ -62,28 +32,52 @@ static void LvAdsMonitor(void *argument)
     const uint32_t period = 250;
 
     LvglLock();
-    auto label = lv_label_create(lv_scr_act());
-    lv_obj_add_style(label, &Style_NormalFont, 0);
-    lv_label_set_text_fmt(label, "DRDY 频率：");
-    lv_obj_align(label, LV_ALIGN_LEFT_MID, 0, 0);
+    auto label_drdy = lv_label_create(lv_scr_act());
+    lv_obj_add_style(label_drdy, &Style_NormalFont, 0);
+    lv_label_set_text_fmt(label_drdy, "DRDY 频率：");
+    lv_obj_align(label_drdy, LV_ALIGN_LEFT_MID, 5, 0);
 
-    auto label_figure = lv_label_create(lv_scr_act());
-    lv_obj_add_style(label_figure, &Style_LargeFont, 0);
-    lv_label_set_text_fmt(label_figure, "0");
-    lv_obj_align_to(label_figure, label, LV_ALIGN_OUT_RIGHT_MID, 20, 0);
+    auto label_drdy_figure = lv_label_create(lv_scr_act());
+    lv_obj_add_style(label_drdy_figure, &Style_LargeFont, 0);
+    lv_label_set_text_fmt(label_drdy_figure, "0");
+    lv_obj_align_to(label_drdy_figure, label_drdy, LV_ALIGN_OUT_RIGHT_MID, 20, 0);
+
+    auto label_adc = lv_label_create(lv_scr_act());
+    lv_obj_add_style(label_adc, &Style_NormalFont, 0);
+    lv_label_set_text_fmt(label_adc, "ADC 速率：");
+    lv_obj_align(label_adc, LV_ALIGN_LEFT_MID, 5, 40);
+
+    auto label_adc_figure = lv_label_create(lv_scr_act());
+    lv_obj_add_style(label_adc_figure, &Style_NormalFont, 0);
+    lv_label_set_text_fmt(label_adc_figure, "0,0,0");
+    lv_obj_align_to(label_adc_figure, label_adc, LV_ALIGN_OUT_RIGHT_MID, 20, 0);
     LvglUnlock();
 
     auto last_count = ads->drdy_count_;
+    uint32_t adc_now_count[3];
+    uint32_t adc_last_count[3] = {};
 
     uint32_t PreviousWakeTime = xTaskGetTickCount();
     while (1) {
         auto now_count = ads->drdy_count_;
 
+        adc_now_count[0] = Adc1.conv_cplt_count;
+        adc_now_count[1] = Adc2.conv_cplt_count;
+        adc_now_count[2] = Adc3.conv_cplt_count;
+
         LvglLock();
-        lv_label_set_text_fmt(label_figure, "%lu", (now_count - last_count) * 1000 / period);
+        lv_label_set_text_fmt(label_drdy_figure, "%lu", (now_count - last_count) * 1000 / period);
+        lv_label_set_text_fmt(label_adc_figure, "%lu,%lu,%lu",
+                              (adc_now_count[0] - adc_last_count[0]) * 1000 / period,
+                              (adc_now_count[1] - adc_last_count[1]) * 1000 / period,
+                              (adc_now_count[2] - adc_last_count[2]) * 1000 / period);
         LvglUnlock();
 
         last_count = now_count;
+        for (size_t i = 0; i < 3; i++) {
+            adc_last_count[i] = adc_now_count[i];
+        }
+
         vTaskDelayUntil(&PreviousWakeTime, period);
     }
 }

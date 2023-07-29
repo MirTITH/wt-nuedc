@@ -16,6 +16,8 @@ void AdcTest()
 
     Adc1.Init();
     Adc1.StartDma();
+    Adc2.Init();
+    Adc2.StartDma();
 
     // int last_count                = 0;
     // TickType_t pxPreviousWakeTime = xTaskGetTickCount();
@@ -24,31 +26,31 @@ void AdcTest()
 
     // while (true) {
 
-        // dac_value += 1;
-        // if (dac_value >= 4096) {
-        //     dac_value = 0;
-        // }
-        // if (dac_value <= 2048) {
-            
-        //     auto volts = Adc1.GetAllVoltage();
-        //     os_printf("%f,%f\n", dac_value * (3.3 / 4095.0), volts.at(3));
-        // } else {
-        //     auto volts = Adc1.GetAllVoltage();
-        //     os_printf("%f,%f\n", 2048 * (3.3 / 4095.0), volts.at(3));
-        // }
+    // dac_value += 1;
+    // if (dac_value >= 4096) {
+    //     dac_value = 0;
+    // }
+    // if (dac_value <= 2048) {
 
-        // os_printf("dac value: %-4d ", dac_value);
+    //     auto volts = Adc1.GetAllVoltage();
+    //     os_printf("%f,%f\n", dac_value * (3.3 / 4095.0), volts.at(3));
+    // } else {
+    //     auto volts = Adc1.GetAllVoltage();
+    //     os_printf("%f,%f\n", 2048 * (3.3 / 4095.0), volts.at(3));
+    // }
 
-        // os_printf("adc volt: ");
-        // for (auto &var : volts) {
-        //     os_printf("%-7.5f ", var);
-        // }
+    // os_printf("dac value: %-4d ", dac_value);
 
-        // os_printf("temp: %f\t", GetCoreTemperature());
-        // auto count = Adc1.conv_cplt_count;
-        // os_printf("count: %lu speed: %g kps", count, (float)(count - last_count) / loop_period_ms);
-        // last_count = count;
-        // os_printf("\n");
+    // os_printf("adc volt: ");
+    // for (auto &var : volts) {
+    //     os_printf("%-7.5f ", var);
+    // }
+
+    // os_printf("temp: %f\t", GetCoreTemperature());
+    // auto count = Adc1.conv_cplt_count;
+    // os_printf("count: %lu speed: %g kps", count, (float)(count - last_count) / loop_period_ms);
+    // last_count = count;
+    // os_printf("\n");
 
     //     vTaskDelayUntil(&pxPreviousWakeTime, loop_period_ms);
     // }

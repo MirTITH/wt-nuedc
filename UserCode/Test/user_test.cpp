@@ -7,7 +7,7 @@
 // Test includes
 // #include "test_template.cpp"
 // #include "OldTests/control_system_test.cpp"
-// #include "OldTests/adc_test.cpp"
+#include "OldTests/adc_test.cpp"
 // #include "OldTests/math_test.cpp"
 // #include "OldTests/pll_test.cpp"
 // #include "OldTests/high_precision_time_test.cpp"
