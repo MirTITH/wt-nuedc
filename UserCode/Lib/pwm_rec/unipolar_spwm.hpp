@@ -58,7 +58,7 @@ private:
     std::array<SpwmChannel_t, 2> spwm_channels_;
     void SetChannelDuty(const SpwmChannel_t &channel, float duty)
     {
-        auto max_compare = __HAL_TIM_GET_AUTORELOAD(channel.htim) + 1;
+        auto max_compare = __HAL_TIM_GET_AUTORELOAD(channel.htim);
         uint32_t compare = std::lround(max_compare * duty);
         __HAL_TIM_SET_COMPARE(channel.htim, channel.channel, compare);
     }

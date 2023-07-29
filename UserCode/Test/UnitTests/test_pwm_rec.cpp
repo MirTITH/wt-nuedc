@@ -17,10 +17,12 @@ void TestPwmRec()
 
     PwmRec<float> pwm_rec(1.0 / 5000.0, {&htim8, TIM_CHANNEL_1, &htim8, TIM_CHANNEL_2});
     pwm_rec.Init();
+    pwm_rec.StartPwm();
+
     control_system::SineGenerator<float, std::cos> cosine(50 * 2 * M_PI, 1.0 / 5000.0);
     // control_system::Pll<float> pll(1.0 / 5000.0);
 
-    while (true) {
+    while (false) {
         auto input        = cosine.Step();
         uint32_t start_us = HPT_GetUs();
 

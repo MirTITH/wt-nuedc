@@ -41,6 +41,16 @@ public:
         : pi_controller(Kp, Ki, Ts), Ts(Ts),
           spwm_(tim_channel){};
 
+    void StartPwm()
+    {
+        spwm_.StartPwm();
+    }
+
+    void StopPwm()
+    {
+        spwm_.StopPwm();
+    }
+
     /**
      * @brief 初始化比例谐振滤波器
      *
