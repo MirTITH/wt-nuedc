@@ -13,19 +13,11 @@
 #include "freertos_io/uart_device.hpp"
 #include "HighPrecisionTime/high_precision_time.h"
 #include "freertos_io/os_printf.h"
-#include "freertos_io/uart_device.hpp"
-#include "Adc/adc_class_device.hpp"
-#include "control_system/pll.hpp"
-#include <cmath>
-#include "control_system/signal_generator.hpp"
-// #include "dac.h"
 #include "Adc/adc_class_device.hpp"
 #include "Lcd/lcd_device.hpp"
 #include "ads1256/ads1256_device.hpp"
-#include "usercode_vc/User_VC.h"
 #include "Vofa/just_float.hpp"
-#include <atomic>
-#include "pwm_rec/pwm_rec.hpp"
+#include "fast_tim_callback.hpp"
 
 #ifdef __cplusplus
 extern "C" {
@@ -71,27 +63,12 @@ void HAL_UARTEx_RxEventCallback(UART_HandleTypeDef *huart, uint16_t Size)
     }
 }
 
-uint32_t kTaskVcStartUs, kTaskVcDuration;
-uint32_t kTimCount;
-control_system::Pll<float> pll(1.0 / 5000.0);
+
 void MY_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
 {
     if (htim->Instance == TIM3) {
-        /* code */
     } else if (htim->Instance == TIM6) { // spwm
-        extern std::atomic<bool> kStartPwmRec;
-        extern std::atomic<float> kMod;
-        extern std::atomic<float> kDuty;
-        extern UnipolarSpwm kSpwm;
-
-        if (kStartPwmRec) {
-            auto ac_volt = Adc2.GetVoltage(0);
-            pll.Step(ac_volt);
-            kDuty = (kMod * std::cos(pll.phase_) + 1) / 2;
-            kSpwm.SetDuty(kDuty);
-            JFStream << ac_volt << pll.phase_ << kDuty << EndJFStream;
-        }
-
+        FastTimCallback();
     } else if (htim->Instance == TIM8) { // svpwm
         // kTaskVcStartUs = HPT_GetUs();
 
