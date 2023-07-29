@@ -20,23 +20,12 @@
  */
 class UnipolarSpwm
 {
+public:
     typedef struct
     {
         TIM_HandleTypeDef *htim;
         uint32_t channel;
     } SpwmChannel_t;
-
-private:
-    std::array<SpwmChannel_t, 2> spwm_channels_;
-    void SetChannelDuty(const SpwmChannel_t &channel, float duty)
-    {
-        duty = (duty < 0) ? 0 : duty;
-        duty = (duty > 1) ? 1 : duty;
-
-        auto max_compare = __HAL_TIM_GET_AUTORELOAD(channel.htim) + 1;
-        uint32_t compare = std::lround(max_compare * duty);
-        __HAL_TIM_SET_COMPARE(channel.htim, channel.channel, compare);
-    }
 
 public:
     UnipolarSpwm(const std::array<SpwmChannel_t, 2> &spwm_channels)
@@ -58,7 +47,19 @@ public:
 
     void SetDuty(float duty)
     {
+        duty = (duty < 0) ? 0 : duty;
+        duty = (duty > 1) ? 1 : duty;
+
         SetChannelDuty(spwm_channels_[0], duty);
         SetChannelDuty(spwm_channels_[1], 1 - duty);
+    }
+
+private:
+    std::array<SpwmChannel_t, 2> spwm_channels_;
+    void SetChannelDuty(const SpwmChannel_t &channel, float duty)
+    {
+        auto max_compare = __HAL_TIM_GET_AUTORELOAD(channel.htim) + 1;
+        uint32_t compare = std::lround(max_compare * duty);
+        __HAL_TIM_SET_COMPARE(channel.htim, channel.channel, compare);
     }
 };

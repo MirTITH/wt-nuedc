@@ -77,7 +77,8 @@ private:
 public:
     T omega_; // 角速度 (rad/s)
     T phase_; // 相位 (rad)，范围 [0, 2*PI). 注：相位值为输入信号的矢量与 x 轴正方向的夹角（即余弦信号的相角）
-    T d_, q_;
+    T d_;     // 交流幅值
+    T q_;     // 应该在 0 附近
 
     /**
      * @brief 单相锁相环
@@ -117,7 +118,7 @@ public:
      * @brief 走一个周期
      *
      * @param input 输入
-     * @return  输出
+     * @return  omega
      */
     T Step(T input) override
     {

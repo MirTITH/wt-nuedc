@@ -16,7 +16,7 @@
 namespace control_system
 {
 
-template <typename T>
+template <typename T, T (*sin_func)(T) = std::sin>
 class SineGenerator
 {
 private:
@@ -80,12 +80,17 @@ public:
      */
     T Step()
     {
-        T result = std::sin(k * counter_ + initial_phase_);
+        T result = sin_func(k * counter_ + initial_phase_);
         counter_++;
         if (counter_ >= reload_num_) {
             counter_ = 0;
         }
         return result;
+    }
+
+    T GetPhase() const
+    {
+        return k * counter_ + initial_phase_;
     }
 
     /**
@@ -96,7 +101,7 @@ public:
      */
     T GetOutputDeltaPhase(T delta_phase) const
     {
-        return std::sin(k * counter_ + initial_phase_ + delta_phase);
+        return sin_func(k * counter_ + initial_phase_ + delta_phase);
     }
 
     /**
