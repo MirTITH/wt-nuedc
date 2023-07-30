@@ -13,9 +13,6 @@
 #include "freertos_io/uart_device.hpp"
 #include <cmath>
 
-namespace lv_app
-{
-
 using namespace std;
 
 static void MainPage_Thread(void *)
@@ -41,6 +38,7 @@ static void MainPage_Thread(void *)
     LvTextField tf_touch_screen(cont_col, "触摸点数", (cont_col_width) / 3);
     LvTextField tf_main_uart(cont_col, "UART发送速率", (cont_col_width) / 2);
     LvTextField tf_temperature(cont_col, "内核温度", (cont_col_width) / 2);
+    LvTextField tf_adc_duration(cont_col, "内置ADC中断时长", (cont_col_width) / 2);
 
     LvglUnlock();
 
@@ -113,18 +111,24 @@ static void MainPage_Thread(void *)
 
         // Tempearture
         char temp[10];
-        snprintf(temp, sizeof(temp), "%.1f", GetCoreTemperature());
+        extern float kCoreTempearture;
+        snprintf(temp, sizeof(temp), "%.2f", kCoreTempearture);
         LvglLock();
         tf_temperature.SetMsg(temp);
+        LvglUnlock();
+
+        // adc_duration
+        extern uint32_t kAdc1CallbackDuration;
+        str = to_string(kAdc1CallbackDuration);
+        LvglLock();
+        tf_adc_duration.SetMsg(str);
         LvglUnlock();
 
         vTaskDelayUntil(&PreviousWakeTime, period);
     }
 }
 
-void MainPage_Init()
+void lv_app::MainPage_Init()
 {
     xTaskCreate(MainPage_Thread, "main_page", 1024 * 2, nullptr, PriorityBelowNormal, nullptr);
 }
-
-} // namespace lv_app

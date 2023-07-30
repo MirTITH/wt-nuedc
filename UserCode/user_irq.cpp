@@ -18,6 +18,7 @@
 #include "ads1256/ads1256_device.hpp"
 #include "Vofa/just_float.hpp"
 #include "fast_tim_callback.hpp"
+#include "HighPrecisionTime/time_meter.hpp"
 
 #ifdef __cplusplus
 extern "C" {
@@ -80,10 +81,17 @@ void MY_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
     }
 }
 
+#include "Filters/butterworth.hpp"
+float kCoreTempearture;
+uint32_t kAdc1CallbackDuration;
+
 void HAL_ADC_ConvCpltCallback(ADC_HandleTypeDef *hadc)
 {
+    static Butter_LP_5_20_40dB_5000Hz<float> kTemperatureFilter;
     if (hadc->Instance == ADC1) {
+        TimeMeter time_meter(&kAdc1CallbackDuration);
         Adc1.ConvCpltCallback();
+        kCoreTempearture = kTemperatureFilter.Step(GetCoreTemperature());
     } else if (hadc->Instance == ADC2) {
         Adc2.ConvCpltCallback();
     } else if (hadc->Instance == ADC3) {
