@@ -14,8 +14,7 @@ static control_system::Pll<float> pll(1.0 / 5000.0);
 void FastTimCallback()
 {
     // 频率和时间统计
-    static TimeMeter time_meter(false);
-    time_meter.StartMeasure();
+    TimeMeter time_meter(&kFastTimCallbackDuration);
     kFastTimCallbackCount++;
 
     extern std::atomic<bool> kStartPwmRec;
@@ -30,6 +29,4 @@ void FastTimCallback()
         kSpwm.SetDuty(kDuty);
         // JFStream << ac_volt << pll.phase_ << kDuty << EndJFStream;
     }
-
-    kFastTimCallbackDuration = time_meter.GetDuration();
 }

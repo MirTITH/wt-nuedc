@@ -16,30 +16,30 @@ LV_FONT_DECLARE(FALLBACK_SMALL_FONT)
 
 static lv_ft_info_t kTtfInfo      = {};
 static lv_ft_info_t kTtfInfoLarge = {};
-// static lv_ft_info_t kTtfInfoSmall = {};
+static lv_ft_info_t kTtfInfoSmall = {};
 
 void LvglTTF_Init()
 {
     kTtfInfo.name     = NULL;
-    kTtfInfo.weight   = 20;                   // 字体大小
+    kTtfInfo.weight   = 18;                   // 字体大小
     kTtfInfo.style    = FT_FONT_STYLE_NORMAL; // 字体风格
     kTtfInfo.mem      = TTF_MEM_START;
     kTtfInfo.mem_size = TTF_MEM_SIZE;
     lv_ft_font_init(&kTtfInfo);
 
     kTtfInfoLarge.name     = NULL;
-    kTtfInfoLarge.weight   = 48;                   // 字体大小
+    kTtfInfoLarge.weight   = 40;                   // 字体大小
     kTtfInfoLarge.style    = FT_FONT_STYLE_NORMAL; // 字体风格
     kTtfInfoLarge.mem      = TTF_MEM_START;
     kTtfInfoLarge.mem_size = TTF_MEM_SIZE;
     lv_ft_font_init(&kTtfInfoLarge);
 
-    // kTtfInfoSmall.name     = NULL;
-    // kTtfInfoSmall.weight   = 12;                   // 字体大小
-    // kTtfInfoSmall.style    = FT_FONT_STYLE_NORMAL; // 字体风格
-    // kTtfInfoSmall.mem      = TTF_MEM_START;
-    // kTtfInfoSmall.mem_size = TTF_MEM_SIZE;
-    // lv_ft_font_init(&kTtfInfoSmall);
+    kTtfInfoSmall.name     = NULL;
+    kTtfInfoSmall.weight   = 12;                   // 字体大小
+    kTtfInfoSmall.style    = FT_FONT_STYLE_NORMAL; // 字体风格
+    kTtfInfoSmall.mem      = TTF_MEM_START;
+    kTtfInfoSmall.mem_size = TTF_MEM_SIZE;
+    lv_ft_font_init(&kTtfInfoSmall);
 }
 
 lv_font_t *LvglTTF_GetFont()
@@ -62,9 +62,9 @@ lv_font_t *LvglTTF_GetLargeFont()
 
 lv_font_t *LvglTTF_GetSmallFont()
 {
-    // if (kTtfInfoSmall.font != NULL) {
-    //     return kTtfInfoSmall.font;
-    // }
+    if (kTtfInfoSmall.font != NULL) {
+        return kTtfInfoSmall.font;
+    }
 
     return (lv_font_t *)&FALLBACK_SMALL_FONT;
 }

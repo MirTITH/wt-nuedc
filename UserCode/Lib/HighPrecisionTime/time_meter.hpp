@@ -5,13 +5,17 @@
 
 class TimeMeter
 {
+private:
+    uint32_t *duration_;
+
 public:
     uint32_t start_time_ = 0;
 
     /**
      * @brief 创建时是否开始测量
      */
-    TimeMeter(bool start_measure = true)
+    TimeMeter(uint32_t *duration, bool start_measure = true)
+        : duration_(duration)
     {
         if (start_measure) {
             start_time_ = HPT_GetUs();
@@ -28,13 +32,8 @@ public:
         start_time_ = HPT_GetUs();
     }
 
-    /**
-     * @brief 获取上次开始测量到当前时刻的时间间隔
-     *
-     * @return uint32_t 微秒
-     */
-    uint32_t GetDuration() const
+    ~TimeMeter()
     {
-        return HPT_GetUs() - start_time_;
+        *duration_ = HPT_GetUs() - start_time_;
     }
 };

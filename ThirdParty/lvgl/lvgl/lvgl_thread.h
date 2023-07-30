@@ -10,10 +10,6 @@ void StartLvglThread();
 void LvglLock();
 void LvglUnlock();
 
-extern lv_style_t Style_NormalFont;
-extern lv_style_t Style_LargeFont;
-extern lv_style_t Style_SmallFont;
-
 #ifdef __cplusplus
 }
 #endif
