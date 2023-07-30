@@ -37,3 +37,32 @@ public:
         *duration_ = HPT_GetUs() - start_time_;
     }
 };
+
+template <typename T>
+class CounterFreqMeter
+{
+private:
+    const T *const counter_;
+    T last_count_ = 0;
+    uint32_t last_us_;
+
+public:
+    CounterFreqMeter(const T *const counter)
+        : counter_(counter)
+    {
+        last_count_ = *counter_;
+        last_us_    = HPT_GetUs();
+    }
+
+    uint32_t MeasureFreq()
+    {
+        T now_count     = *counter_;
+        uint32_t now_us = HPT_GetUs();
+
+        uint32_t result = (now_count - last_count_) * 1000000 / (now_us - last_us_);
+
+        last_us_    = now_us;
+        last_count_ = now_count;
+        return result;
+    }
+};

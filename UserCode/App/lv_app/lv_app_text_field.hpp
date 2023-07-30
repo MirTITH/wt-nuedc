@@ -15,7 +15,10 @@ private:
     lv_obj_t *obj_title_frame_;
 
 public:
-    LvTextField(lv_obj_t *parent, const std::string &title = "Untitled", lv_coord_t width = LV_PCT(100), lv_coord_t height = 70)
+    LvTextField(lv_obj_t *parent, const std::string &title = "Untitled",
+                lv_coord_t width = LV_PCT(100), lv_coord_t height = 70,
+                const lv_font_t *msg_font   = LvglTTF_GetLargeFont(),
+                const lv_font_t *title_font = LvglTTF_GetFont())
     {
         main_frame_ = lv_obj_create(parent);
         lv_obj_set_style_pad_all(main_frame_, 0, 0);
@@ -38,7 +41,7 @@ public:
         lv_obj_add_style(obj_title_frame_, &lv_app::kStyleNoBorder, 0);
 
         label_title_ = lv_label_create(obj_title_frame_);
-        lv_obj_set_style_text_font(label_title_, LvglTTF_GetFont(), 0);
+        lv_obj_set_style_text_font(label_title_, title_font, 0);
         lv_label_set_text(label_title_, title.c_str());
 
         lv_obj_move_background(obj_msg_border_);
@@ -46,7 +49,7 @@ public:
         label_msg_ = lv_label_create(main_frame_);
         lv_obj_set_width(label_msg_, lv_pct(96));
         lv_obj_align(label_msg_, LV_ALIGN_CENTER, 0, 15 / 2 + 1);
-        lv_obj_set_style_text_font(label_msg_, LvglTTF_GetLargeFont(), 0);
+        lv_obj_set_style_text_font(label_msg_, msg_font, 0);
         lv_label_set_long_mode(label_msg_, LV_LABEL_LONG_SCROLL);
         // lv_obj_set_style_text_align(label_msg_, LV_TEXT_ALIGN_CENTER, 0);
         // lv_label_set_text(label_msg_, "Hello World!");

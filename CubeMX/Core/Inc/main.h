@@ -57,6 +57,16 @@ void Error_Handler(void);
 /* USER CODE END EFP */
 
 /* Private defines -----------------------------------------------------------*/
+#define Key_Addr2_Pin GPIO_PIN_2
+#define Key_Addr2_GPIO_Port GPIOE
+#define Key_Addr3_Pin GPIO_PIN_3
+#define Key_Addr3_GPIO_Port GPIOE
+#define Key_Addr1_Pin GPIO_PIN_13
+#define Key_Addr1_GPIO_Port GPIOC
+#define Key_Addr0_Pin GPIO_PIN_4
+#define Key_Addr0_GPIO_Port GPIOC
+#define Key_Data_Pin GPIO_PIN_5
+#define Key_Data_GPIO_Port GPIOC
 #define ISync_Pin GPIO_PIN_2
 #define ISync_GPIO_Port GPIOB
 #define IDrdy_Pin GPIO_PIN_11

@@ -18,7 +18,7 @@
 #include "ads1256/ads1256_device.hpp"
 #include "Vofa/just_float.hpp"
 #include "fast_tim_callback.hpp"
-#include "HighPrecisionTime/time_meter.hpp"
+#include "HighPrecisionTime/stat.hpp"
 
 #ifdef __cplusplus
 extern "C" {
