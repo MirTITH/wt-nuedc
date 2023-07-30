@@ -35,7 +35,7 @@ public:
     {
         lightness = (lightness < 0) ? 0 : lightness;
         lightness = (lightness > 1) ? 1 : lightness;
-        __HAL_TIM_SET_COMPARE(_htim, _channel, __HAL_TIM_GET_AUTORELOAD(_htim) * lightness);
+        __HAL_TIM_SET_COMPARE(_htim, _channel, (__HAL_TIM_GET_AUTORELOAD(_htim) + 1) * lightness);
     }
 
     /**
