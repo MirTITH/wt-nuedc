@@ -63,11 +63,10 @@ void HAL_UARTEx_RxEventCallback(UART_HandleTypeDef *huart, uint16_t Size)
     }
 }
 
-
 void MY_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
 {
     if (htim->Instance == TIM3) {
-    } else if (htim->Instance == TIM6) { // spwm
+    } else if (htim->Instance == TIM6) {
         FastTimCallback();
     } else if (htim->Instance == TIM8) { // svpwm
         // kTaskVcStartUs = HPT_GetUs();

@@ -8,6 +8,7 @@
 #include "lvgl/lvgl_thread.h"
 #include "lv_app_text_field.hpp"
 #include "Adc/adc_class_device.hpp"
+#include "fast_tim_callback.hpp"
 
 namespace lv_app
 {
@@ -24,6 +25,7 @@ static void MainPage_Thread(void *)
 
     LvTextField tf_drdy(cont_col, "VAds, IAds DRDY 频率");
     LvTextField tf_adc_rate(cont_col, "内置 ADC 1,2,3 速率");
+    LvTextField tf_fast_tim(cont_col, "FastTim: 频率, 时间 (us)");
 
     LvglUnlock();
 
@@ -31,11 +33,13 @@ static void MainPage_Thread(void *)
     auto iads_last_count = IAds.drdy_count_;
     uint32_t adc_now_count[3];
     uint32_t adc_last_count[3] = {};
+    auto fast_tim_last_count   = kFastTimCallbackCount;
 
     std::stringstream sstr;
 
     uint32_t PreviousWakeTime = xTaskGetTickCount();
     while (1) {
+        // ADS1256
         auto vads_now_count = VAds.drdy_count_;
         auto iads_now_count = IAds.drdy_count_;
         sstr.str("");
@@ -47,6 +51,7 @@ static void MainPage_Thread(void *)
         tf_drdy.SetMsg(sstr.str());
         LvglUnlock();
 
+        // ADC
         adc_now_count[0] = Adc1.conv_cplt_count;
         adc_now_count[1] = Adc2.conv_cplt_count;
         adc_now_count[2] = Adc3.conv_cplt_count;
@@ -59,6 +64,16 @@ static void MainPage_Thread(void *)
         }
         LvglLock();
         tf_adc_rate.SetMsg(sstr.str());
+        LvglUnlock();
+
+        // FastTim
+        auto fast_tim_now_count = kFastTimCallbackCount;
+        sstr.str("");
+        sstr << (fast_tim_now_count - fast_tim_last_count) * 1000 / period << ","
+             << kFastTimCallbackDuration;
+        fast_tim_last_count = fast_tim_now_count;
+        LvglLock();
+        tf_fast_tim.SetMsg(sstr.str());
         LvglUnlock();
 
         vTaskDelayUntil(&PreviousWakeTime, period);
