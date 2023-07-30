@@ -14,7 +14,6 @@
 #include "adc.h"
 #include <vector>
 #include <cassert>
-// #include "freertos_lock/freertos_lock.hpp"
 
 /**
  * ADC 需要在 CubeMX 里先配置好，以下参数需要配置：（其他随意）
@@ -35,8 +34,6 @@ class Adc
 {
 private:
     using adc_data_t = uint16_t;
-
-    // freertos_lock::CountingSemphr lock_;
 
     bool is_inited_ = false;
     const float vref_;
@@ -66,7 +63,6 @@ public:
     void ConvCpltCallback()
     {
         conv_cplt_count++;
-        // lock_.unlock_from_isr();
     }
 
     /**
