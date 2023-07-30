@@ -3,7 +3,7 @@
 #include "FreeRTOS.h"
 #include "task.h"
 #include "ads1256/ads1256_device.hpp"
-#include <sstream>
+#include <string>
 #include "thread_priority_def.h"
 #include "lvgl/lvgl_thread.h"
 #include "lv_app_text_field.hpp"
@@ -11,6 +11,8 @@
 
 namespace lv_app
 {
+
+using namespace std;
 
 static void MainPage_Thread(void *)
 {
@@ -32,33 +34,37 @@ static void MainPage_Thread(void *)
     uint32_t adc_now_count[3];
     uint32_t adc_last_count[3] = {};
 
-    std::stringstream sstr;
+    // std::stringstream sstr;
+
+    std::string str;
 
     uint32_t PreviousWakeTime = xTaskGetTickCount();
     while (1) {
         auto vads_now_count = VAds.drdy_count_;
         auto iads_now_count = IAds.drdy_count_;
-        sstr.str("");
-        sstr << (vads_now_count - vads_last_count) * 1000 / period << ","
-             << (vads_now_count - iads_last_count) * 1000 / period;
+
+        str = to_string((vads_now_count - vads_last_count) * 1000 / period).append(",") +
+              to_string((vads_now_count - iads_last_count) * 1000 / period);
+
         vads_last_count = vads_now_count;
         iads_last_count = iads_now_count;
         LvglLock();
-        tf_drdy.SetMsg(sstr.str());
+        tf_drdy.SetMsg(str);
         LvglUnlock();
 
         adc_now_count[0] = Adc1.conv_cplt_count;
         adc_now_count[1] = Adc2.conv_cplt_count;
         adc_now_count[2] = Adc3.conv_cplt_count;
-        sstr.str("");
-        sstr << (adc_now_count[0] - adc_last_count[0]) * 1000 / period << ","
-             << (adc_now_count[1] - adc_last_count[1]) * 1000 / period << ","
-             << (adc_now_count[2] - adc_last_count[2]) * 1000 / period;
+
+        str = to_string((adc_now_count[0] - adc_last_count[0]) * 1000 / period).append(",") +
+              to_string((adc_now_count[1] - adc_last_count[1]) * 1000 / period).append(",") +
+              to_string((adc_now_count[2] - adc_last_count[2]) * 1000 / period);
+
         for (size_t i = 0; i < 3; i++) {
             adc_last_count[i] = adc_now_count[i];
         }
         LvglLock();
-        tf_adc_rate.SetMsg(sstr.str());
+        tf_adc_rate.SetMsg(str);
         LvglUnlock();
 
         vTaskDelayUntil(&PreviousWakeTime, period);
