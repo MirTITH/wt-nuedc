@@ -735,4 +735,4 @@ n-th Harmonic Restraint n次谐波制动
 
 谐波总畸变率 total harmonic distortion（THD）
 
-测试
+测试触摸屏内核

@@ -10,6 +10,8 @@
 #include "Adc/adc_class_device.hpp"
 #include "fast_tim_callback.hpp"
 #include "TouchScreen/GT911/gt911_device.hpp"
+#include "freertos_io/uart_device.hpp"
+#include <cmath>
 
 namespace lv_app
 {
@@ -35,12 +37,10 @@ static void MainPage_Thread(void *)
 
     LvTextField tf_drdy(cont_col, "VAds, IAds DRDY 频率");
     LvTextField tf_adc_rate(cont_col, "内置 ADC 1,2,3 速率");
-    LvTextField tf_fast_tim(cont_col, "Fast:频率,时间", (cont_col_width) / 2);
-    LvTextField tf_touch_screen(cont_col, "触摸点个数", (cont_col_width) / 2);
-    LvTextField tf_test1(cont_col, "测试1", (cont_col_width) / 3);
-    LvTextField tf_test2(cont_col, "测试2", (cont_col_width) / 3);
-    LvTextField tf_test3(cont_col, "测试3", (cont_col_width) / 3);
-    tf_test1.SetMsg(to_string(cont_col_width));
+    LvTextField tf_fast_tim(cont_col, "FastTim:频率,时间", (cont_col_width)*2 / 3);
+    LvTextField tf_touch_screen(cont_col, "触摸点数", (cont_col_width) / 3);
+    LvTextField tf_main_uart(cont_col, "UART发送速率", (cont_col_width) / 2);
+    LvTextField tf_temperature(cont_col, "内核温度", (cont_col_width) / 2);
 
     LvglUnlock();
 
@@ -49,6 +49,7 @@ static void MainPage_Thread(void *)
     uint32_t adc_now_count[3];
     uint32_t adc_last_count[3] = {};
     auto fast_tim_last_count   = kFastTimCallbackCount;
+    auto main_uart_last_tx     = MainUart.uart_device.total_tx_size_;
 
     // std::stringstream sstr;
 
@@ -100,6 +101,21 @@ static void MainPage_Thread(void *)
         str = to_string(TouchScreen.NumberOfTouchPoint());
         LvglLock();
         tf_touch_screen.SetMsg(str);
+        LvglUnlock();
+
+        // MainUart
+        auto main_uart_now_tx = MainUart.uart_device.total_tx_size_;
+        str                   = to_string((main_uart_now_tx - main_uart_last_tx) * 1000 / period);
+        LvglLock();
+        tf_main_uart.SetMsg(str);
+        LvglUnlock();
+        main_uart_last_tx = main_uart_now_tx;
+
+        // Tempearture
+        char temp[10];
+        snprintf(temp, sizeof(temp), "%.1f", GetCoreTemperature());
+        LvglLock();
+        tf_temperature.SetMsg(temp);
         LvglUnlock();
 
         vTaskDelayUntil(&PreviousWakeTime, period);

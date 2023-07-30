@@ -18,6 +18,7 @@ private:
 
 public:
     using uart_port::uart_port;
+    uint32_t total_tx_size_ = 0;
 
     /**
      * @brief 发送完成回调
@@ -56,6 +57,7 @@ public:
 
     auto Write(const std::string &str, uint32_t Timeout = HAL_MAX_DELAY)
     {
+        total_tx_size_ += str.size();
         lk_guard lock(write_lock_);
         return uart_port::Write((const uint8_t *)str.data(), str.size(), Timeout);
     }
@@ -63,6 +65,7 @@ public:
     template <typename T>
     auto Write(const T *pData, uint16_t Size, uint32_t Timeout = HAL_MAX_DELAY)
     {
+        total_tx_size_ += Size;
         lk_guard lock(write_lock_);
         return uart_port::Write((const uint8_t *)pData, Size, Timeout);
     }
@@ -79,6 +82,7 @@ public:
     template <typename T>
     auto WriteDirectly(const T *pData, uint16_t Size, uint32_t Timeout = HAL_MAX_DELAY)
     {
+        total_tx_size_ += Size;
         return uart_port::Write((const uint8_t *)pData, Size, Timeout);
     }
 
@@ -96,13 +100,14 @@ public:
             return HAL_OK;
         }
 
+        total_tx_size_ += Size;
         write_lock_.lock();
 
         if (UseDmaTx() && IsAddressValidForDma(pData)) {
-            return WriteDma((const uint8_t *)pData, Size);
+            return uart_port::WriteDma((const uint8_t *)pData, Size);
         }
 
-        return WriteIt((const uint8_t *)pData, Size);
+        return uart_port::WriteIt((const uint8_t *)pData, Size);
     }
 
     auto WriteNonBlock(const std::string &str)
@@ -120,10 +125,10 @@ public:
         read_lock_.lock();
 
         if (UseDmaRx() && IsAddressValidForDma(pData)) {
-            return ReadDma((uint8_t *)pData, Size);
+            return uart_port::ReadDma((uint8_t *)pData, Size);
         }
 
-        return ReadIt((uint8_t *)pData, Size);
+        return uart_port::ReadIt((uint8_t *)pData, Size);
     }
 
     template <typename T>
@@ -138,9 +143,9 @@ public:
         HAL_StatusTypeDef result;
 
         if (UseDmaRx() && IsAddressValidForDma(pData)) {
-            result = ReadToIdleDma((uint8_t *)pData, Size);
+            result = uart_port::ReadToIdleDma((uint8_t *)pData, Size);
         } else {
-            result = ReadToIdleIt((uint8_t *)pData, Size);
+            result = uart_port::ReadToIdleIt((uint8_t *)pData, Size);
         }
 
         if (result != HAL_OK) {

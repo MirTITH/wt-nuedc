@@ -12,6 +12,7 @@
 #include "freertos_io/os_printf.h"
 #include "fonts/lvgl_ttf.h"
 #include "usercode_vc/User_VC.h"
+#include "Adc/adc_class_device.hpp"
 
 using namespace std;
 
@@ -21,6 +22,9 @@ void StartDefaultTask(void const *argument)
 
     // 时间库初始化，需要最先 init
     HPT_Init();
+
+    Adc1.Init();
+    Adc1.StartDma();
 
     // lvgl
     lv_init();
