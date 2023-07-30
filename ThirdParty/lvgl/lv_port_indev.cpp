@@ -95,8 +95,8 @@ void lv_port_indev_init(void)
         indev_touchpad    = lv_indev_drv_register(&indev_drv);
 
         // 开启指针，用于触摸屏 Debug
-        // lv_obj_t *mouse_cursor = lv_img_create(lv_scr_act());
-        // lv_img_set_src(mouse_cursor, LV_SYMBOL_BACKSPACE);
+        // lv_obj_t *mouse_cursor = lv_label_create(lv_scr_act());
+        // lv_label_set_text_static(mouse_cursor, "+");
         // lv_indev_set_cursor(indev_touchpad, mouse_cursor);
     }
 
@@ -190,8 +190,9 @@ static void touchpad_read(lv_indev_drv_t *indev_drv, lv_indev_data_t *data)
     TouchScreen.UpdateTouch();
     /*Save the pressed coordinates and the state*/
     if (TouchScreen.NumberOfTouchPoint() != 0) {
-        data->point.y = TouchScreen.MaxOutput_X() - TouchScreen.touch_points.at(0).x - 1;
-        data->point.x = TouchScreen.touch_points.at(0).y;
+        auto point    = TouchScreen.touch_points.at(0);
+        data->point.y = TouchScreen.MaxOutput_Y() - point.y - 1;
+        data->point.x = TouchScreen.MaxOutput_X() - point.x - 1;
         data->state   = LV_INDEV_STATE_PR;
     } else {
         data->state = LV_INDEV_STATE_REL;

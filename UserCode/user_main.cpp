@@ -25,7 +25,7 @@ void StartDefaultTask(void const *argument)
     // lvgl
     lv_init();
     lv_port_disp_init();
-    // lv_port_indev_init();
+    lv_port_indev_init();
     LvglTTF_Init();
     StartLvglThread();
 

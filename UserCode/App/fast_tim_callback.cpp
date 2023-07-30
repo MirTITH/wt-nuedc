@@ -6,10 +6,26 @@
 #include "control_system/pll.hpp"
 #include "Adc/adc_class_device.hpp"
 
+// static control_system::Pll<float> pll(1.0 / 5000.0);
+
+// static void PwmRecCallback()
+// {
+//     extern std::atomic<bool> kStartPwmRec;
+//     extern std::atomic<float> kMod;
+//     extern std::atomic<float> kDuty;
+//     extern UnipolarSpwm kSpwm;
+
+//     if (kStartPwmRec) {
+//         auto ac_volt = Adc2.GetVoltage(0);
+//         pll.Step(ac_volt);
+//         kDuty = (kMod * std::cos(pll.phase_) + 1) / 2;
+//         kSpwm.SetDuty(kDuty);
+//         // JFStream << ac_volt << pll.phase_ << kDuty << EndJFStream;
+//     }
+// }
+
 uint32_t kFastTimCallbackDuration;
 uint32_t kFastTimCallbackCount = 0;
-
-static control_system::Pll<float> pll(1.0 / 5000.0);
 
 void FastTimCallback()
 {
@@ -17,16 +33,5 @@ void FastTimCallback()
     TimeMeter time_meter(&kFastTimCallbackDuration);
     kFastTimCallbackCount++;
 
-    extern std::atomic<bool> kStartPwmRec;
-    extern std::atomic<float> kMod;
-    extern std::atomic<float> kDuty;
-    extern UnipolarSpwm kSpwm;
-
-    if (kStartPwmRec) {
-        auto ac_volt = Adc2.GetVoltage(0);
-        pll.Step(ac_volt);
-        kDuty = (kMod * std::cos(pll.phase_) + 1) / 2;
-        kSpwm.SetDuty(kDuty);
-        // JFStream << ac_volt << pll.phase_ << kDuty << EndJFStream;
-    }
+    // PwmRecCallback();
 }

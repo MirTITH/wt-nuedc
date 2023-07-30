@@ -33,7 +33,7 @@ public:
         obj_title_frame_ = lv_obj_create(main_frame_);
         lv_obj_set_pos(obj_title_frame_, 10, 0);
         lv_obj_set_size(obj_title_frame_, LV_SIZE_CONTENT, LV_SIZE_CONTENT);
-        lv_obj_set_style_pad_hor(obj_title_frame_, 5, 0);
+        lv_obj_set_style_pad_hor(obj_title_frame_, 2, 0);
         lv_obj_set_style_pad_ver(obj_title_frame_, 0, 0);
         lv_obj_add_style(obj_title_frame_, &lv_app::kStyleNoBorder, 0);
 
@@ -49,7 +49,7 @@ public:
         lv_obj_set_style_text_font(label_msg_, LvglTTF_GetLargeFont(), 0);
         lv_label_set_long_mode(label_msg_, LV_LABEL_LONG_SCROLL);
         // lv_obj_set_style_text_align(label_msg_, LV_TEXT_ALIGN_CENTER, 0);
-        lv_label_set_text(label_msg_, "Hello World!");
+        // lv_label_set_text(label_msg_, "Hello World!");
     }
 
     void SetTitle(const char *text)

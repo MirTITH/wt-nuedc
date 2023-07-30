@@ -16,7 +16,7 @@
 // #include "UnitTests/test_lvgl.cpp"
 // #include "UnitTests/test_atomic.cpp"
 // #include "UnitTests/test_svpwm.cpp"
-#include "UnitTests/test_pwm_rec.cpp"
+// #include "UnitTests/test_pwm_rec.cpp"
 
 void TestThread(void *argument)
 {
@@ -35,7 +35,7 @@ void TestThread(void *argument)
     // TestLvgl();
     // StartTestAtomic();
     // TestSvpwm();
-    TestPwmRec();
+    // TestPwmRec();
 
     vTaskDelete(nullptr);
 }
