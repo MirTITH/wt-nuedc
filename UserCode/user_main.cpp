@@ -7,6 +7,7 @@
 #include "HighPrecisionTime/high_precision_time.h"
 #include "lvgl/lvgl.h"
 #include "lv_port_disp.h"
+#include "lv_port_indev.h"
 #include "lvgl/lvgl_thread.h"
 #include "freertos_io/os_printf.h"
 #include "fonts/lvgl_ttf.h"
@@ -24,6 +25,7 @@ void StartDefaultTask(void const *argument)
     // lvgl
     lv_init();
     lv_port_disp_init();
+    // lv_port_indev_init();
     LvglTTF_Init();
     StartLvglThread();
 

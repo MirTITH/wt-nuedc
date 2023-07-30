@@ -69,6 +69,10 @@ void Error_Handler(void);
 #define VDrdy_EXTI_IRQn EXTI15_10_IRQn
 #define VSync_Pin GPIO_PIN_3
 #define VSync_GPIO_Port GPIOB
+#define Tp_Int_Pin GPIO_PIN_9
+#define Tp_Int_GPIO_Port GPIOB
+#define Tp_Rst_Pin GPIO_PIN_0
+#define Tp_Rst_GPIO_Port GPIOE
 
 /* USER CODE BEGIN Private defines */
 

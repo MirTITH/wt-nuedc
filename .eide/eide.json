@@ -3,7 +3,6 @@
   "type": "ARM",
   "dependenceList": [],
   "srcDirs": [
-    ".eide/deps",
     "UserCode",
     "CubeMX",
     "System",
@@ -103,7 +102,6 @@
       "custom_dep": {
         "name": "default",
         "incList": [
-          ".eide/deps",
           "CubeMX/Core/Inc",
           "CubeMX/Drivers/STM32F4xx_HAL_Driver/Inc",
           "CubeMX/Drivers/STM32F4xx_HAL_Driver/Inc/Legacy",
