@@ -14,8 +14,6 @@
 #include "usercode_vc/User_VC.h"
 #include "Adc/adc_class_device.hpp"
 #include "Encoder/encoder_device.hpp"
-#include "Led/led_device.hpp"
-#include <stdlib.h>
 
 using namespace std;
 
