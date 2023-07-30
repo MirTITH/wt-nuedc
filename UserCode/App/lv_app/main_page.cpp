@@ -14,6 +14,7 @@
 #include <cmath>
 #include "Keyboard/keyboard_device.hpp"
 #include "HighPrecisionTime/stat.hpp"
+#include "Encoder/encoder_device.hpp"
 
 using namespace std;
 
@@ -26,7 +27,8 @@ static void MainPage_ThreadFastLoop(void *)
 
     LvglLock();
     LvTextField tf_keyboard(kMainPage, "Keyboard", (kContentWidth) / 2, 70, LvglTTF_GetFont());
-    LvTextField tf_touch_screen(kMainPage, "触摸点数", (kContentWidth) / 3);
+    LvTextField tf_touch_screen(kMainPage, "触摸点数", (kContentWidth) / 2);
+    LvTextField tf_encoder(kMainPage, "编码器，开关，编码器按钮", (kContentWidth));
     LvglUnlock();
 
     char str_buffer[20];
@@ -36,7 +38,7 @@ static void MainPage_ThreadFastLoop(void *)
         // tf_keyboard
         std::string str;
         for (size_t i = 0; i < 16; i++) {
-            str.append(to_string(kKeyboard.ReadKey(i)));
+            str.append(to_string(Keyboard.ReadKey(i)));
         }
 
         LvglLock();
@@ -47,6 +49,14 @@ static void MainPage_ThreadFastLoop(void *)
         snprintf(str_buffer, sizeof(str_buffer), "%u", TouchScreen.NumberOfTouchPoint());
         LvglLock();
         tf_touch_screen.SetMsg(str_buffer);
+        LvglUnlock();
+
+        // tf_encoder
+        snprintf(str_buffer, sizeof(str_buffer), "%ld,%d,%d", KeyboardEncoder.Count(),
+                 Keyboard.ReadSwitch(),
+                 Keyboard.ReadKey(Key::kEncoderBtn));
+        LvglLock();
+        tf_encoder.SetMsg(str_buffer);
         LvglUnlock();
 
         vTaskDelayUntil(&PreviousWakeTime, period);

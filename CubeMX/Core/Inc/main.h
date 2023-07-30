@@ -61,6 +61,10 @@ void Error_Handler(void);
 #define Key_Addr2_GPIO_Port GPIOE
 #define Key_Addr3_Pin GPIO_PIN_3
 #define Key_Addr3_GPIO_Port GPIOE
+#define Key_LedG_Pin GPIO_PIN_5
+#define Key_LedG_GPIO_Port GPIOE
+#define Key_LedR_Pin GPIO_PIN_6
+#define Key_LedR_GPIO_Port GPIOE
 #define Key_Addr1_Pin GPIO_PIN_13
 #define Key_Addr1_GPIO_Port GPIOC
 #define Key_Addr0_Pin GPIO_PIN_4
@@ -72,6 +76,10 @@ void Error_Handler(void);
 #define IDrdy_Pin GPIO_PIN_11
 #define IDrdy_GPIO_Port GPIOD
 #define IDrdy_EXTI_IRQn EXTI15_10_IRQn
+#define Key_LedB_Pin GPIO_PIN_12
+#define Key_LedB_GPIO_Port GPIOD
+#define Key_EncoderBtn_Pin GPIO_PIN_13
+#define Key_EncoderBtn_GPIO_Port GPIOD
 #define LcdBacklight_Pin GPIO_PIN_8
 #define LcdBacklight_GPIO_Port GPIOA
 #define VDrdy_Pin GPIO_PIN_15
@@ -79,10 +87,18 @@ void Error_Handler(void);
 #define VDrdy_EXTI_IRQn EXTI15_10_IRQn
 #define VSync_Pin GPIO_PIN_3
 #define VSync_GPIO_Port GPIOB
+#define Key_EncoderA_Pin GPIO_PIN_4
+#define Key_EncoderA_GPIO_Port GPIOB
+#define Key_EncoderA_EXTI_IRQn EXTI4_IRQn
+#define Key_EncoderB_Pin GPIO_PIN_5
+#define Key_EncoderB_GPIO_Port GPIOB
+#define Key_EncoderB_EXTI_IRQn EXTI9_5_IRQn
 #define Tp_Int_Pin GPIO_PIN_9
 #define Tp_Int_GPIO_Port GPIOB
 #define Tp_Rst_Pin GPIO_PIN_0
 #define Tp_Rst_GPIO_Port GPIOE
+#define Key_Switch_Pin GPIO_PIN_1
+#define Key_Switch_GPIO_Port GPIOE
 
 /* USER CODE BEGIN Private defines */
 

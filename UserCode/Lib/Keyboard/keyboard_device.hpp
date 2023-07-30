@@ -2,4 +2,4 @@
 
 #include "keyboard.hpp"
 
-extern KeyboardClass kKeyboard;
+extern KeyboardClass Keyboard;

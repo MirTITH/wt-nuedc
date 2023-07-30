@@ -19,6 +19,7 @@
 #include "Vofa/just_float.hpp"
 #include "fast_tim_callback.hpp"
 #include "HighPrecisionTime/stat.hpp"
+#include "Encoder/encoder_device.hpp"
 
 #ifdef __cplusplus
 extern "C" {
@@ -110,6 +111,12 @@ void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin)
     switch (GPIO_Pin) {
         case VDrdy_Pin:
             VAds.DRDY_Callback();
+            break;
+        case Key_EncoderA_Pin:
+            KeyboardEncoder.ExtiCallback();
+            break;
+        case Key_EncoderB_Pin:
+            KeyboardEncoder.ExtiCallback();
             break;
 
         default:
