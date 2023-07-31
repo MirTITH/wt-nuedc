@@ -290,6 +290,8 @@ void Ads1256::StartConvQueue()
 {
     assert(use_conv_queue_ == false); // 开启后不要再次开启
 
+    WaitForNextDataReady();
+
     if (conv_queue_.size() != 0) {
         SetMux(conv_queue_.at(0).mux);
     }
