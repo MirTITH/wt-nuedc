@@ -13,11 +13,22 @@ static void UserAppEntry(void *argument)
     vTaskDelay(500); // 等待供电稳定
 
     VAds.Init(Ads1256::DataRate::SPS_7500);
-    VAds.SetConvQueue({0x0f, 0x1f, 0x2f, 0x3f});
+    VAds.SetConvQueue({0x0f});
     VAds.StartConvQueue();
 
     while (true) {
-        JFStream << VAds.GetVoltage() << EndJFStream;
+        auto volt = VAds.GetVoltage();
+        // 0 y = 1.009981 x - 0.012726
+        for (auto &var : volt) {
+            var = 1.009981 * var - 0.012726;
+        }
+
+        // 1 y = 0.996947 x - 0.003996
+        // for (auto &var : volt) {
+        //     var = 0.996947 * var - 0.003996;
+        // }
+
+        JFStream << volt << EndJFStream;
         // auto volt = VAds.GetVoltage();
         // os_printf("%f,%d,%d,%d\n", volt[0], VAds.dma_rx_buffer_[0], VAds.dma_rx_buffer_[1], VAds.dma_rx_buffer_[2]);
         vTaskDelay(1);
