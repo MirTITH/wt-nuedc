@@ -15,6 +15,7 @@
 #include "Adc/adc_class_device.hpp"
 #include "Encoder/encoder_device.hpp"
 #include "Keyboard/keyboard_device.hpp"
+#include "user_app.hpp"
 
 using namespace std;
 
@@ -28,8 +29,8 @@ void StartDefaultTask(void const *argument)
     KeyboardEncoder.Init();
     KeyboardScannerStart();
 
-    Adc1.Init();
-    Adc1.StartDma();
+    // Adc1.Init();
+    // Adc1.StartDma();
 
     // lvgl
     lv_init();
@@ -45,6 +46,8 @@ void StartDefaultTask(void const *argument)
     // task_pll_start();
 
     StartTestThread();
+
+    StartUserApp();
 
     vTaskDelete(nullptr); // 删除当前线程
 }

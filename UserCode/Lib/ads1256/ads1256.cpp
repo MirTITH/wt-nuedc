@@ -11,17 +11,17 @@ static constexpr float kClkin = 7.68; // MHz, 晶振频率
 
 // 延时数据 (page 6)
 // > 50 tclkin, Delay from last SCLK edge for DIN to first SCLK rising edge for DOUT: RDATA, RDATAC, RREG Commands
-static constexpr uint32_t kT6 = 50 / kClkin + 1;
+static constexpr uint32_t kT6 = 50 / kClkin + 2;
 
 // > 8 tclkin, nCS low after final SCLK falling edge
-static constexpr uint32_t kT10 = 8 / kClkin + 1;
+static constexpr uint32_t kT10 = 8 / kClkin + 2;
 
 // Final SCLK falling edge of command to first SCLK rising edge of next command.
-static constexpr uint32_t kT11_1 = 4 / kClkin + 1;  // > 4 tclkin, for RREG, WREG, RDATA
-static constexpr uint32_t kT11_2 = 24 / kClkin + 1; // > 24 tclkin, for RDATAC, SYNC
+static constexpr uint32_t kT11_1 = 4 / kClkin + 2;  // > 4 tclkin, for RREG, WREG, RDATA
+static constexpr uint32_t kT11_2 = 24 / kClkin + 2; // > 24 tclkin, for RDATAC, SYNC
 
 // RESET, SYNC/PDWN, pulse width
-static constexpr uint32_t kT16 = 4 / kClkin + 1; // > 4 tclkin
+static constexpr uint32_t kT16 = 4 / kClkin + 2; // > 4 tclkin
 
 static const uint8_t zeros_[3]{};
 
@@ -72,8 +72,11 @@ void Ads1256::Init(DataRate data_rate, PGA gain, bool input_buffer, bool auto_ca
 
     Reset();
 
-    if (CheckForReset() == false) {
-        os_printf("CheckForReset failed\n");
+    for (size_t i = 0; i < 4; i++) {
+        if (CheckForReset() == true) {
+            break;
+        }
+        Reset();
     }
 
     InitAdsGpio();
@@ -431,7 +434,7 @@ bool Ads1256::CheckForReset()
     auto io_reg = ReadReg(ADS1256_IO);
 
     // IO 寄存器的 bit7 ~ bit4 为输入输出方向，Reset Value = 0xE0
-    if ((io_reg & 0xF0) == 0xE0) {
+    if ((io_reg & 0xE0) == 0xE0) {
         return true;
     }
 

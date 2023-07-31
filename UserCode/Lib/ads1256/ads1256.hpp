@@ -101,6 +101,8 @@ public:
     using CallbackFunc_t = std::function<void(Ads1256 *)>;
     CallbackFunc_t conv_queue_cplt_callback_; // 队列转换完成后会调用这个函数
 
+    uint8_t dma_rx_buffer_[3];
+
 public: // Public functions
     Ads1256(SPI_HandleTypeDef *hspi,
             GPIO_TypeDef *n_drdy_port, uint16_t n_drdy_pin,
@@ -325,7 +327,6 @@ private: // 转换队列实现
     std::atomic<bool> use_conv_queue_{false};
     std::atomic<size_t> conv_queue_index_{0};
     std::atomic<uint8_t> dma_transfer_index_{0xff}; // DMA 正在接收的 ConvQueue_t 序号，0xff 表示没有正在进行的 DMA 接收
-    uint8_t dma_rx_buffer_[3];
 
     std::atomic<bool> is_in_rdatac_mode_{false}; // 是否处于连续读取模式
 
