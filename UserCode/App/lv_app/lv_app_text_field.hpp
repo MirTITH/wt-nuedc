@@ -70,7 +70,67 @@ public:
         lv_label_set_text(label_msg_, text.c_str());
     }
 
+    lv_obj_t *GetMsgLabel() const
+    {
+        return label_msg_;
+    }
+
     ~LvTextField()
+    {
+        lv_obj_del(main_frame_);
+    }
+};
+
+class LvSimpleTextField
+{
+private:
+    lv_obj_t *main_frame_;
+    lv_obj_t *label_msg_;
+    lv_obj_t *label_title_;
+
+public:
+    LvSimpleTextField(lv_obj_t *parent, const std::string &title = "Untitled",
+                      lv_coord_t width = LV_PCT(100), lv_coord_t height = 30,
+                      const lv_font_t *msg_font   = LvglTTF_GetFont(),
+                      const lv_font_t *title_font = LvglTTF_GetFont())
+    {
+        main_frame_ = lv_obj_create(parent);
+        lv_obj_set_style_pad_all(main_frame_, 4, 0);
+        lv_obj_set_style_border_width(main_frame_, 1, 0);
+        lv_obj_set_style_border_color(main_frame_, lv_color_make(0, 0, 0), 0);
+        lv_obj_set_size(main_frame_, width, height);
+
+        label_title_ = lv_label_create(main_frame_);
+        lv_obj_set_style_text_font(label_title_, title_font, 0);
+        lv_label_set_text(label_title_, title.c_str());
+        lv_obj_align(label_title_, LV_ALIGN_LEFT_MID, 0, 0);
+
+        label_msg_ = lv_label_create(main_frame_);
+        lv_obj_align(label_msg_, LV_ALIGN_RIGHT_MID, 0, 0);
+        lv_obj_set_style_text_font(label_msg_, msg_font, 0);
+    }
+
+    void SetTitle(const char *text)
+    {
+        lv_label_set_text(label_title_, text);
+    }
+
+    void SetTitle(const std::string &text)
+    {
+        lv_label_set_text(label_title_, text.c_str());
+    }
+
+    void SetMsg(const std::string &text)
+    {
+        lv_label_set_text(label_msg_, text.c_str());
+    }
+
+    lv_obj_t *GetMsgLabel() const
+    {
+        return label_msg_;
+    }
+
+    ~LvSimpleTextField()
     {
         lv_obj_del(main_frame_);
     }

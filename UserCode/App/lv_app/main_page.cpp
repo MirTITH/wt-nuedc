@@ -26,9 +26,9 @@ static void MainPage_ThreadFastLoop(void *)
     const uint32_t period = 100;
 
     LvglLock();
-    LvTextField tf_keyboard(kMainPage, "Keyboard", (kContentWidth) / 2, 70, LvglTTF_GetFont());
-    LvTextField tf_touch_screen(kMainPage, "触摸点数", (kContentWidth) / 2);
-    LvTextField tf_encoder(kMainPage, "编码器，开关，编码器按钮", (kContentWidth));
+    LvSimpleTextField tf_keyboard(kMainPage, "键盘", kContentWidth * 2 / 3);
+    LvSimpleTextField tf_touch_screen(kMainPage, "触摸点数", kContentWidth / 3);
+    LvSimpleTextField tf_encoder(kMainPage, "Enc,Sw", kContentWidth / 2);
     LvglUnlock();
 
     char str_buffer[20];
@@ -43,37 +43,34 @@ static void MainPage_ThreadFastLoop(void *)
 
         LvglLock();
         tf_keyboard.SetMsg(str);
-        LvglUnlock();
 
         // TouchScreen
         snprintf(str_buffer, sizeof(str_buffer), "%u", TouchScreen.NumberOfTouchPoint());
-        LvglLock();
+
         tf_touch_screen.SetMsg(str_buffer);
-        LvglUnlock();
 
         // tf_encoder
         snprintf(str_buffer, sizeof(str_buffer), "%ld,%d,%d", KeyboardEncoder.Count(),
                  Keyboard.ReadSwitch(),
                  Keyboard.ReadKey(Key::kEncoderBtn));
-        LvglLock();
-        tf_encoder.SetMsg(str_buffer);
-        LvglUnlock();
 
+        tf_encoder.SetMsg(str_buffer);
+
+        LvglUnlock();
         vTaskDelayUntil(&PreviousWakeTime, period);
     }
 }
 
 static void MainPage_Thread(void *)
 {
-    const uint32_t period = 500;
+    const uint32_t period = 1000;
 
     LvglLock();
-    LvTextField tf_drdy(kMainPage, "VAds, IAds DRDY 频率");
-    LvTextField tf_adc_rate(kMainPage, "内置 ADC 1,2,3 速率");
-    LvTextField tf_fast_tim(kMainPage, "FastTim:频率,时间", (kContentWidth)*2 / 3);
-    LvTextField tf_temperature(kMainPage, "内核温度", (kContentWidth) / 3);
-    LvTextField tf_main_uart(kMainPage, "UART发送速率", (kContentWidth) / 2);
-    LvTextField tf_adc_duration(kMainPage, "内置ADC中断时长", (kContentWidth) / 2);
+    LvSimpleTextField tf_temperature(kMainPage, "内核温度", kContentWidth / 2);
+    LvSimpleTextField tf_drdy(kMainPage, "VAds,IAds");
+    LvSimpleTextField tf_adc_rate(kMainPage, "ADC123速率");
+    LvSimpleTextField tf_fast_tim(kMainPage, "FastTim频率,时间", kContentWidth);
+    LvTextField tf_main_uart(kMainPage, "UART发送速率", kContentWidth / 2);
     LvglUnlock();
 
     CounterFreqMeter vads_drdy_meter(&VAds.drdy_count_);
@@ -90,48 +87,33 @@ static void MainPage_Thread(void *)
 
     uint32_t PreviousWakeTime = xTaskGetTickCount();
     while (1) {
+        LvglLock();
         // ADS1256
         snprintf(str_buffer, sizeof(str_buffer), "%lu,%lu",
                  vads_drdy_meter.MeasureFreq(), iads_drdy_meter.MeasureFreq());
-        LvglLock();
         tf_drdy.SetMsg(str_buffer);
-        LvglUnlock();
 
         // ADC
         snprintf(str_buffer, sizeof(str_buffer), "%lu,%lu,%lu",
                  adc_interrupt_meter1.MeasureFreq(),
                  adc_interrupt_meter2.MeasureFreq(),
                  adc_interrupt_meter3.MeasureFreq());
-        LvglLock();
         tf_adc_rate.SetMsg(str_buffer);
-        LvglUnlock();
 
         // FastTim
         snprintf(str_buffer, sizeof(str_buffer), "%lu,%lu", fast_tim_meter.MeasureFreq(), kFastTimCallbackDuration);
-        LvglLock();
         tf_fast_tim.SetMsg(str_buffer);
-        LvglUnlock();
 
         // MainUart
         snprintf(str_buffer, sizeof(str_buffer), "%lu", main_uart_meter.MeasureFreq());
-        LvglLock();
         tf_main_uart.SetMsg(str_buffer);
-        LvglUnlock();
 
         // Tempearture
         extern float kCoreTempearture;
         snprintf(str_buffer, sizeof(str_buffer), "%.1f", kCoreTempearture);
-        LvglLock();
         tf_temperature.SetMsg(str_buffer);
-        LvglUnlock();
 
-        // adc_duration
-        extern uint32_t kAdc1CallbackDuration;
-        snprintf(str_buffer, sizeof(str_buffer), "%lu", kAdc1CallbackDuration);
-        LvglLock();
-        tf_adc_duration.SetMsg(str_buffer);
         LvglUnlock();
-
         vTaskDelayUntil(&PreviousWakeTime, period);
     }
 }
@@ -147,7 +129,7 @@ void lv_app::MainPage_Init()
     // lv_obj_set_style_pad_row(kMainPage, 4, 0);
     lv_obj_set_style_pad_column(kMainPage, 0, 0);
     lv_obj_set_flex_flow(kMainPage, LV_FLEX_FLOW_ROW_WRAP);
-    // lv_obj_set_flex_align(kMainPage, LV_FLEX_ALIGN_SPACE_EVENLY, LV_FLEX_ALIGN_CENTER, LV_FLEX_ALIGN_START);
+    lv_obj_set_flex_align(kMainPage, LV_FLEX_ALIGN_SPACE_EVENLY, LV_FLEX_ALIGN_CENTER, LV_FLEX_ALIGN_START);
     lv_obj_update_layout(kMainPage);
     kContentWidth = lv_obj_get_content_width(kMainPage);
     LvglUnlock();
