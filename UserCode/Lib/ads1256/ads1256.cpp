@@ -18,7 +18,7 @@ static constexpr uint32_t kT10 = 8 / kClkin + 2;
 
 // Final SCLK falling edge of command to first SCLK rising edge of next command.
 static constexpr uint32_t kT11_1 = 4 / kClkin + 2;  // > 4 tclkin, for RREG, WREG, RDATA
-static constexpr uint32_t kT11_2 = 24 / kClkin +2; // > 24 tclkin, for RDATAC, SYNC
+static constexpr uint32_t kT11_2 = 24 / kClkin + 2; // > 24 tclkin, for RDATAC, SYNC
 
 // RESET, SYNC/PDWN, pulse width
 static constexpr uint32_t kT16 = 4 / kClkin + 2; // > 4 tclkin
@@ -53,10 +53,11 @@ void Ads1256::DRDY_Callback()
                 if (next_index >= conv_queue_.size()) {
                     next_index = 0;
                 }
-                conv_queue_index_ = next_index;
 
                 // 开始转换下一个通道
                 SetMux(conv_queue_.at(next_index).mux);
+
+                conv_queue_index_ = next_index;
 
                 // 上一个通道转换完成，读取它的值
                 ReadDataToQueueDma(now_index);
@@ -177,10 +178,12 @@ void Ads1256::SyncWakeup()
         WriteCmd(ADS1256_CMD_SYNC);
         HPT_DelayUs(kT11_2);
         WriteCmd(ADS1256_CMD_WAKEUP);
+        HPT_DelayUs(kT11_2);
     } else {
         HAL_GPIO_WritePin(n_sync_port_, n_sync_pin_, GPIO_PIN_RESET);
         HPT_DelayUs(kT16);
         HAL_GPIO_WritePin(n_sync_port_, n_sync_pin_, GPIO_PIN_SET);
+        HPT_DelayUs(kT11_2);
     }
 }
 
