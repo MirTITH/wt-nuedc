@@ -20,6 +20,7 @@
 #include "fast_tim_callback.hpp"
 #include "HighPrecisionTime/stat.hpp"
 #include "Encoder/encoder_device.hpp"
+#include "Keyboard/keyboard_device.hpp"
 
 #ifdef __cplusplus
 extern "C" {
@@ -131,4 +132,9 @@ void HAL_SPI_TxRxCpltCallback(SPI_HandleTypeDef *hspi)
     } else if (hspi->Instance == IAds.GetSpiHandle()->Instance) {
         IAds.SPI_TxRxCpltCallback();
     }
+}
+
+void common_btn_evt_cb(flex_button_t *btn)
+{
+    os_printf("Button id: %d, event: %d\n", btn->id, btn->event);
 }

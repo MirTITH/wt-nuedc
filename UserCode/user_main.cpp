@@ -14,6 +14,7 @@
 #include "usercode_vc/User_VC.h"
 #include "Adc/adc_class_device.hpp"
 #include "Encoder/encoder_device.hpp"
+#include "Keyboard/keyboard_device.hpp"
 
 using namespace std;
 
@@ -23,7 +24,9 @@ void StartDefaultTask(void const *argument)
 
     // 时间库初始化，需要最先 init
     HPT_Init();
+
     KeyboardEncoder.Init();
+    KeyboardScannerStart();
 
     Adc1.Init();
     Adc1.StartDma();

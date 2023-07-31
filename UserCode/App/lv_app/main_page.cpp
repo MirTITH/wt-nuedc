@@ -31,30 +31,24 @@ static void MainPage_ThreadFastLoop(void *)
     LvSimpleTextField tf_encoder(kMainPage, "Enc,Sw", kContentWidth / 2);
     LvglUnlock();
 
-    char str_buffer[20];
-
     uint32_t PreviousWakeTime = xTaskGetTickCount();
     while (1) {
         // tf_keyboard
         std::string str;
         for (size_t i = 0; i < 16; i++) {
-            str.append(to_string(Keyboard.ReadKey(i)));
+            str.append(to_string(Keyboard_Read((Keys)i)));
         }
 
         LvglLock();
         tf_keyboard.SetMsg(str);
 
         // TouchScreen
-        snprintf(str_buffer, sizeof(str_buffer), "%u", TouchScreen.NumberOfTouchPoint());
-
-        tf_touch_screen.SetMsg(str_buffer);
+        lv_label_set_text_fmt(tf_touch_screen.GetMsgLabel(), "%u", TouchScreen.NumberOfTouchPoint());
 
         // tf_encoder
-        snprintf(str_buffer, sizeof(str_buffer), "%ld,%d,%d", KeyboardEncoder.Count(),
-                 Keyboard.ReadSwitch(),
-                 Keyboard.ReadKey(Key::kEncoderBtn));
-
-        tf_encoder.SetMsg(str_buffer);
+        lv_label_set_text_fmt(tf_encoder.GetMsgLabel(), "%ld,%d,%d", KeyboardEncoder.Count(),
+                              Keyboard_Read(Keys::kSwitch),
+                              Keyboard_Read(Keys::kKnobBtn));
 
         LvglUnlock();
         vTaskDelayUntil(&PreviousWakeTime, period);
@@ -69,7 +63,7 @@ static void MainPage_Thread(void *)
     LvSimpleTextField tf_temperature(kMainPage, "内核温度", kContentWidth / 2);
     LvSimpleTextField tf_drdy(kMainPage, "VAds,IAds");
     LvSimpleTextField tf_adc_rate(kMainPage, "ADC123速率");
-    LvSimpleTextField tf_fast_tim(kMainPage, "FastTim频率,时间", kContentWidth);
+    LvSimpleTextField tf_fast_tim(kMainPage, "FastTim", kContentWidth);
     LvTextField tf_main_uart(kMainPage, "UART发送速率", kContentWidth / 2);
     LvglUnlock();
 
@@ -83,35 +77,34 @@ static void MainPage_Thread(void *)
     CounterFreqMeter fast_tim_meter(&kFastTimCallbackCount);
     CounterFreqMeter main_uart_meter(&MainUart.uart_device.total_tx_size_);
 
-    char str_buffer[20];
+    // char str_buffer[20];
 
     uint32_t PreviousWakeTime = xTaskGetTickCount();
     while (1) {
         LvglLock();
         // ADS1256
-        snprintf(str_buffer, sizeof(str_buffer), "%lu,%lu",
-                 vads_drdy_meter.MeasureFreq(), iads_drdy_meter.MeasureFreq());
-        tf_drdy.SetMsg(str_buffer);
+        lv_label_set_text_fmt(tf_drdy.GetMsgLabel(),
+                              "%lu,%lu",
+                              vads_drdy_meter.MeasureFreq(),
+                              iads_drdy_meter.MeasureFreq());
 
         // ADC
-        snprintf(str_buffer, sizeof(str_buffer), "%lu,%lu,%lu",
-                 adc_interrupt_meter1.MeasureFreq(),
-                 adc_interrupt_meter2.MeasureFreq(),
-                 adc_interrupt_meter3.MeasureFreq());
-        tf_adc_rate.SetMsg(str_buffer);
+        lv_label_set_text_fmt(tf_adc_rate.GetMsgLabel(), "%lu,%lu,%lu",
+                              adc_interrupt_meter1.MeasureFreq(),
+                              adc_interrupt_meter2.MeasureFreq(),
+                              adc_interrupt_meter3.MeasureFreq());
 
         // FastTim
-        snprintf(str_buffer, sizeof(str_buffer), "%lu,%lu", fast_tim_meter.MeasureFreq(), kFastTimCallbackDuration);
-        tf_fast_tim.SetMsg(str_buffer);
+        lv_label_set_text_fmt(tf_fast_tim.GetMsgLabel(),
+                              "%lu Hz,%lu us",
+                              fast_tim_meter.MeasureFreq(), kFastTimCallbackDuration);
 
         // MainUart
-        snprintf(str_buffer, sizeof(str_buffer), "%lu", main_uart_meter.MeasureFreq());
-        tf_main_uart.SetMsg(str_buffer);
+        lv_label_set_text_fmt(tf_main_uart.GetMsgLabel(), "%lu", main_uart_meter.MeasureFreq());
 
         // Tempearture
         extern float kCoreTempearture;
-        snprintf(str_buffer, sizeof(str_buffer), "%.1f", kCoreTempearture);
-        tf_temperature.SetMsg(str_buffer);
+        lv_label_set_text_fmt(tf_temperature.GetMsgLabel(), "%.1f", kCoreTempearture);
 
         LvglUnlock();
         vTaskDelayUntil(&PreviousWakeTime, period);

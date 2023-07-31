@@ -1,5 +1,6 @@
 #pragma once
 
-#include "keyboard.hpp"
+// #include "keyboard.hpp"
+// extern KeyboardClass Keyboard;
 
-extern KeyboardClass Keyboard;
+#include "KeyboardScanner/keyboard_scanner.hpp"

@@ -3,8 +3,9 @@
 #include "main.h"
 #include <array>
 #include "HighPrecisionTime/high_precision_time.h"
+#include <cassert>
 
-enum class Key {
+enum class Keys {
     k0 = 0,
     k1,
     k2,
@@ -21,7 +22,8 @@ enum class Key {
     kRight,
     kBackspace,
     kOk,
-    kEncoderBtn
+    kKnobBtn,
+    kSwitch
 };
 
 class KeyboardClass
@@ -37,30 +39,23 @@ public:
     KeyboardClass(const std::array<Gpio_t, 4> &addr_gpios, const Gpio_t &data_gpio)
         : addr_gpios_(addr_gpios), data_gpio_(data_gpio){};
 
-    bool ReadKey(Key key)
+    bool ReadKey(Keys key)
     {
-        return ReadKey((uint8_t)key);
-    }
+        switch (key) {
+            case Keys::kKnobBtn:
+                return !HAL_GPIO_ReadPin(Key_EncoderBtn_GPIO_Port, Key_EncoderBtn_Pin);
+                break;
+            case Keys::kSwitch:
+                return HAL_GPIO_ReadPin(Key_Switch_GPIO_Port, Key_Switch_Pin);
+                break;
 
-    bool ReadKey(uint8_t index)
-    {
-        if (index < 16) {
-            for (size_t i = 0; i < 4; i++) {
-                WritePin(addr_gpios_[i], (index >> i) & 1);
-            }
-        } else if (index == 16) {
-            return !HAL_GPIO_ReadPin(Key_EncoderBtn_GPIO_Port, Key_EncoderBtn_Pin);
+            default:
+                assert((int)key < 16);
+                SetAddr((int)key);
+                HPT_DelayUs(10);
+                return ReadData();
+                break;
         }
-
-        HPT_DelayUs(10);
-
-        auto result = ReadPin(data_gpio_);
-        return result;
-    }
-
-    bool ReadSwitch()
-    {
-        return HAL_GPIO_ReadPin(Key_Switch_GPIO_Port, Key_Switch_Pin);
     }
 
 private:
@@ -72,8 +67,17 @@ private:
         HAL_GPIO_WritePin(gpio.port, gpio.pin, (GPIO_PinState)level);
     }
 
-    bool ReadPin(const Gpio_t &gpio)
+    bool ReadData()
     {
-        return HAL_GPIO_ReadPin(gpio.port, gpio.pin);
+        return HAL_GPIO_ReadPin(data_gpio_.port, data_gpio_.pin);
     }
+
+    void SetAddr(size_t addr)
+    {
+        for (size_t i = 0; i < 4; i++) {
+            WritePin(addr_gpios_[i], (addr >> i) & 1);
+        }
+    }
+
+    friend void UpdateButtonMatrix();
 };
