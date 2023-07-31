@@ -26,7 +26,7 @@ void Ads1256Test()
     os_printf("==== Start %s ====\n", __func__);
 
     // 循环初始化测试
-    while (false) {
+    while (true) {
         os_printf("===== Init =====\n");
         VAds.Init();
         auto ads_reg = VAds.ReadAllRegs();

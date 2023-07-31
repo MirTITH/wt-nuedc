@@ -73,6 +73,10 @@ void Error_Handler(void);
 #define Key_Data_GPIO_Port GPIOC
 #define ISync_Pin GPIO_PIN_2
 #define ISync_GPIO_Port GPIOB
+#define IAds_nReset_Pin GPIO_PIN_10
+#define IAds_nReset_GPIO_Port GPIOB
+#define IAds_nCs_Pin GPIO_PIN_12
+#define IAds_nCs_GPIO_Port GPIOB
 #define IDrdy_Pin GPIO_PIN_11
 #define IDrdy_GPIO_Port GPIOD
 #define IDrdy_EXTI_IRQn EXTI15_10_IRQn
@@ -85,6 +89,10 @@ void Error_Handler(void);
 #define VDrdy_Pin GPIO_PIN_15
 #define VDrdy_GPIO_Port GPIOA
 #define VDrdy_EXTI_IRQn EXTI15_10_IRQn
+#define VAds_nCs_Pin GPIO_PIN_2
+#define VAds_nCs_GPIO_Port GPIOD
+#define VAds_nReset_Pin GPIO_PIN_6
+#define VAds_nReset_GPIO_Port GPIOD
 #define VSync_Pin GPIO_PIN_3
 #define VSync_GPIO_Port GPIOB
 #define Key_EncoderA_Pin GPIO_PIN_4

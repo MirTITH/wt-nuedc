@@ -72,8 +72,12 @@ void Ads1256::Init(DataRate data_rate, PGA gain, bool input_buffer, bool auto_ca
 
     Reset();
 
-    if (CheckForReset() == false) {
-        os_printf("CheckForReset failed\n");
+    // 尝试 4 次
+    for (size_t i = 0; i < 4; i++) {
+        if (CheckForReset() == true) {
+            break;
+        }
+        Reset();
     }
 
     InitAdsGpio();
