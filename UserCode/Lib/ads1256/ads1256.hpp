@@ -141,7 +141,23 @@ public: // Public functions
         return !HAL_GPIO_ReadPin(n_drdy_port_, n_drdy_pin_);
     }
 
+    /**
+     * @brief 等待数据准备好，如果当前已经是准备好的状态，则立即返回
+     *
+     * @param timeout_us 最长等待时间 (us)
+     * @return true 未超时
+     * @return false 超时
+     */
     bool WaitForDataReady(uint32_t timeout_us = std::numeric_limits<uint32_t>::max()) const;
+
+    /**
+     * @brief 等待下一次数据准备好，如果当前是准备好的状态，也会等到下次
+     *
+     * @param timeout_us 最长等待时间 (us)
+     * @return true 未超时
+     * @return false 超时
+     */
+    bool WaitForNextDataReady(uint32_t timeout_us = std::numeric_limits<uint32_t>::max()) const;
 
     /**
      * @brief 直接从 ADS 读取数据

@@ -11,14 +11,14 @@ static constexpr float kClkin = 7.68; // MHz, 晶振频率
 
 // 延时数据 (page 6)
 // > 50 tclkin, Delay from last SCLK edge for DIN to first SCLK rising edge for DOUT: RDATA, RDATAC, RREG Commands
-static constexpr uint32_t kT6 = 50 / kClkin + 2;
+static constexpr uint32_t kT6 = 50 / kClkin;
 
 // > 8 tclkin, nCS low after final SCLK falling edge
-static constexpr uint32_t kT10 = 8 / kClkin + 2;
+static constexpr uint32_t kT10 = 8 / kClkin + 1;
 
 // Final SCLK falling edge of command to first SCLK rising edge of next command.
 static constexpr uint32_t kT11_1 = 4 / kClkin + 2;  // > 4 tclkin, for RREG, WREG, RDATA
-static constexpr uint32_t kT11_2 = 24 / kClkin + 2; // > 24 tclkin, for RDATAC, SYNC
+static constexpr uint32_t kT11_2 = 24 / kClkin + 1; // > 24 tclkin, for RDATAC, SYNC
 
 // RESET, SYNC/PDWN, pulse width
 static constexpr uint32_t kT16 = 4 / kClkin + 2; // > 4 tclkin
@@ -68,16 +68,22 @@ void Ads1256::DRDY_Callback()
 
 void Ads1256::Init(DataRate data_rate, PGA gain, bool input_buffer, bool auto_calibration)
 {
-    // 等待电源稳定
-    vTaskDelay(100);
+    // 用逻辑分析仪测出，STM32 在第一次收发 SPI 前 CLK 为高电平，在第一次收发时 CLK 会先变为低电平，再产生跳变信号
+    // 这就导致“先变为低电平”被设备识别为 CLK 的一部分，导致通信失败
+    // 因此这里先发送空数据使得 CLK 电平正确
+    SpiWrite(zeros_, sizeof(zeros_));
+
+    // 等待电源稳定，并等待 ADS 忽略之前的空数据
+    vTaskDelay(200);
 
     Reset();
 
-    // 尝试 4 次
+    // 如果 Reset 失败，尝试 4 次
     for (size_t i = 0; i < 4; i++) {
         if (CheckForReset() == true) {
             break;
         }
+        vTaskDelay(100);
         Reset();
     }
 
@@ -119,7 +125,6 @@ void Ads1256::Init(DataRate data_rate, PGA gain, bool input_buffer, bool auto_ca
 
     // 自校准
     SelfCalibrateOffsetGain();
-    vTaskDelay(100);
 }
 
 void Ads1256::Reset()
@@ -130,34 +135,39 @@ void Ads1256::Reset()
 
     if (n_reset_port_ != nullptr) {
         HAL_GPIO_WritePin(n_reset_port_, n_reset_pin_, GPIO_PIN_RESET);
-        vTaskDelay(10);
+        vTaskDelay(2);
         HAL_GPIO_WritePin(n_reset_port_, n_reset_pin_, GPIO_PIN_SET);
     } else {
-        // 多发送几个 RESET 命令，防止 RESET 命令不能正确送达
-        // 尽管如此，ADS 还是有可能不能成功 RESET，建议使用 RESET 引脚
-        // 原因之一：
-        // ADS 读写指令需要多个 spi 字节周期，如果上一时刻 ADS 正在进行读写指令，
-        // 则此时发送 RESET 可能被 ADS 认为是整个读写过程的一部分，从而不能 RESET
-        for (size_t i = 0; i < 5; i++) {
-            WaitForDataReady();
-            WriteCmd(ADS1256_CMD_RESET);
-            vTaskDelay(100);
-        }
+        WaitForNextDataReady(); // 实测必须在 DataReady 时才能发送 RESET 命令
+        WriteCmd(ADS1256_CMD_RESET);
     }
 
-    vTaskDelay(100);
+    WaitForNextDataReady();
 }
 
 bool Ads1256::WaitForDataReady(uint32_t timeout_us) const
 {
-    if (timeout_us == std::numeric_limits<uint32_t>::max()) {
-        while (IsDataReady() == false) {};
-    } else {
-        uint32_t startUs = HPT_GetUs();
-        while (IsDataReady() == false) {
-            if (HPT_GetUs() - startUs >= timeout_us) return false;
-        }
+    uint32_t startUs = HPT_GetUs();
+
+    while (IsDataReady() == false) {
+        if (HPT_GetUs() - startUs > timeout_us) return false;
     }
+
+    return true;
+}
+
+bool Ads1256::WaitForNextDataReady(uint32_t timeout_us) const
+{
+    uint32_t startUs = HPT_GetUs();
+
+    while (IsDataReady() == true) {
+        if (HPT_GetUs() - startUs > timeout_us) return false;
+    }
+
+    while (IsDataReady() == false) {
+        if (HPT_GetUs() - startUs > timeout_us) return false;
+    }
+
     return true;
 }
 
@@ -189,14 +199,14 @@ void Ads1256::SyncWakeup()
 
 void Ads1256::EnterReadDataContinousMode()
 {
-    WaitForDataReady();
+    WaitForNextDataReady();
     WriteCmd(ADS1256_CMD_RDATAC);
     is_in_rdatac_mode_ = true;
 }
 
 void Ads1256::ExitReadDataContinousMode()
 {
-    WaitForDataReady();
+    WaitForNextDataReady();
     WriteCmd(ADS1256_CMD_SDATAC);
     HPT_DelayUs(kT6); // 手册里没写，按最大时间延时
     is_in_rdatac_mode_ = false;
@@ -218,7 +228,7 @@ void Ads1256::InitAdsGpio()
 int32_t Ads1256::ReadData()
 {
     assert(GetConvQueueState() == false); // 如果启动了转换队列，请不要使用这个函数，否则会导致 SPI 读写冲突
-    WaitForDataReady();
+    WaitForNextDataReady();
 
     WriteCmd(ADS1256_CMD_RDATA);
     HPT_DelayUs(kT6);
@@ -427,8 +437,7 @@ void Ads1256::SelfCalibrateOffsetGain()
 {
     assert(GetConvQueueState() == false); // 转换队列启动时不要读写 ADS
     WriteCmd(ADS1256_CMD_SELFCAL);
-    HPT_DelayUs(100);
-    WaitForDataReady();
+    WaitForNextDataReady();
 }
 
 bool Ads1256::CheckForReset()
@@ -449,7 +458,7 @@ bool Ads1256::CheckForPresent()
 {
     assert(GetConvQueueState() == false); // 转换队列启动时不要读写 ADS
 
-    WaitForDataReady(1000 * 1000);
+    WaitForNextDataReady(1000 * 1000);
     auto status_reg = ReadReg(ADS1256_STATUS);
 
     if ((status_reg & 0xF0) != (kADS1256_ID << 4)) {

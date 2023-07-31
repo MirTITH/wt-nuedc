@@ -10,10 +10,8 @@ static void UserAppEntry(void *argument)
 {
     (void)argument;
 
-    vTaskDelay(500); // 等待供电稳定
-
-    VAds.Init(Ads1256::DataRate::SPS_30000);
-    VAds.SetConvQueue({0x0f, 0x1f, 0x01, 0x23});
+    VAds.Init(Ads1256::DataRate::SPS_15000);
+    VAds.SetConvQueue({0x0f, 0x1f, 0x2f, 0x3f, 0x4f, 0x5f, 0x6f, 0x7f});
     VAds.StartConvQueue();
 
     while (true) {
