@@ -79,7 +79,8 @@ uint8_t Keyboard_Read(Keys key)
 void KeyboardScannerEntry(void *)
 {
     while (1) {
-        FlexibleButton_Scan();
+        FlexibleButton_Scan(); // 这个要花费 16 ms
+        vTaskDelay(4);
     }
 }
 
