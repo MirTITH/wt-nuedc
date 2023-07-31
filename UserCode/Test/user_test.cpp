@@ -17,6 +17,7 @@
 // #include "UnitTests/test_atomic.cpp"
 // #include "UnitTests/test_svpwm.cpp"
 // #include "UnitTests/test_pwm_rec.cpp"
+// #include "UnitTests/test_delay_module.cpp"
 
 void TestThread(void *argument)
 {
@@ -36,6 +37,7 @@ void TestThread(void *argument)
     // StartTestAtomic();
     // TestSvpwm();
     // TestPwmRec();
+    // TestDelayModule();
 
     vTaskDelete(nullptr);
 }

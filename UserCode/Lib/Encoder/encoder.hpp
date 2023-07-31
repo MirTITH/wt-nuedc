@@ -17,8 +17,8 @@ private:
     const std::array<Gpio_t, 2> channels;
     States_t prev_states;
 
-    int32_t count_        = 0; // 编码器计数值
-    uint32_t error_count_ = 0; // 编码器错误计数。当此值较大时，检查是否同时启用两相的上升下降沿中断、信号质量、编码器质量
+    volatile int32_t count_        = 0; // 编码器计数值
+    volatile uint32_t error_count_ = 0; // 编码器错误计数。当此值较大时，检查是否同时启用两相的上升下降沿中断、信号质量、编码器质量
 
     States_t ReadChannel() const
     {

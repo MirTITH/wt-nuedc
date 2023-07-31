@@ -34,12 +34,12 @@ void LvglTTF_Init()
     kTtfInfoLarge.mem_size = TTF_MEM_SIZE;
     lv_ft_font_init(&kTtfInfoLarge);
 
-    kTtfInfoSmall.name     = NULL;
-    kTtfInfoSmall.weight   = 12;                   // 字体大小
-    kTtfInfoSmall.style    = FT_FONT_STYLE_NORMAL; // 字体风格
-    kTtfInfoSmall.mem      = TTF_MEM_START;
-    kTtfInfoSmall.mem_size = TTF_MEM_SIZE;
-    lv_ft_font_init(&kTtfInfoSmall);
+    // kTtfInfoSmall.name     = NULL;
+    // kTtfInfoSmall.weight   = 12;                   // 字体大小
+    // kTtfInfoSmall.style    = FT_FONT_STYLE_NORMAL; // 字体风格
+    // kTtfInfoSmall.mem      = TTF_MEM_START;
+    // kTtfInfoSmall.mem_size = TTF_MEM_SIZE;
+    // lv_ft_font_init(&kTtfInfoSmall);
 }
 
 lv_font_t *LvglTTF_GetFont()

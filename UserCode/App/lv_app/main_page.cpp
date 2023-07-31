@@ -152,7 +152,7 @@ void lv_app::MainPage_Init()
     kContentWidth = lv_obj_get_content_width(kMainPage);
     LvglUnlock();
 
-    xTaskCreate(MainPage_Thread, "main_page", 1024 * 2, nullptr, PriorityBelowNormal, nullptr);
-    vTaskDelay(100);
     xTaskCreate(MainPage_ThreadFastLoop, "main_page_fast", 1024 * 2, nullptr, PriorityBelowNormal, nullptr);
+    vTaskDelay(100);
+    xTaskCreate(MainPage_Thread, "main_page", 1024 * 2, nullptr, PriorityBelowNormal, nullptr);
 }
