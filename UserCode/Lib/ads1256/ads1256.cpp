@@ -47,7 +47,7 @@ void Ads1256::DRDY_Callback()
                 break;
 
             default:
-                if (drdy_count_ % 8 == 0) {
+                if (drdy_count_ % 24 == 0) {
                     // 每隔几次检查一下寄存器
                     if (CheckForConfigQuick() != true) {
                         ads_err_count_++;
