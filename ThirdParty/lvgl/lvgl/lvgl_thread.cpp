@@ -7,6 +7,7 @@
 #include "lv_app/lv_app.hpp"
 #include "lv_app/main_page.hpp"
 #include "Encoder/encoder_device.hpp"
+#include <cmath>
 
 freertos_lock::RecursiveMutex LvglMutex;
 freertos_lock::BinarySemphr LvglThreadStartSem; // LvglThread 启动后会解锁这个信号量
@@ -25,7 +26,7 @@ static void slider_event_cb(lv_event_t *e)
 {
     lv_obj_t *slider = lv_event_get_target(e);
 
-    LCD.SetBacklight(lv_slider_get_value(slider) / 100.0f);
+    LCD.SetBacklight(std::pow(lv_slider_get_value(slider) / 100.0f, 2));
 }
 
 static void LvglThreadEntry(void *argument)
@@ -40,9 +41,10 @@ static void LvglThreadEntry(void *argument)
     lv_obj_align(spinner, LV_ALIGN_BOTTOM_RIGHT, -70, 0);
 
     /* 屏幕亮度滑条 */
-    lv_obj_t *slider = lv_slider_create(lv_scr_act());
+    lv_obj_t *slider = lv_slider_create(lv_layer_top());
     lv_obj_set_width(slider, lv_pct(80));
-    lv_obj_align(slider, LV_ALIGN_BOTTOM_MID, 0, -10);
+    lv_obj_align(slider, LV_ALIGN_BOTTOM_MID, 0, -30);
+    // lv_obj_set_style_opa(slider, 50, 0);
     lv_slider_set_range(slider, 0, 100);
     lv_slider_set_value(slider, 50, LV_ANIM_ON);
     lv_obj_add_event_cb(slider, slider_event_cb, LV_EVENT_VALUE_CHANGED, NULL);

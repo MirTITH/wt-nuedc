@@ -26,7 +26,9 @@ static lv_coord_t kContentWidth;
 void lv_app::ScreenConsole_AddText(const char *txt)
 {
     if (kTextAreaConsole != nullptr) {
+        LvglLock();
         lv_textarea_add_text(kTextAreaConsole, txt);
+        LvglUnlock();
     }
 }
 
