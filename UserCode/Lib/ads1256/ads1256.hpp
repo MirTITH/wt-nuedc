@@ -96,7 +96,8 @@ public:
 public: // 统计变量
     uint32_t dma_busy_count_{0};
     uint32_t drdy_count_{0};
-    uint32_t ads_err_count_{0};    // 寄存器检查错误次数
+    uint32_t data_sample_count_{0}; // 采样计数
+    uint32_t ads_err_count_{0};     // 寄存器检查错误次数
 
 public:
     using CallbackFunc_t = std::function<void(Ads1256 *)>;
@@ -279,6 +280,7 @@ public: // Public functions
      *
      */
     bool CheckForConfig();
+    bool CheckForConfigQuick();
 
     void EnterPowerDownMode();
     void ExitPowerDownMode();

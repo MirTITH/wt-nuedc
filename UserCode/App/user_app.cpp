@@ -81,9 +81,11 @@ static void UserAppEntry(void *argument)
         //     filter_result = butt.Step(average);
         // }
 
+        extern uint32_t kIAdsDrdyDuration;
+
         if (kUserAppPrint) {
             // JFStream << volt << average << filter_result << butt_duration << EndJFStream;
-            JFStream << VAds.GetVoltage() << IAds.GetVoltage() << EndJFStream;
+            JFStream << VAds.GetVoltage() << IAds.GetVoltage() << kIAdsDrdyDuration << EndJFStream;
             // for (auto &var : volt) {
             //     os_printf("%f,", var);
             // }

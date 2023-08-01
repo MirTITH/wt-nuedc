@@ -85,13 +85,11 @@ void MY_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
 
 #include "Filters/butterworth.hpp"
 float kCoreTempearture;
-uint32_t kAdc1CallbackDuration;
 
 void HAL_ADC_ConvCpltCallback(ADC_HandleTypeDef *hadc)
 {
     static Butter_LP_5_50_20dB_5000Hz<float> kTemperatureFilter;
     if (hadc->Instance == ADC1) {
-        TimeMeter time_meter(&kAdc1CallbackDuration);
         Adc1.ConvCpltCallback();
         kCoreTempearture = kTemperatureFilter.Step(GetCoreTemperature());
     } else if (hadc->Instance == ADC2) {
@@ -107,14 +105,19 @@ void LcdFmc_DmaXferCpltCallback(DMA_HandleTypeDef *_hdma)
     LCD.DmaXferCpltCallback();
 }
 
+uint32_t kIAdsDrdyDuration;
+
 void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin)
 {
+    static TimeMeter time_meter(&kIAdsDrdyDuration);
     switch (GPIO_Pin) {
         case VDrdy_Pin:
             VAds.DRDY_Callback();
             break;
         case IDrdy_Pin:
+            time_meter.StartMeasure();
             IAds.DRDY_Callback();
+            time_meter.EndMeasure();
             break;
         case Key_EncoderA_Pin:
             KeyboardEncoder.ExtiCallback();

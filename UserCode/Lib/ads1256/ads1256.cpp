@@ -38,6 +38,7 @@ void Ads1256::DRDY_Callback()
             case 0:
                 break;
             case 1:
+                data_sample_count_++;
                 if (is_in_rdatac_mode_) {
                     ReadDataContinousToQueueDma(0);
                 } else {
@@ -46,9 +47,9 @@ void Ads1256::DRDY_Callback()
                 break;
 
             default:
-                if (drdy_count_ % 100 == 0) {
+                if (drdy_count_ % 8 == 0) {
                     // 每隔几次检查一下寄存器
-                    if (CheckForConfig() != true) {
+                    if (CheckForConfigQuick() != true) {
                         ads_err_count_++;
                         use_conv_queue_ = false;
                         ReInit();
@@ -57,6 +58,7 @@ void Ads1256::DRDY_Callback()
                     // 放弃这次读取数据，等待下次 drdy
 
                 } else {
+                    data_sample_count_++;
                     // 正常读取数据
                     size_t now_index = conv_queue_index_;
 
@@ -584,6 +586,61 @@ bool Ads1256::CheckForConfig()
                         (enable_auto_calibration_ << 2);
     if ((regs.STATUS & 0xFE) != exp_value) {
         return false;
+    }
+
+    return true;
+}
+
+bool Ads1256::CheckForConfigQuick()
+{
+    Registers_t regs;
+
+    Cs(true);
+
+    static constexpr uint8_t read_reg_num = 4; // 总共读取并检查的寄存器个数
+
+    // Datasheet page 36
+    // Write command
+    uint8_t temp[2];
+    temp[0] = ADS1256_CMD_RREG;
+    temp[1] = read_reg_num - 1;
+    SpiWrite(temp, sizeof(temp));
+
+    HPT_DelayUs(kT6);
+
+    // Read reg
+    SpiRead((uint8_t *)&regs, read_reg_num);
+
+    Cs(false);
+
+    if constexpr (read_reg_num >= 5) {
+        if ((regs.IO) != kIO_REG_INIT_VALUE) {
+            return false;
+        }
+    }
+
+    if constexpr (read_reg_num >= 4) {
+        if (regs.DRATE != (uint8_t)data_rate_) {
+            return false;
+        }
+    }
+
+    if constexpr (read_reg_num >= 3) {
+        if ((regs.ADCON & 0x7) != (uint8_t)pga_) {
+            return false;
+        }
+    }
+
+    // MUX 在不断变动，不方便检测
+    // if constexpr (read_reg_num >= 2) {}
+
+    if constexpr (read_reg_num >= 1) {
+        uint8_t exp_value = (kADS1256_ID << 4) |
+                            (enable_input_buffer_ << 1) |
+                            (enable_auto_calibration_ << 2);
+        if ((regs.STATUS & 0xFE) != exp_value) {
+            return false;
+        }
     }
 
     return true;

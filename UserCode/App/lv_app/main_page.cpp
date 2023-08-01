@@ -69,6 +69,8 @@ static void MainPage_Thread(void *)
 
     CounterFreqMeter vads_drdy_meter(&VAds.drdy_count_);
     CounterFreqMeter iads_drdy_meter(&IAds.drdy_count_);
+    CounterFreqMeter vads_sample_rate_meter(&VAds.data_sample_count_);
+    CounterFreqMeter iads_sample_rate_meter(&IAds.data_sample_count_);
 
     CounterFreqMeter adc_interrupt_meter1(&Adc1.conv_cplt_count);
     CounterFreqMeter adc_interrupt_meter2(&Adc2.conv_cplt_count);
@@ -84,9 +86,11 @@ static void MainPage_Thread(void *)
         LvglLock();
         // ADS1256
         lv_label_set_text_fmt(tf_drdy.GetMsgLabel(),
-                              "drdy 频率: %lu, %lu\nbusy:%lu, %lu | err:%lu, %lu",
+                              "drdy:%lu,%lu|采样:%lu,%lu\nbusy:%lu, %lu | err:%lu, %lu",
                               vads_drdy_meter.MeasureFreq(),
                               iads_drdy_meter.MeasureFreq(),
+                              vads_sample_rate_meter.MeasureFreq(),
+                              iads_sample_rate_meter.MeasureFreq(),
                               VAds.dma_busy_count_,
                               IAds.dma_busy_count_,
                               VAds.ads_err_count_,

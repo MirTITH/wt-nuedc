@@ -8,6 +8,6 @@ Ads1256 VAds(&hspi3,
 
 Ads1256 IAds(&hspi2,
              IDrdy_GPIO_Port, IDrdy_Pin,
-             IAds_nReset_GPIO_Port, IAds_nReset_Pin,
+             nullptr, IAds_nReset_Pin,
              ISync_GPIO_Port, ISync_Pin,
              IAds_nCs_GPIO_Port, IAds_nCs_Pin);

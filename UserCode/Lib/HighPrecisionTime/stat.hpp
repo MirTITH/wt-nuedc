@@ -7,6 +7,7 @@ class TimeMeter
 {
 private:
     uint32_t *duration_;
+    bool end_measure_ = false;
 
 public:
     uint32_t start_time_ = 0;
@@ -32,9 +33,16 @@ public:
         start_time_ = HPT_GetUs();
     }
 
-    ~TimeMeter()
+    void EndMeasure()
     {
         *duration_ = HPT_GetUs() - start_time_;
+    }
+
+    ~TimeMeter()
+    {
+        if (end_measure_ == false) {
+            *duration_ = HPT_GetUs() - start_time_;
+        }
     }
 };
 
