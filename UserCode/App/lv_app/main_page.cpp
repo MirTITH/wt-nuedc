@@ -1,5 +1,4 @@
 #include "main_page.hpp"
-#include "lvgl/lvgl.h"
 #include "FreeRTOS.h"
 #include "task.h"
 #include "ads1256/ads1256_device.hpp"
@@ -18,17 +17,27 @@
 
 using namespace std;
 
-static lv_obj_t *kMainPage;
+static lv_obj_t *kMainTab;
+static lv_obj_t *kConsoleTab;
+lv_obj_t *kTextAreaConsole;
+
 static lv_coord_t kContentWidth;
+
+void lv_app::ScreenConsole_AddText(const char *txt)
+{
+    if (kTextAreaConsole != nullptr) {
+        lv_textarea_add_text(kTextAreaConsole, txt);
+    }
+}
 
 static void MainPage_ThreadFastLoop(void *)
 {
     const uint32_t period = 100;
 
     LvglLock();
-    LvSimpleTextField tf_keyboard(kMainPage, "键盘", kContentWidth * 2 / 3);
-    LvSimpleTextField tf_touch_screen(kMainPage, "触摸点数", kContentWidth / 3);
-    LvSimpleTextField tf_encoder(kMainPage, "Enc,Sw", kContentWidth / 2);
+    LvSimpleTextField tf_keyboard(kMainTab, "键盘", kContentWidth * 2 / 3);
+    LvSimpleTextField tf_touch_screen(kMainTab, "触摸点数", kContentWidth / 3);
+    LvSimpleTextField tf_encoder(kMainTab, "Enc,Sw", kContentWidth / 2);
     LvglUnlock();
 
     uint32_t PreviousWakeTime = xTaskGetTickCount();
@@ -60,11 +69,11 @@ static void MainPage_Thread(void *)
     const uint32_t period = 1000;
 
     LvglLock();
-    LvSimpleTextField tf_temperature(kMainPage, "内核温度", kContentWidth / 2);
-    LvTextField tf_drdy(kMainPage, "VAds,IAds", kContentWidth, 70, LvglTTF_GetFont());
-    LvSimpleTextField tf_adc_rate(kMainPage, "ADC123速率");
-    LvTextField tf_fast_tim(kMainPage, "FastTim", kContentWidth / 2, 70, LvglTTF_GetFont());
-    LvTextField tf_main_uart(kMainPage, "UART发送速率", kContentWidth / 2);
+    LvSimpleTextField tf_temperature(kMainTab, "内核温度", kContentWidth / 2);
+    LvTextField tf_drdy(kMainTab, "VAds,IAds", kContentWidth, 70, LvglTTF_GetFont());
+    LvSimpleTextField tf_adc_rate(kMainTab, "ADC123速率");
+    LvTextField tf_fast_tim(kMainTab, "FastTim", kContentWidth / 2, 70, LvglTTF_GetFont());
+    LvTextField tf_main_uart(kMainTab, "UART发送速率", kContentWidth / 2);
     LvglUnlock();
 
     CounterFreqMeter vads_drdy_meter(&VAds.drdy_count_);
@@ -122,17 +131,29 @@ static void MainPage_Thread(void *)
 void lv_app::MainPage_Init()
 {
     LvglLock();
-    kMainPage = lv_obj_create(lv_scr_act());
-    lv_obj_set_style_border_side(kMainPage, LV_BORDER_SIDE_NONE, 0);
-    lv_obj_set_size(kMainPage, lv_pct(100), 440); // 除去底部 monitor
-    lv_obj_set_style_pad_hor(kMainPage, 4, 0);
-    lv_obj_set_style_pad_ver(kMainPage, 0, 0);
-    // lv_obj_set_style_pad_row(kMainPage, 4, 0);
-    lv_obj_set_style_pad_column(kMainPage, 0, 0);
-    lv_obj_set_flex_flow(kMainPage, LV_FLEX_FLOW_ROW_WRAP);
-    lv_obj_set_flex_align(kMainPage, LV_FLEX_ALIGN_SPACE_EVENLY, LV_FLEX_ALIGN_CENTER, LV_FLEX_ALIGN_START);
-    lv_obj_update_layout(kMainPage);
-    kContentWidth = lv_obj_get_content_width(kMainPage);
+    /*Create a Tab view object*/
+    auto tabview = lv_tabview_create(lv_scr_act(), LV_DIR_TOP, 40);
+    lv_obj_set_height(tabview, 440); // 除去底部 monitor
+
+    kMainTab    = lv_tabview_add_tab(tabview, "信息");
+    kConsoleTab = lv_tabview_add_tab(tabview, "终端");
+
+    lv_obj_set_style_pad_hor(kConsoleTab, 0, 0);
+    lv_obj_set_style_pad_ver(kConsoleTab, 0, 0);
+    kTextAreaConsole = lv_textarea_create(kConsoleTab);
+    lv_obj_set_size(kTextAreaConsole, lv_pct(100), lv_pct(100));
+    lv_textarea_set_placeholder_text(kTextAreaConsole, "Empty here");
+
+    lv_obj_set_style_border_side(kMainTab, LV_BORDER_SIDE_NONE, 0);
+    // lv_obj_set_size(kMainTab, lv_pct(100), 440); // 除去底部 monitor
+    lv_obj_set_style_pad_hor(kMainTab, 4, 0);
+    lv_obj_set_style_pad_ver(kMainTab, 0, 0);
+    // lv_obj_set_style_pad_row(kMainTab, 4, 0);
+    lv_obj_set_style_pad_column(kMainTab, 0, 0);
+    lv_obj_set_flex_flow(kMainTab, LV_FLEX_FLOW_ROW_WRAP);
+    lv_obj_set_flex_align(kMainTab, LV_FLEX_ALIGN_SPACE_EVENLY, LV_FLEX_ALIGN_CENTER, LV_FLEX_ALIGN_START);
+    lv_obj_update_layout(kMainTab);
+    kContentWidth = lv_obj_get_content_width(kMainTab);
     LvglUnlock();
 
     xTaskCreate(MainPage_ThreadFastLoop, "main_page_fast", 1024 * 2, nullptr, PriorityBelowNormal, nullptr);

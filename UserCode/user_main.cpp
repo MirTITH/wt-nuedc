@@ -29,15 +29,15 @@ void StartDefaultTask(void const *argument)
     KeyboardEncoder.Init();
     KeyboardScannerStart();
 
-    Adc1.Init();
-    Adc1.StartDma();
-
     // lvgl
     lv_init();
     lv_port_disp_init();
     lv_port_indev_init();
     LvglTTF_Init();
     StartLvglThread();
+
+    Adc1.Init();
+    Adc1.StartDma();
 
     HAL_TIM_Base_Start_IT(&htim6);
 

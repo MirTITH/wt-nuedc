@@ -9,6 +9,7 @@
 #include <atomic>
 #include "Filters/butterworth.hpp"
 #include "HighPrecisionTime/stat.hpp"
+#include "lv_app/main_page.hpp"
 
 std::atomic<bool> kUserAppPrint = true;
 
@@ -28,6 +29,7 @@ static void UserAppEntry(void *argument)
     while (true) {
         VAds.Init(Ads1256::DataRate::SPS_7500);
         if (VAds.CheckForConfig() == true) {
+            lv_app::ScreenConsole_AddText("VAds.CheckForConfig() == true\n");
             break;
         } else {
             KeyboardLed.SetColor(1, 0, 0);
@@ -38,6 +40,7 @@ static void UserAppEntry(void *argument)
     while (true) {
         IAds.Init(Ads1256::DataRate::SPS_7500);
         if (IAds.CheckForConfig() == true) {
+            lv_app::ScreenConsole_AddText("IAds.CheckForConfig() == true\n");
             break;
         } else {
             KeyboardLed.SetColor(0, 0, 1);

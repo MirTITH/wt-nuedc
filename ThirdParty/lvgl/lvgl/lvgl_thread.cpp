@@ -21,6 +21,13 @@ void LvglUnlock()
     LvglMutex.unlock();
 }
 
+static void slider_event_cb(lv_event_t *e)
+{
+    lv_obj_t *slider = lv_event_get_target(e);
+
+    LCD.SetBacklight(lv_slider_get_value(slider) / 100.0f);
+}
+
 static void LvglThreadEntry(void *argument)
 {
     (void)argument;
@@ -32,11 +39,19 @@ static void LvglThreadEntry(void *argument)
     lv_obj_set_style_arc_width(spinner, 3, LV_PART_INDICATOR);
     lv_obj_align(spinner, LV_ALIGN_BOTTOM_RIGHT, -70, 0);
 
+    /* 屏幕亮度滑条 */
+    lv_obj_t *slider = lv_slider_create(lv_scr_act());
+    lv_obj_set_width(slider, lv_pct(80));
+    lv_obj_align(slider, LV_ALIGN_BOTTOM_MID, 0, -10);
+    lv_slider_set_range(slider, 0, 100);
+    lv_slider_set_value(slider, 50, LV_ANIM_ON);
+    lv_obj_add_event_cb(slider, slider_event_cb, LV_EVENT_VALUE_CHANGED, NULL);
+
+    // 初始化 lv_app
     lv_app::LvApp_Init();
+    lv_app::MainPage_Init();
 
     LvglThreadStartSem.unlock(); // 线程初始化完毕，解锁信号量
-
-    float backlight;
 
     uint32_t PreviousWakeTime = xTaskGetTickCount();
 
@@ -44,8 +59,6 @@ static void LvglThreadEntry(void *argument)
         LvglLock();
         lv_timer_handler();
         LvglUnlock();
-        backlight = 0.5 + (float)KeyboardEncoder.Count() / 400.0f;
-        LCD.SetBacklight(backlight);
 
         vTaskDelayUntil(&PreviousWakeTime, 5);
     }
@@ -53,9 +66,7 @@ static void LvglThreadEntry(void *argument)
 
 void StartLvglThread()
 {
-    // freetype 要的栈空间实在是太大了 qwq
     xTaskCreate(LvglThreadEntry, "lvgl_thread", 1024 * 2, nullptr, PriorityBelowNormal, nullptr);
 
     LvglThreadStartSem.lock(); // 等待 lvgl_thread 启动完毕
-    lv_app::MainPage_Init();
 }
