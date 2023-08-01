@@ -106,11 +106,13 @@ public: // Public functions
             GPIO_TypeDef *n_drdy_port, uint16_t n_drdy_pin,
             GPIO_TypeDef *n_reset_port = nullptr, uint16_t n_reset_pin = 0,
             GPIO_TypeDef *n_sync_port = nullptr, uint16_t n_sync_pin = 0,
+            GPIO_TypeDef *n_cs_port = nullptr, uint16_t n_cs_pin = 0,
             float vref = 2.5)
         : v_max_(2 * vref), hspi_(hspi),
           n_drdy_port_(n_drdy_port), n_drdy_pin_(n_drdy_pin),
           n_reset_port_(n_reset_port), n_reset_pin_(n_reset_pin),
-          n_sync_port_(n_sync_port), n_sync_pin_(n_sync_pin){};
+          n_sync_port_(n_sync_port), n_sync_pin_(n_sync_pin),
+          n_cs_port_(n_cs_port), n_cs_pin_(n_cs_pin){};
 
     /**
      * @brief 请在 DRDY 中断中调用此函数
@@ -123,6 +125,8 @@ public: // Public functions
         auto index                 = dma_transfer_index_.load();
         conv_queue_.at(index).data = RawDataToInt32(dma_rx_buffer_);
         dma_transfer_index_        = 0xff;
+
+        Cs(false);
 
         // 调用用户的回调函数
         if (index == conv_queue_.size() - 1) {
@@ -287,6 +291,7 @@ public: // Public functions
 
     void EnterPowerDownMode();
     void ExitPowerDownMode();
+    bool IsInPowerDownMode();
 
     SPI_HandleTypeDef *GetSpiHandle() const
     {
@@ -336,6 +341,9 @@ private: // 引脚配置
     GPIO_TypeDef *const n_sync_port_;
     const uint16_t n_sync_pin_;
 
+    GPIO_TypeDef *const n_cs_port_;
+    const uint16_t n_cs_pin_;
+
 private: // 转换队列实现
     ConvQueue_t conv_queue_;
     std::atomic<bool> use_conv_queue_{false};
@@ -354,7 +362,8 @@ private: // 私有函数
      * @param Timeout
      */
     void SpiRead(uint8_t *rx_data, uint16_t Size, uint32_t Timeout = HAL_MAX_DELAY);
-    bool SpiReadDma(uint8_t *rx_data, uint16_t Size);
+    bool SpiReadDmaCs(uint8_t *rx_data, uint16_t Size);
+    bool SpiReadDmaNoCs(uint8_t *rx_data, uint16_t Size);
 
     /**
      * @brief 从 SPI 写入
@@ -380,7 +389,8 @@ private: // 私有函数
      *
      * @note Do not call this function for WREG or RREG.
      */
-    void WriteCmd(uint8_t cmd);
+    void WriteCmdCs(uint8_t cmd);
+    void WriteCmdNoCs(uint8_t cmd);
 
     /**
      * @brief 读取寄存器
@@ -428,6 +438,8 @@ private: // 私有函数
     {
         while (dma_transfer_index_ != 0xff) {}
     }
+
+    void Cs(bool cs);
 
     /**
      * @brief 将 ADS 自带的 D0 ~ D3 GPIO 设为 kIO_REG_INIT_VALUE

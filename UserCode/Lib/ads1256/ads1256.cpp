@@ -71,10 +71,13 @@ void Ads1256::Init(DataRate data_rate, PGA gain, bool input_buffer, bool auto_ca
     // 用逻辑分析仪测出，STM32 在第一次收发 SPI 前 CLK 为高电平，在第一次收发时 CLK 会先变为低电平，再产生跳变信号
     // 这就导致“先变为低电平”被设备识别为 CLK 的一部分，导致通信失败
     // 因此这里先发送空数据使得 CLK 电平正确
+    Cs(false);
+    vTaskDelay(1);
     SpiWrite(zeros_, sizeof(zeros_));
 
     // 等待电源稳定，并等待 ADS 忽略之前的空数据
-    vTaskDelay(200);
+    vTaskDelay(100);
+    Cs(true);
 
     Reset();
 
@@ -129,7 +132,9 @@ void Ads1256::Init(DataRate data_rate, PGA gain, bool input_buffer, bool auto_ca
 
 void Ads1256::Reset()
 {
-    ExitPowerDownMode();
+    if (IsInPowerDownMode()) {
+        ExitPowerDownMode();
+    }
     StopConvQueue();
     WaitForDmaCplt();
 
@@ -139,7 +144,7 @@ void Ads1256::Reset()
         HAL_GPIO_WritePin(n_reset_port_, n_reset_pin_, GPIO_PIN_SET);
     } else {
         WaitForNextDataReady(); // 实测必须在 DataReady 时才能发送 RESET 命令
-        WriteCmd(ADS1256_CMD_RESET);
+        WriteCmdCs(ADS1256_CMD_RESET);
     }
 
     WaitForNextDataReady();
@@ -173,11 +178,12 @@ bool Ads1256::WaitForNextDataReady(uint32_t timeout_us) const
 
 void Ads1256::ReadDataToQueueDma(uint8_t queue_index)
 {
-    WriteCmd(ADS1256_CMD_RDATA);
+    Cs(true);
+    WriteCmdNoCs(ADS1256_CMD_RDATA);
     HPT_DelayUs(kT6);
 
     dma_transfer_index_ = queue_index;
-    if (SpiReadDma(dma_rx_buffer_, 3) == false) {
+    if (SpiReadDmaNoCs(dma_rx_buffer_, 3) == false) {
         dma_transfer_index_ = 0xff;
     }
 }
@@ -185,9 +191,9 @@ void Ads1256::ReadDataToQueueDma(uint8_t queue_index)
 void Ads1256::SyncWakeup()
 {
     if (n_sync_port_ == nullptr) {
-        WriteCmd(ADS1256_CMD_SYNC);
+        WriteCmdCs(ADS1256_CMD_SYNC);
         HPT_DelayUs(kT11_2);
-        WriteCmd(ADS1256_CMD_WAKEUP);
+        WriteCmdCs(ADS1256_CMD_WAKEUP);
         HPT_DelayUs(kT11_2);
     } else {
         HAL_GPIO_WritePin(n_sync_port_, n_sync_pin_, GPIO_PIN_RESET);
@@ -200,14 +206,14 @@ void Ads1256::SyncWakeup()
 void Ads1256::EnterReadDataContinousMode()
 {
     WaitForNextDataReady();
-    WriteCmd(ADS1256_CMD_RDATAC);
+    WriteCmdCs(ADS1256_CMD_RDATAC);
     is_in_rdatac_mode_ = true;
 }
 
 void Ads1256::ExitReadDataContinousMode()
 {
     WaitForNextDataReady();
-    WriteCmd(ADS1256_CMD_SDATAC);
+    WriteCmdCs(ADS1256_CMD_SDATAC);
     HPT_DelayUs(kT6); // 手册里没写，按最大时间延时
     is_in_rdatac_mode_ = false;
 }
@@ -215,8 +221,20 @@ void Ads1256::ExitReadDataContinousMode()
 void Ads1256::ReadDataContinousToQueueDma(uint8_t queue_index)
 {
     dma_transfer_index_ = queue_index;
-    if (SpiReadDma(dma_rx_buffer_, 3) == false) {
+    if (SpiReadDmaCs(dma_rx_buffer_, 3) == false) {
         dma_transfer_index_ = 0xff;
+    }
+}
+
+void Ads1256::Cs(bool cs)
+{
+    if (n_cs_port_ != nullptr) {
+        if (cs) {
+            HAL_GPIO_WritePin(n_cs_port_, n_cs_pin_, GPIO_PIN_RESET);
+        } else {
+            // HPT_DelayUs(kT10);
+            HAL_GPIO_WritePin(n_cs_port_, n_cs_pin_, GPIO_PIN_SET);
+        }
     }
 }
 
@@ -230,11 +248,13 @@ int32_t Ads1256::ReadData()
     assert(GetConvQueueState() == false); // 如果启动了转换队列，请不要使用这个函数，否则会导致 SPI 读写冲突
     WaitForNextDataReady();
 
-    WriteCmd(ADS1256_CMD_RDATA);
+    Cs(true);
+    WriteCmdNoCs(ADS1256_CMD_RDATA);
     HPT_DelayUs(kT6);
 
     uint8_t data[3];
     SpiRead(data, 3);
+    Cs(false);
 
     return RawDataToInt32(data);
 }
@@ -244,7 +264,17 @@ void Ads1256::SpiRead(uint8_t *rx_data, uint16_t Size, uint32_t Timeout)
     HAL_SPI_TransmitReceive(hspi_, (uint8_t *)zeros_, rx_data, Size, Timeout);
 }
 
-bool Ads1256::SpiReadDma(uint8_t *rx_data, uint16_t Size)
+bool Ads1256::SpiReadDmaCs(uint8_t *rx_data, uint16_t Size)
+{
+    Cs(true);
+    if (HAL_SPI_TransmitReceive_DMA(hspi_, (uint8_t *)zeros_, rx_data, Size) == HAL_OK) {
+        return true;
+    }
+
+    return false;
+}
+
+bool Ads1256::SpiReadDmaNoCs(uint8_t *rx_data, uint16_t Size)
 {
     if (HAL_SPI_TransmitReceive_DMA(hspi_, (uint8_t *)zeros_, rx_data, Size) == HAL_OK) {
         return true;
@@ -324,6 +354,8 @@ void Ads1256::WriteReg(uint8_t regaddr, const uint8_t *databyte, uint8_t size)
         return;
     }
 
+    Cs(true);
+
     // Datasheet page 36
     // Write command
     uint8_t temp[2];
@@ -333,11 +365,15 @@ void Ads1256::WriteReg(uint8_t regaddr, const uint8_t *databyte, uint8_t size)
     SpiWrite(temp, sizeof(temp));
     SpiWrite(databyte, size);
 
+    Cs(false);
+
     HPT_DelayUs(kT11_1);
 }
 
 void Ads1256::WriteReg(uint8_t regaddr, uint8_t databyte)
 {
+    Cs(true);
+
     uint8_t temp[3];
     temp[0] = ADS1256_CMD_WREG | (regaddr & 0x0F);
     temp[1] = 0;
@@ -345,10 +381,19 @@ void Ads1256::WriteReg(uint8_t regaddr, uint8_t databyte)
 
     SpiWrite(temp, sizeof(temp));
 
+    Cs(false);
+
     HPT_DelayUs(kT11_1);
 }
 
-void Ads1256::WriteCmd(uint8_t cmd)
+void Ads1256::WriteCmdCs(uint8_t cmd)
+{
+    Cs(true);
+    SpiWrite(&cmd, 1);
+    Cs(false);
+}
+
+void Ads1256::WriteCmdNoCs(uint8_t cmd)
 {
     SpiWrite(&cmd, 1);
 }
@@ -358,6 +403,8 @@ void Ads1256::ReadReg(uint8_t regaddr, uint8_t *databyte, uint8_t size)
     if (size == 0) {
         return;
     }
+
+    Cs(true);
 
     // Datasheet page 36
     // Write command
@@ -371,11 +418,15 @@ void Ads1256::ReadReg(uint8_t regaddr, uint8_t *databyte, uint8_t size)
     // Read reg
     SpiRead(databyte, size);
 
+    Cs(false);
+
     HPT_DelayUs(kT11_1);
 }
 
 uint8_t Ads1256::ReadReg(uint8_t regaddr)
 {
+    Cs(true);
+
     uint8_t result = 0;
     uint8_t temp[2];
     temp[0] = ADS1256_CMD_RREG | (regaddr & 0x0F);
@@ -386,6 +437,8 @@ uint8_t Ads1256::ReadReg(uint8_t regaddr)
 
     // Read reg
     SpiRead(&result, 1);
+
+    Cs(false);
 
     HPT_DelayUs(kT11_1);
     return result;
@@ -438,7 +491,7 @@ Ads1256::DataRate Ads1256::GetDataRateFromChip()
 void Ads1256::SelfCalibrateOffsetGain()
 {
     assert(GetConvQueueState() == false); // 转换队列启动时不要读写 ADS
-    WriteCmd(ADS1256_CMD_SELFCAL);
+    WriteCmdCs(ADS1256_CMD_SELFCAL);
     WaitForNextDataReady();
 }
 
@@ -498,15 +551,26 @@ bool Ads1256::CheckForConfig()
 
 void Ads1256::EnterPowerDownMode()
 {
+    assert(n_sync_port_ != nullptr);
     // Holding the SYNC/PDWN pin low for 20 DRDY cycles activates the Power-Down mode.
     HAL_GPIO_WritePin(n_sync_port_, n_sync_pin_, GPIO_PIN_RESET);
 }
 
 void Ads1256::ExitPowerDownMode()
 {
+    assert(n_sync_port_ != nullptr);
     // To exit Power-Down mode, take the SYNC/PDWN pin high.
     // Upon exiting from Power-Down mode, the ADS1255/6 crystal oscillator typically requires 30ms to wake up.
     // If using an external clock source, 8192 CLKIN cycles are needed before conversions begin.
     HAL_GPIO_WritePin(n_sync_port_, n_sync_pin_, GPIO_PIN_SET);
     vTaskDelay(100);
+}
+
+bool Ads1256::IsInPowerDownMode()
+{
+    if (n_sync_port_ != nullptr) {
+        return !HAL_GPIO_ReadPin(n_sync_port_, n_sync_pin_);
+    } else {
+        return false;
+    }
 }

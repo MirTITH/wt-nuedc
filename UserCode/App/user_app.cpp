@@ -10,9 +10,14 @@ static void UserAppEntry(void *argument)
 {
     (void)argument;
 
-    VAds.Init(Ads1256::DataRate::SPS_15000);
+    vTaskDelay(200);
+
+    VAds.Init(Ads1256::DataRate::SPS_30000);
     VAds.SetConvQueue({0x0f, 0x1f, 0x2f, 0x3f, 0x4f, 0x5f, 0x6f, 0x7f});
     VAds.StartConvQueue();
+    // VAds.SetConvQueueCpltCallback([](Ads1256 *ads) {
+    //     JFStream << ads->GetVoltage() << EndJFStream;
+    // });
 
     while (true) {
         auto volt = VAds.GetVoltage();

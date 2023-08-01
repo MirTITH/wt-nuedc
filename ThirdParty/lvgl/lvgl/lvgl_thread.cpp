@@ -50,7 +50,7 @@ void StartLvglThread()
 {
     // freetype 要的栈空间实在是太大了 qwq
     xTaskCreate(LvglThreadEntry, "lvgl_thread", 1024 * 2, nullptr, PriorityBelowNormal, nullptr);
-    LCD.SetBacklight(0.5);
+    LCD.SetBacklight(0.1);
     LvglThreadStartSem.lock(); // 等待 lvgl_thread 启动完毕
     lv_app::MainPage_Init();
 }
