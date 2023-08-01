@@ -12,70 +12,87 @@
 
 std::atomic<bool> kUserAppPrint = true;
 
+static TaskHandle_t UserAppEntry_handle;
+
 static void UserAppEntry(void *argument)
 {
     (void)argument;
 
     KeyboardLed.Power(true);
-    KeyboardLed.SetColor(0, 0.02, 0);
+    KeyboardLed.SetColor(0, 1, 0);
 
     vTaskDelay(200);
 
-    Butter_LP_5_20_40dB_5000Hz<float> butt;
+    // Butter_LP_5_50_20dB_3000Hz<double> butt;
 
     while (true) {
         VAds.Init(Ads1256::DataRate::SPS_7500);
         if (VAds.CheckForConfig() == true) {
             break;
         } else {
-            KeyboardLed.SetColor(0.02, 0, 0);
+            KeyboardLed.SetColor(1, 0, 0);
         }
         vTaskDelay(100);
     }
 
+    while (true) {
+        IAds.Init(Ads1256::DataRate::SPS_7500);
+        if (IAds.CheckForConfig() == true) {
+            break;
+        } else {
+            KeyboardLed.SetColor(0, 0, 1);
+        }
+        vTaskDelay(100);
+    }
+
+    // VAds.SetConvQueueCpltCallback([](Ads1256 *) {
+    //     BaseType_t xHigherPriorityTaskWoken = pdFALSE;
+    //     vTaskNotifyGiveFromISR(UserAppEntry_handle, &xHigherPriorityTaskWoken);
+    //     portYIELD_FROM_ISR(xHigherPriorityTaskWoken);
+    // });
+
     VAds.SetConvQueue({0x0f, 0x1f, 0x2f, 0x3f, 0x4f, 0x5f, 0x6f, 0x7f});
     VAds.StartConvQueue();
+
+    IAds.SetConvQueue({0x0f, 0x1f, 0x2f, 0x3f, 0x4f, 0x5f, 0x6f, 0x7f});
+    IAds.StartConvQueue();
     // VAds.SetConvQueueCpltCallback([](Ads1256 *ads) {
     //     JFStream << ads->GetVoltage() << EndJFStream;
     // });
 
-    uint32_t filter_duration;
+    // uint32_t butt_duration;
 
     while (true) {
-        auto volt = VAds.GetVoltage();
-        // 0 y = 1.0018744205424700 x - 0.0080428892443834
-        float average = 0;
-        for (auto &var : volt) {
-            var = 1.0018744205424700 * var - 0.0080428892443834;
-            average += var;
-        }
-
-        average /= volt.size();
-
-        decltype(butt.Step(average)) filter_result;
-
-        {
-            TimeMeter tm(&filter_duration);
-            filter_result = butt.Step(average);
-        }
-
-        // 1 y = 0.996947 x - 0.003996
-        // for (auto &var : volt) {
-        //     var = 0.996947 * var - 0.003996;
-        // }
-        if (kUserAppPrint) {
-            for (auto &var : volt) {
-                os_printf("%f,", var);
-            }
-            os_printf("%f,%f,%lu\n", average, filter_result, filter_duration);
-        }
-        // auto volt = VAds.GetVoltage();
-        // os_printf("%f,%d,%d,%d\n", volt[0], VAds.dma_rx_buffer_[0], VAds.dma_rx_buffer_[1], VAds.dma_rx_buffer_[2]);
+        // ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
         vTaskDelay(1);
+        auto volt = VAds.GetVoltage();
+
+        // float average = 0;
+        // for (auto &var : volt) {
+        //     average += var;
+        // }
+
+        // average /= volt.size();
+
+        // decltype(butt.Step(average)) filter_result;
+
+        // {
+        //     TimeMeter tm(&butt_duration);
+        //     filter_result = butt.Step(average);
+        // }
+
+        if (kUserAppPrint) {
+            // JFStream << volt << average << filter_result << butt_duration << EndJFStream;
+            JFStream << VAds.GetVoltage() << IAds.GetVoltage() << EndJFStream;
+            // for (auto &var : volt) {
+            //     os_printf("%f,", var);
+            // }
+            // os_printf("%f,%f,%lu\n", average, filter_result, duration);
+        }
     }
 }
 
 void StartUserApp()
 {
-    xTaskCreate(UserAppEntry, "user_app", 512, nullptr, PriorityNormal, nullptr);
+    xTaskCreate(UserAppEntry, "user_app", 512, nullptr, PriorityNormal, &UserAppEntry_handle);
 }

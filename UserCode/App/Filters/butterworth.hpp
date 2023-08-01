@@ -2,6 +2,7 @@
 
 #include "control_system/z_tf.hpp"
 
+// 2 个 section 及以上的建议使用 double 计算
 template <typename T>
 class Butter_LP_5_20_40dB_5000Hz : public control_system::DiscreteControllerBase<T>
 {
@@ -28,5 +29,71 @@ public:
     {
         section1.ResetState();
         section2.ResetState();
+    }
+};
+
+template <typename T>
+class Butter_LP_5_50_20dB_5000Hz : public control_system::DiscreteControllerBase<T>
+{
+private:
+    control_system::ZTf<T> section1{{1, 2, 1},
+                                    {1,
+                                     -1.971823537253104108302181884937454015017,
+                                     0.972215016838654855213519567769253626466}};
+    T gain1 = 0.000097869896387716434973946810771394667;
+
+public:
+    T Step(T input) override
+    {
+        return gain1 * section1.Step(input);
+    }
+
+    void ResetState() override
+    {
+        section1.ResetState();
+    }
+};
+
+template <typename T>
+class Butter_LP_5_50_20dB_1000Hz : public control_system::DiscreteControllerBase<T>
+{
+private:
+    control_system::ZTf<T> section1{{1, 2, 1},
+                                    {1,
+                                     -1.858313796423278541070089886488858610392,
+                                     0.867707845059007443211385179893113672733}};
+    T gain1 = 0.002348512158932234642622072229301011248;
+
+public:
+    T Step(T input) override
+    {
+        return gain1 * section1.Step(input);
+    }
+
+    void ResetState() override
+    {
+        section1.ResetState();
+    }
+};
+
+template <typename T>
+class Butter_LP_5_50_20dB_3000Hz : public control_system::DiscreteControllerBase<T>
+{
+private:
+    control_system::ZTf<T> section1{{1, 2, 1},
+                                    {1,
+                                     -1.953019802626017265012592361017595976591,
+                                     0.954098328230158609919442369573516771197}};
+    T gain1 = 0.000269631401035287600245066164106333417;
+
+public:
+    T Step(T input) override
+    {
+        return gain1 * section1.Step(input);
+    }
+
+    void ResetState() override
+    {
+        section1.ResetState();
     }
 };

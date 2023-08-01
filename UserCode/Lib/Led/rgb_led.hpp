@@ -27,7 +27,7 @@ public:
      * @param b 蓝
      * @param light_factor 亮度系数，大于 1 会更亮，小于 1 会更暗
      */
-    void SetColor(float r, float g, float b, float light_factor = 1)
+    void SetColor(float r, float g, float b, float light_factor = 0.02)
     {
         r_.SetLightness(r * light_factor);
         g_.SetLightness(g * light_factor);

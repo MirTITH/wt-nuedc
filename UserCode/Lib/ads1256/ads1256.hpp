@@ -41,8 +41,6 @@
 #include <limits>
 #include <cassert>
 #include <functional>
-#include "FreeRTOS.h"
-#include "task.h"
 
 class Ads1256
 {
@@ -99,10 +97,6 @@ public: // 统计变量
     uint32_t dma_busy_count_{0};
     uint32_t drdy_count_{0};
     uint32_t ads_err_count_{0};    // 寄存器检查错误次数
-    uint32_t ads_reinit_count_{0}; // 重新初始化次数
-    static constexpr bool kAllowReInit      = true;
-    TaskHandle_t watch_dog_thread_          = nullptr;
-    const uint32_t call_watch_dog_interval_ = 1000;
 
 public:
     using CallbackFunc_t = std::function<void(Ads1256 *)>;
@@ -239,9 +233,8 @@ public: // Public functions
 
     Registers_t ReadAllRegs()
     {
-        // if (!InHandlerMode()) {
-        //     assert(GetConvQueueState() == false); // 转换队列启动时不要读寄存器
-        // }
+        // assert(GetConvQueueState() == false); // 转换队列启动时不要读寄存器
+
         Registers_t result{};
         ReadReg(0x00, (uint8_t *)(&result), sizeof(result));
         return result;
@@ -452,6 +445,4 @@ private: // 私有函数
     {
         return 1 << y;
     }
-
-    friend void AdsWatchDogEntry(Ads1256 *ads);
 };

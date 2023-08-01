@@ -90,7 +90,7 @@ private:
 
 public:
     LvSimpleTextField(lv_obj_t *parent, const std::string &title = "Untitled",
-                      lv_coord_t width = LV_PCT(100), lv_coord_t height = 30,
+                      lv_coord_t width = LV_PCT(100), lv_coord_t height = 35,
                       const lv_font_t *msg_font   = LvglTTF_GetFont(),
                       const lv_font_t *title_font = LvglTTF_GetFont())
     {

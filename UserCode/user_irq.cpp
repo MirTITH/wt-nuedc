@@ -89,7 +89,7 @@ uint32_t kAdc1CallbackDuration;
 
 void HAL_ADC_ConvCpltCallback(ADC_HandleTypeDef *hadc)
 {
-    static Butter_LP_5_20_40dB_5000Hz<float> kTemperatureFilter;
+    static Butter_LP_5_50_20dB_5000Hz<float> kTemperatureFilter;
     if (hadc->Instance == ADC1) {
         TimeMeter time_meter(&kAdc1CallbackDuration);
         Adc1.ConvCpltCallback();
@@ -112,6 +112,9 @@ void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin)
     switch (GPIO_Pin) {
         case VDrdy_Pin:
             VAds.DRDY_Callback();
+            break;
+        case IDrdy_Pin:
+            IAds.DRDY_Callback();
             break;
         case Key_EncoderA_Pin:
             KeyboardEncoder.ExtiCallback();

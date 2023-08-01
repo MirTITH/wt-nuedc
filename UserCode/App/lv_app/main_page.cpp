@@ -63,7 +63,7 @@ static void MainPage_Thread(void *)
     LvSimpleTextField tf_temperature(kMainPage, "内核温度", kContentWidth / 2);
     LvTextField tf_drdy(kMainPage, "VAds,IAds", kContentWidth, 70, LvglTTF_GetFont());
     LvSimpleTextField tf_adc_rate(kMainPage, "ADC123速率");
-    LvSimpleTextField tf_fast_tim(kMainPage, "FastTim", kContentWidth);
+    LvTextField tf_fast_tim(kMainPage, "FastTim", kContentWidth / 2, 70, LvglTTF_GetFont());
     LvTextField tf_main_uart(kMainPage, "UART发送速率", kContentWidth / 2);
     LvglUnlock();
 
@@ -84,7 +84,7 @@ static void MainPage_Thread(void *)
         LvglLock();
         // ADS1256
         lv_label_set_text_fmt(tf_drdy.GetMsgLabel(),
-                              "drdy 频率: %lu, %lu\nbusy|err count:%lu, %lu | %lu, %lu",
+                              "drdy 频率: %lu, %lu\nbusy:%lu, %lu | err:%lu, %lu",
                               vads_drdy_meter.MeasureFreq(),
                               iads_drdy_meter.MeasureFreq(),
                               VAds.dma_busy_count_,
@@ -100,7 +100,7 @@ static void MainPage_Thread(void *)
 
         // FastTim
         lv_label_set_text_fmt(tf_fast_tim.GetMsgLabel(),
-                              "%lu Hz,%lu us",
+                              "%lu Hz\n%lu us",
                               fast_tim_meter.MeasureFreq(), kFastTimCallbackDuration);
 
         // MainUart
@@ -108,7 +108,7 @@ static void MainPage_Thread(void *)
 
         // Tempearture
         extern float kCoreTempearture;
-        lv_label_set_text_fmt(tf_temperature.GetMsgLabel(), "%.1f", kCoreTempearture);
+        lv_label_set_text_fmt(tf_temperature.GetMsgLabel(), "%.3f", kCoreTempearture);
 
         LvglUnlock();
         vTaskDelayUntil(&PreviousWakeTime, period);
