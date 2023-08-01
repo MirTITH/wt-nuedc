@@ -84,11 +84,13 @@ static void MainPage_Thread(void *)
         LvglLock();
         // ADS1256
         lv_label_set_text_fmt(tf_drdy.GetMsgLabel(),
-                              "drdy 频率: %lu, %lu\ndma_busy_count: %lu, %lu",
+                              "drdy 频率: %lu, %lu\nbusy|err count:%lu, %lu | %lu, %lu",
                               vads_drdy_meter.MeasureFreq(),
                               iads_drdy_meter.MeasureFreq(),
                               VAds.dma_busy_count_,
-                              IAds.dma_busy_count_);
+                              IAds.dma_busy_count_,
+                              VAds.ads_err_count_,
+                              IAds.ads_err_count_);
 
         // ADC
         lv_label_set_text_fmt(tf_adc_rate.GetMsgLabel(), "%lu,%lu,%lu",

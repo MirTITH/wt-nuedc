@@ -41,6 +41,7 @@
 #include <limits>
 #include <cassert>
 #include <functional>
+#include "in_handle_mode.h"
 
 class Ads1256
 {
@@ -96,6 +97,7 @@ public:
 public: // 统计变量
     uint32_t dma_busy_count_{0};
     uint32_t drdy_count_{0};
+    uint32_t ads_err_count_{0};
 
 public:
     using CallbackFunc_t = std::function<void(Ads1256 *)>;
@@ -243,7 +245,9 @@ public: // Public functions
 
     Registers_t ReadAllRegs()
     {
-        assert(GetConvQueueState() == false); // 转换队列启动时不要读寄存器
+        // if (!InHandlerMode()) {
+        //     assert(GetConvQueueState() == false); // 转换队列启动时不要读寄存器
+        // }
         Registers_t result{};
         ReadReg(0x00, (uint8_t *)(&result), sizeof(result));
         return result;
@@ -350,6 +354,7 @@ private: // 转换队列实现
     std::atomic<size_t> conv_queue_index_{0};
     std::atomic<uint8_t> dma_transfer_index_{0xff}; // DMA 正在接收的 ConvQueue_t 序号，0xff 表示没有正在进行的 DMA 接收
     uint8_t dma_rx_buffer_[3];
+    uint8_t spi_rx_trush_[3] = {}; // SPI 是全双工通信，发送时必须接收，接收的东西放在这里面
 
     std::atomic<bool> is_in_rdatac_mode_{false}; // 是否处于连续读取模式
 

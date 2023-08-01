@@ -57,6 +57,10 @@ void Ads1256::DRDY_Callback()
                 // 开始转换下一个通道
                 SetMux(conv_queue_.at(next_index).mux);
 
+                // if (CheckForConfig() == false) {
+                //     ads_err_count_++;
+                // }
+
                 conv_queue_index_ = next_index;
 
                 // 上一个通道转换完成，读取它的值
@@ -285,7 +289,7 @@ bool Ads1256::SpiReadDmaNoCs(uint8_t *rx_data, uint16_t Size)
 
 void Ads1256::SpiWrite(const uint8_t *tx_data, uint16_t Size, uint32_t Timeout)
 {
-    HAL_SPI_TransmitReceive(hspi_, (uint8_t *)tx_data, (uint8_t *)zeros_, Size, Timeout);
+    HAL_SPI_TransmitReceive(hspi_, (uint8_t *)tx_data, spi_rx_trush_, Size, Timeout);
 }
 
 void Ads1256::SetConvQueue(const std::vector<uint8_t> &muxs)

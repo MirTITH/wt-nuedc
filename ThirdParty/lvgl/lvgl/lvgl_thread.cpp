@@ -6,6 +6,7 @@
 #include "Lcd/lcd_device.hpp"
 #include "lv_app/lv_app.hpp"
 #include "lv_app/main_page.hpp"
+#include "Encoder/encoder_device.hpp"
 
 freertos_lock::RecursiveMutex LvglMutex;
 freertos_lock::BinarySemphr LvglThreadStartSem; // LvglThread 启动后会解锁这个信号量
@@ -35,12 +36,16 @@ static void LvglThreadEntry(void *argument)
 
     LvglThreadStartSem.unlock(); // 线程初始化完毕，解锁信号量
 
+    float backlight;
+
     uint32_t PreviousWakeTime = xTaskGetTickCount();
 
     for (;;) {
         LvglLock();
         lv_timer_handler();
         LvglUnlock();
+        backlight = 0.5 + (float)KeyboardEncoder.Count() / 400.0f;
+        LCD.SetBacklight(backlight);
 
         vTaskDelayUntil(&PreviousWakeTime, 5);
     }
@@ -50,7 +55,7 @@ void StartLvglThread()
 {
     // freetype 要的栈空间实在是太大了 qwq
     xTaskCreate(LvglThreadEntry, "lvgl_thread", 1024 * 2, nullptr, PriorityBelowNormal, nullptr);
-    LCD.SetBacklight(0.1);
+
     LvglThreadStartSem.lock(); // 等待 lvgl_thread 启动完毕
     lv_app::MainPage_Init();
 }
