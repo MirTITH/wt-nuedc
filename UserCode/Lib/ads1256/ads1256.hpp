@@ -41,7 +41,8 @@
 #include <limits>
 #include <cassert>
 #include <functional>
-#include "in_handle_mode.h"
+#include "FreeRTOS.h"
+#include "task.h"
 
 class Ads1256
 {
@@ -97,11 +98,16 @@ public:
 public: // 统计变量
     uint32_t dma_busy_count_{0};
     uint32_t drdy_count_{0};
-    uint32_t ads_err_count_{0};
+    uint32_t ads_err_count_{0};    // 寄存器检查错误次数
+    uint32_t ads_reinit_count_{0}; // 重新初始化次数
+    static constexpr bool kAllowReInit      = true;
+    TaskHandle_t watch_dog_thread_          = nullptr;
+    const uint32_t call_watch_dog_interval_ = 1000;
 
 public:
     using CallbackFunc_t = std::function<void(Ads1256 *)>;
-    CallbackFunc_t conv_queue_cplt_callback_; // 队列转换完成后会调用这个函数
+    CallbackFunc_t conv_queue_cplt_callback_;    // 队列转换完成后会调用这个函数
+    std::atomic<bool> is_in_rdatac_mode_{false}; // 是否处于连续读取模式
 
 public: // Public functions
     Ads1256(SPI_HandleTypeDef *hspi,
@@ -122,23 +128,11 @@ public: // Public functions
      */
     void DRDY_Callback();
 
-    void SPI_TxRxCpltCallback()
-    {
-        auto index                 = dma_transfer_index_.load();
-        conv_queue_.at(index).data = RawDataToInt32(dma_rx_buffer_);
-        dma_transfer_index_        = 0xff;
-
-        Cs(false);
-
-        // 调用用户的回调函数
-        if (index == conv_queue_.size() - 1) {
-            if (conv_queue_cplt_callback_ != nullptr) {
-                conv_queue_cplt_callback_(this);
-            }
-        }
-    }
+    void SPI_TxRxCpltCallback();
 
     void Init(DataRate data_rate = DataRate::SPS_3750, PGA gain = PGA::Gain1, bool input_buffer = false, bool auto_calibration = true);
+
+    void ReInit();
 
     void Reset();
 
@@ -356,8 +350,6 @@ private: // 转换队列实现
     uint8_t dma_rx_buffer_[3];
     uint8_t spi_rx_trush_[3] = {}; // SPI 是全双工通信，发送时必须接收，接收的东西放在这里面
 
-    std::atomic<bool> is_in_rdatac_mode_{false}; // 是否处于连续读取模式
-
 private: // 私有函数
     /**
      * @brief 从 SPI 读取
@@ -460,4 +452,6 @@ private: // 私有函数
     {
         return 1 << y;
     }
+
+    friend void AdsWatchDogEntry(Ads1256 *ads);
 };

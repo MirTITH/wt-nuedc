@@ -6,6 +6,7 @@
 #include "freertos_io/os_printf.h"
 #include <string.h>
 #include "in_handle_mode.h"
+#include "ads_watchdog.hpp"
 
 static constexpr float kClkin = 7.68; // MHz, 晶振频率
 
@@ -57,15 +58,34 @@ void Ads1256::DRDY_Callback()
                 // 开始转换下一个通道
                 SetMux(conv_queue_.at(next_index).mux);
 
-                // if (CheckForConfig() == false) {
-                //     ads_err_count_++;
-                // }
-
                 conv_queue_index_ = next_index;
 
                 // 上一个通道转换完成，读取它的值
                 ReadDataToQueueDma(now_index);
                 break;
+        }
+    }
+}
+
+void Ads1256::SPI_TxRxCpltCallback()
+{
+    auto index                 = dma_transfer_index_.load();
+    conv_queue_.at(index).data = RawDataToInt32(dma_rx_buffer_);
+    dma_transfer_index_        = 0xff;
+    Cs(false);
+
+    if (drdy_count_ % call_watch_dog_interval_ == 0) {
+        if (watch_dog_thread_ != nullptr) {
+            BaseType_t xHigherPriorityTaskWoken = pdFALSE;
+            vTaskNotifyGiveFromISR(watch_dog_thread_, &xHigherPriorityTaskWoken);
+            portYIELD_FROM_ISR(xHigherPriorityTaskWoken);
+        }
+    }
+
+    // 调用用户的回调函数
+    if (index == conv_queue_.size() - 1) {
+        if (conv_queue_cplt_callback_ != nullptr) {
+            conv_queue_cplt_callback_(this);
         }
     }
 }
@@ -78,6 +98,8 @@ void Ads1256::Init(DataRate data_rate, PGA gain, bool input_buffer, bool auto_ca
     Cs(false);
     vTaskDelay(1);
     SpiWrite(zeros_, sizeof(zeros_));
+
+    StartAdsWatchDog(this, &watch_dog_thread_);
 
     // 等待电源稳定，并等待 ADS 忽略之前的空数据
     vTaskDelay(100);
@@ -132,6 +154,30 @@ void Ads1256::Init(DataRate data_rate, PGA gain, bool input_buffer, bool auto_ca
 
     // 自校准
     SelfCalibrateOffsetGain();
+}
+
+void Ads1256::ReInit()
+{
+    ads_reinit_count_++;
+    Reset();
+
+    // 如果 Reset 失败，尝试 4 次
+    for (size_t i = 0; i < 4; i++) {
+        if (CheckForReset() == true) {
+            break;
+        }
+        vTaskDelay(1);
+        Reset();
+    }
+
+    InitAdsGpio();
+    SetGain(GetGain());
+    SetInputBufferAndAutoCalibration(GetInputBufferStatus(), GetAutoCalibrationStatus());
+    SetDataRate(data_rate_);
+    WaitForNextDataReady();
+
+    // 自校准
+    // SelfCalibrateOffsetGain();
 }
 
 void Ads1256::Reset()
