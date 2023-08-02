@@ -23,7 +23,7 @@ lv_obj_t *kTextAreaConsole;
 
 static lv_coord_t kContentWidth;
 
-void lv_app::ScreenConsole_AddText(const char *txt)
+void ScreenConsole_AddText(const char *txt)
 {
     if (kTextAreaConsole != nullptr) {
         LvglLock();
@@ -130,7 +130,7 @@ static void MainPage_Thread(void *)
     }
 }
 
-void lv_app::MainPage_Init()
+void MainPage_Init()
 {
     LvglLock();
     /*Create a Tab view object*/
@@ -143,6 +143,7 @@ void lv_app::MainPage_Init()
     lv_obj_set_style_pad_hor(kConsoleTab, 0, 0);
     lv_obj_set_style_pad_ver(kConsoleTab, 0, 0);
     kTextAreaConsole = lv_textarea_create(kConsoleTab);
+    lv_obj_set_style_text_font(kTextAreaConsole, LvglTTF_GetSmallFont(), 0);
     lv_obj_set_size(kTextAreaConsole, lv_pct(100), lv_pct(100));
     lv_textarea_set_placeholder_text(kTextAreaConsole, "Empty here");
 
@@ -156,6 +157,10 @@ void lv_app::MainPage_Init()
     lv_obj_set_flex_align(kMainTab, LV_FLEX_ALIGN_SPACE_EVENLY, LV_FLEX_ALIGN_CENTER, LV_FLEX_ALIGN_START);
     lv_obj_update_layout(kMainTab);
     kContentWidth = lv_obj_get_content_width(kMainTab);
+
+    // 切换到显示终端
+    lv_obj_scroll_to_view_recursive(kTextAreaConsole, LV_ANIM_OFF);
+
     LvglUnlock();
 
     xTaskCreate(MainPage_ThreadFastLoop, "main_page_fast", 1024 * 2, nullptr, PriorityBelowNormal, nullptr);

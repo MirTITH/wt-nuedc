@@ -105,19 +105,14 @@ void LcdFmc_DmaXferCpltCallback(DMA_HandleTypeDef *_hdma)
     LCD.DmaXferCpltCallback();
 }
 
-uint32_t kIAdsDrdyDuration;
-
 void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin)
 {
-    static TimeMeter time_meter(&kIAdsDrdyDuration);
     switch (GPIO_Pin) {
         case VDrdy_Pin:
             VAds.DRDY_Callback();
             break;
         case IDrdy_Pin:
-            time_meter.StartMeasure();
             IAds.DRDY_Callback();
-            time_meter.EndMeasure();
             break;
         case Key_EncoderA_Pin:
             KeyboardEncoder.ExtiCallback();

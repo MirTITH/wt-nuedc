@@ -129,7 +129,7 @@ public: // Public functions
 
     void ReInit();
 
-    void Reset();
+    void Reset(uint32_t timeout_us = std::numeric_limits<uint32_t>::max());
 
     bool IsDataReady() const
     {
