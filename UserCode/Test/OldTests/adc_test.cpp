@@ -16,8 +16,6 @@ void AdcTest()
 
     Adc1.Init();
     Adc1.StartDma();
-    Adc2.Init();
-    Adc2.StartDma();
 
     // int last_count                = 0;
     // TickType_t pxPreviousWakeTime = xTaskGetTickCount();

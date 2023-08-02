@@ -1,4 +1,5 @@
 #include "main_page.hpp"
+#include "screeen_console.h"
 #include "FreeRTOS.h"
 #include "task.h"
 #include "ads1256/ads1256_device.hpp"
@@ -73,7 +74,7 @@ static void MainPage_Thread(void *)
     LvglLock();
     LvSimpleTextField tf_temperature(kMainTab, "内核温度", kContentWidth / 2);
     LvTextField tf_drdy(kMainTab, "VAds,IAds", kContentWidth, 70, LvglTTF_GetFont());
-    LvSimpleTextField tf_adc_rate(kMainTab, "ADC123速率");
+    LvSimpleTextField tf_adc_rate(kMainTab, "ADC1,3速率");
     LvTextField tf_fast_tim(kMainTab, "FastTim", kContentWidth / 2, 70, LvglTTF_GetFont());
     LvTextField tf_main_uart(kMainTab, "UART发送速率", kContentWidth / 2);
     LvglUnlock();
@@ -84,7 +85,6 @@ static void MainPage_Thread(void *)
     CounterFreqMeter iads_sample_rate_meter(&IAds.data_sample_count_);
 
     CounterFreqMeter adc_interrupt_meter1(&Adc1.conv_cplt_count);
-    CounterFreqMeter adc_interrupt_meter2(&Adc2.conv_cplt_count);
     CounterFreqMeter adc_interrupt_meter3(&Adc3.conv_cplt_count);
 
     CounterFreqMeter fast_tim_meter(&kFastTimCallbackCount);
@@ -108,9 +108,8 @@ static void MainPage_Thread(void *)
                               IAds.ads_err_count_);
 
         // ADC
-        lv_label_set_text_fmt(tf_adc_rate.GetMsgLabel(), "%lu,%lu,%lu",
+        lv_label_set_text_fmt(tf_adc_rate.GetMsgLabel(), "%lu,%lu",
                               adc_interrupt_meter1.MeasureFreq(),
-                              adc_interrupt_meter2.MeasureFreq(),
                               adc_interrupt_meter3.MeasureFreq());
 
         // FastTim
@@ -136,6 +135,7 @@ void MainPage_Init()
     /*Create a Tab view object*/
     auto tabview = lv_tabview_create(lv_scr_act(), LV_DIR_TOP, 40);
     lv_obj_set_height(tabview, 440); // 除去底部 monitor
+    // lv_obj_set_style_text_font(tabview, LvglTTF_GetFont(), 0);
 
     kMainTab    = lv_tabview_add_tab(tabview, "信息");
     kConsoleTab = lv_tabview_add_tab(tabview, "终端");

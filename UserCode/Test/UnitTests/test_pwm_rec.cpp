@@ -21,8 +21,8 @@ void TestPwmRec()
 {
     os_printf("====== Start %s ======\n", __func__);
 
-    Adc2.Init();
-    Adc2.StartDma();
+    // Adc2.Init();
+    // Adc2.StartDma();
 
     // control_system::Pll<float> pll(1/500)
 

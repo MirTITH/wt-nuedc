@@ -10,6 +10,7 @@
 #include "Filters/butterworth.hpp"
 #include "HighPrecisionTime/stat.hpp"
 #include "lv_app/main_page.hpp"
+#include "lv_app/screeen_console.h"
 
 std::atomic<bool> kUserAppPrint = true;
 
@@ -24,7 +25,6 @@ static void UserAppEntry(void *argument)
 
     vTaskDelay(200);
 
-    // Butter_LP_5_50_20dB_3000Hz<double> butt;
     VAds.Reset(100 * 1000);
     if (VAds.CheckForPresent() == true) {
         VAds.Init(Ads1256::DataRate::SPS_7500);
@@ -34,7 +34,7 @@ static void UserAppEntry(void *argument)
             ScreenConsole_AddText("VAds.CheckForConfig() == false\n");
             KeyboardLed.SetColor(1, 0, 0);
         }
-        VAds.SetConvQueue({0x0f});
+        VAds.SetConvQueue({0x01});
         VAds.StartConvQueue();
 
     } else {
@@ -51,11 +51,14 @@ static void UserAppEntry(void *argument)
             KeyboardLed.SetColor(1, 0, 0);
         }
 
-        IAds.SetConvQueue({0x0f});
+        IAds.SetConvQueue({0x01});
         IAds.StartConvQueue();
     } else {
         ScreenConsole_AddText("No IAds found!\n");
     }
+
+    Butter_LP_5_50_20dB_5000Hz<double> butt;
+    double butter_result = 0;
 
     // VAds.SetConvQueueCpltCallback([](Ads1256 *) {
     //     BaseType_t xHigherPriorityTaskWoken = pdFALSE;
@@ -63,9 +66,9 @@ static void UserAppEntry(void *argument)
     //     portYIELD_FROM_ISR(xHigherPriorityTaskWoken);
     // });
 
-    // VAds.SetConvQueueCpltCallback([](Ads1256 *ads) {
-    //     JFStream << ads->GetVoltage() << EndJFStream;
-    // });
+    IAds.SetConvQueueCpltCallback([&](Ads1256 *ads) {
+        butter_result = butt.Step(ads->GetVoltage(0));
+    });
 
     // uint32_t butt_duration;
 
@@ -90,7 +93,7 @@ static void UserAppEntry(void *argument)
 
         if (kUserAppPrint) {
             // JFStream << volt << average << filter_result << butt_    duration << EndJFStream;
-            JFStream << VAds.GetVoltage() << IAds.GetVoltage() << EndJFStream;
+            JFStream << VAds.GetVoltage() << IAds.GetVoltage() << butter_result << EndJFStream;
             // for (auto &var : volt) {
             //     os_printf("%f,", var);
             // }

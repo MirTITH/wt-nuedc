@@ -94,8 +94,6 @@ void HAL_ADC_ConvCpltCallback(ADC_HandleTypeDef *hadc)
     if (hadc->Instance == ADC1) {
         Adc1.ConvCpltCallback();
         kCoreTempearture = kTemperatureFilter.Step(GetCoreTemperature());
-    } else if (hadc->Instance == ADC2) {
-        Adc2.ConvCpltCallback();
     } else if (hadc->Instance == ADC3) {
         Adc3.ConvCpltCallback();
     }
@@ -138,26 +136,3 @@ void HAL_SPI_TxRxCpltCallback(SPI_HandleTypeDef *hspi)
 }
 
 extern std::atomic<bool> kUserAppPrint;
-
-void common_btn_evt_cb(flex_button_t *btn)
-{
-    auto key   = (Keys)btn->id;
-    auto event = (flex_button_event_t)btn->event;
-
-    if (key == Keys::k8 && event == FLEX_BTN_PRESS_DOWN) {
-        if (VAds.GetConvQueueState() == false) {
-            VAds.StartConvQueue();
-        }
-        kUserAppPrint = true;
-
-    } else if (key == Keys::k9 && event == FLEX_BTN_PRESS_DOWN) {
-        kUserAppPrint = false;
-        VAds.StopConvQueue();
-        auto ads_reg = VAds.ReadAllRegs();
-        os_printf("ADCON: %x\n", ads_reg.ADCON);
-        os_printf("DRATE: %x\n", ads_reg.DRATE);
-        os_printf("IO: %x\n", ads_reg.IO);
-        os_printf("MUX: %x\n", ads_reg.MUX);
-        os_printf("STATUS: %x\n", ads_reg.STATUS);
-    }
-}
