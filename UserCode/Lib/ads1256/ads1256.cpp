@@ -39,11 +39,12 @@ void Ads1256::DRDY_Callback()
                 break;
             case 1:
                 data_sample_count_++;
-                if (is_in_rdatac_mode_) {
-                    ReadDataContinousToQueueDma(0);
-                } else {
-                    ReadDataToQueueDma(0);
-                }
+                ReadDataContinousToQueueDma(0);
+                // if (is_in_rdatac_mode_) {
+                //     ReadDataContinousToQueueDma(0);
+                // } else {
+                //     ReadDataToQueueDma(0);
+                // }
                 break;
 
             default:

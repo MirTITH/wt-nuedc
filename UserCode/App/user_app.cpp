@@ -57,11 +57,11 @@ static void UserAppEntry(void *argument)
         ScreenConsole_AddText("No IAds found!\n");
     }
 
-    VAds.SetConvQueueCpltCallback([](Ads1256 *) {
-        BaseType_t xHigherPriorityTaskWoken = pdFALSE;
-        vTaskNotifyGiveFromISR(UserAppEntry_handle, &xHigherPriorityTaskWoken);
-        portYIELD_FROM_ISR(xHigherPriorityTaskWoken);
-    });
+    // VAds.SetConvQueueCpltCallback([](Ads1256 *) {
+    //     BaseType_t xHigherPriorityTaskWoken = pdFALSE;
+    //     vTaskNotifyGiveFromISR(UserAppEntry_handle, &xHigherPriorityTaskWoken);
+    //     portYIELD_FROM_ISR(xHigherPriorityTaskWoken);
+    // });
 
     // VAds.SetConvQueueCpltCallback([](Ads1256 *ads) {
     //     JFStream << ads->GetVoltage() << EndJFStream;
@@ -70,8 +70,8 @@ static void UserAppEntry(void *argument)
     // uint32_t butt_duration;
 
     while (true) {
-        ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
-        // vTaskDelay(1);
+        // ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
+        vTaskDelay(1);
 
         // auto volt = VAds.GetVoltage();
         // float average = 0;
@@ -89,7 +89,7 @@ static void UserAppEntry(void *argument)
         // }
 
         if (kUserAppPrint) {
-            // JFStream << volt << average << filter_result << butt_duration << EndJFStream;
+            // JFStream << volt << average << filter_result << butt_    duration << EndJFStream;
             JFStream << VAds.GetVoltage() << IAds.GetVoltage() << EndJFStream;
             // for (auto &var : volt) {
             //     os_printf("%f,", var);
