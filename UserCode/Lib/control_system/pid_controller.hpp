@@ -30,7 +30,7 @@
  *
  * 使用示例:
  *   定义 PID 控制器:
- *     pid::PIDController<float> pid_controller{1.23, 0.54, 0, 1000, 0.01};
+ *     PIDController<float> pid_controller{1.23, 0.54, 0, 1000, 0.01};
  *
  *   使用 PID 控制器:
  *     while(1) {
@@ -49,9 +49,6 @@
 #include <array>
 
 namespace control_system
-{
-
-namespace pid
 {
 
 template <typename T>
@@ -185,7 +182,7 @@ public:
  *
  * @tparam T 运算数据类型
  * @tparam IntegratorType 积分器类型，默认为带限幅的 DiscreteIntegratorSaturation<T>. 如果不需要限幅，可以指定为 DiscreteIntegrator<T>
- * @note   例如：pid::PIDController<float, DiscreteIntegrator<float>> pid_controller{1.23, 0.54, 0.5, 100, 0.01};
+ * @note   例如：PIDController<float, DiscreteIntegrator<float>> pid_controller{1.23, 0.54, 0.5, 100, 0.01};
  */
 template <typename T, typename IntegratorType = IController<T>>
 class PIDController : public DiscreteControllerBase<T>
@@ -239,7 +236,7 @@ public:
  *
  * @tparam T 运算数据类型
  * @tparam IntegratorType 积分器类型，默认为带限幅的 DiscreteIntegratorSaturation<T>. 如果不需要限幅，可以指定为 DiscreteIntegrator<T>
- * @note   例如：pid::PIController<float, DiscreteIntegrator<float>> pi_controller{1.23, 0.54, 0.01};
+ * @note   例如：PIController<float, DiscreteIntegrator<float>> pi_controller{1.23, 0.54, 0.01};
  */
 template <typename T, typename IntegratorType = IController<T>>
 class PIController : public DiscreteControllerBase<T>
@@ -431,7 +428,5 @@ public:
         integrator.ResetState();
     }
 };
-
-} // namespace pid
 
 } // namespace control_system

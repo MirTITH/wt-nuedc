@@ -73,7 +73,7 @@ void PidTest()
     os_printf("\n==============Start PidTest=============\n");
 
     // os_printf("\np_controller:\n");
-    // pid::PController<float> p_controller{2};
+    // PController<float> p_controller{2};
     // DiscreteControllerTest(p_controller);
 
     // os_printf("\ni_controller:\n");
@@ -85,37 +85,37 @@ void PidTest()
     // DiscreteControllerTest(integrator);
 
     // os_printf("\nd_controller:\n");
-    // pid::DController<double> d_controller{1, 100, 0.01};
+    // DController<double> d_controller{1, 100, 0.01};
     // DiscreteControllerTest(d_controller);
 
     os_printf("\npid_controller:\n");
-    pid::PIDController<float> pid_controller{1.23, 0.54, 0.5, 100, 0.01};
+    PIDController<float> pid_controller{1.23, 0.54, 0.5, 100, 0.01};
     DiscreteControllerTest(pid_controller);
 
     os_printf("\npid_controller, no saturation:\n");
-    pid::PIDController<float, DiscreteIntegrator<float>> pid_controller1{1.23, 0.54, 0.5, 100, 0.01};
+    PIDController<float, DiscreteIntegrator<float>> pid_controller1{1.23, 0.54, 0.5, 100, 0.01};
     DiscreteControllerTest(pid_controller1);
 
     // os_printf( "\npi_controller:\n");
-    // pid::PIController<float> pi_controller{1.23, 0.54, 0.01};
+    // PIController<float> pi_controller{1.23, 0.54, 0.01};
     // DiscreteControllerTest(pi_controller, 1000000);
 
     // os_printf("\npi_controller, no saturation:\n");
-    // pid::PIController<float, DiscreteIntegrator<float>> pi_controller1{1.23, 0.54, 0.01};
+    // PIController<float, DiscreteIntegrator<float>> pi_controller1{1.23, 0.54, 0.01};
     // DiscreteControllerTest(pi_controller1, 1000000);
 
     // os_printf("\npd_controller:\n");
-    // pid::PDController<float> pd_controller{1.23, 0.76, 100, 0.01};
+    // PDController<float> pd_controller{1.23, 0.76, 100, 0.01};
     // DiscreteControllerTest(pd_controller);
 
     // os_printf("PID_AntiWindup:\n");
-    // pid::PID_AntiWindup<float> pid_controller{2, 100, 0, 100, 0.01, 50, -5, 5};
+    // PID_AntiWindup<float> pid_controller{2, 100, 0, 100, 0.01, 50, -5, 5};
     // // pid_controller.i_controller.SetOutputMinMax(-5, 5);
     // DiscreteControllerTest(pid_controller);
     // os_printf("\n");
 
     // os_printf("PI_AntiWindup:\n");
-    // pid::PI_AntiWindup<float> pi_controller{2, 100, 0.01, 50, -5, 5};
+    // PI_AntiWindup<float> pi_controller{2, 100, 0.01, 50, -5, 5};
 
     // pid_controller.i_controller.SetOutputMinMax(-5, 5);
     // DiscreteControllerTest(pi_controller);

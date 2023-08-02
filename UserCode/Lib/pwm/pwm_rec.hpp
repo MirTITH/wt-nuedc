@@ -27,7 +27,7 @@ public:
     T in_is_    = 0; // 交流侧反馈电流
     T in_phase_ = 0; // 相角 (rad)
 
-    control_system::pid::PIController<T> pi_controller;
+    control_system::PIController<T> pi_controller;
     control_system::ZTf<T> c_controller; // 比例谐振滤波器
 
 private:
