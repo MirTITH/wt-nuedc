@@ -11,6 +11,7 @@
 #include "HighPrecisionTime/stat.hpp"
 #include "lv_app/main_page.hpp"
 #include "lv_app/screeen_console.h"
+#include "line_calis.hpp"
 
 std::atomic<bool> kUserAppPrint = true;
 
@@ -67,7 +68,7 @@ static void UserAppEntry(void *argument)
     // });
 
     IAds.SetConvQueueCpltCallback([&](Ads1256 *ads) {
-        butter_result = butt.Step(ads->GetVoltage(0));
+        butter_result = butt.Step(kLC_B_Ads_Current.Calc(ads->GetVoltage(0)));
     });
 
     // uint32_t butt_duration;
@@ -93,7 +94,8 @@ static void UserAppEntry(void *argument)
 
         if (kUserAppPrint) {
             // JFStream << volt << average << filter_result << butt_    duration << EndJFStream;
-            JFStream << VAds.GetVoltage() << IAds.GetVoltage() << butter_result << EndJFStream;
+            // JFStream << VAds.GetVoltage() << IAds.GetVoltage() << butter_result << EndJFStream;
+            JFStream << butter_result << EndJFStream;
             // for (auto &var : volt) {
             //     os_printf("%f,", var);
             // }

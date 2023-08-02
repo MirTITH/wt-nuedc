@@ -24,7 +24,7 @@ public:
 
     T Calc(T x) const
     {
-        return k_ * x + b;
+        return k_ * x + b_;
     }
 };
 
