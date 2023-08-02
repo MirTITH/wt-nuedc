@@ -18,6 +18,7 @@
 // #include "UnitTests/test_svpwm.cpp"
 // #include "UnitTests/test_pwm_rec.cpp"
 // #include "UnitTests/test_delay_module.cpp"
+#include "UnitTests/test_prcontroller.cpp"
 
 void TestThread(void *argument)
 {
@@ -38,6 +39,7 @@ void TestThread(void *argument)
     // TestSvpwm();
     // TestPwmRec();
     // TestDelayModule();
+    TestPrController();
 
     vTaskDelete(nullptr);
 }

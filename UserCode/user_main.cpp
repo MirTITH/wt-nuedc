@@ -47,7 +47,7 @@ void StartDefaultTask(void const *argument)
 
     StartTestThread();
 
-    StartUserApp();
+    // StartUserApp();
 
     vTaskDelete(nullptr); // 删除当前线程
 }
