@@ -22,7 +22,7 @@ class Pll : public DiscreteControllerBase<T>
 {
 private:
     constexpr static T PI_ = M_PI;
-    pid::PIController<T, DiscreteIntegrator<T>> pi_controller;
+    PIController<T, DiscreteIntegrator<T>> pi_controller;
     DiscreteIntegrator<T> integrator;
 
     // 改进III型二阶广义积分器

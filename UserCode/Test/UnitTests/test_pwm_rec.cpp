@@ -5,7 +5,7 @@
 #include "task.h"
 #include "freertos_io/os_printf.h"
 #include "HighPrecisionTime/high_precision_time.h"
-#include "pwm_rec/pwm_rec.hpp"
+#include "pwm/pwm_rec.hpp"
 #include "Vofa/just_float.hpp"
 #include "tim.h"
 #include "control_system/signal_generator.hpp"
@@ -21,8 +21,8 @@ void TestPwmRec()
 {
     os_printf("====== Start %s ======\n", __func__);
 
-    Adc2.Init();
-    Adc2.StartDma();
+    // Adc2.Init();
+    // Adc2.StartDma();
 
     // control_system::Pll<float> pll(1/500)
 

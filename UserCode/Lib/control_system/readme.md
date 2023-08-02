@@ -61,7 +61,7 @@ using namespace control_system;
 // Kn = 100 （滤波器系数）
 // Ts = 0.01 （采样周期）
 // 详细信息见头文件注释
-pid::PID<float> pid_controller{2, 100, 0.76, 100, 0.01};
+PID<float> pid_controller{2, 100, 0.76, 100, 0.01};
 
 // 设置积分限幅
 pid_controller.i_controller.saturation.SetMinMax(-1, 1);
@@ -95,7 +95,7 @@ using namespace control_system;
 // 输出饱和下限: -5
 // 输出饱和上限: 5
 // 详细信息见头文件注释
-pid::PI_AntiWindup<float> pi_antiwindup{2, 1, 0.1, 1, -5, 5};
+PI_AntiWindup<float> pi_antiwindup{2, 1, 0.1, 1, -5, 5};
 ```
 
 示例3:
@@ -106,7 +106,7 @@ using namespace control_system;
 // 如果不需要限幅，可以指定一个不带限幅的积分器，提高计算速度
 // 实测在 STM32F407 上，Og 优化，不带限幅器的为 5587.37 千次/s，默认带限幅器的 PI 控制器计算速度为 2747.85 千次/s
 // O3 优化下则分别为 27917.4 千次/s 和 11972.2 千次/s
-pid::PI<float, DiscreteIntegrator<float>> pi_controller{1.23, 0.54, 0.01};
+PI<float, DiscreteIntegrator<float>> pi_controller{1.23, 0.54, 0.01};
 ```
 
 ### 离散时间积分器

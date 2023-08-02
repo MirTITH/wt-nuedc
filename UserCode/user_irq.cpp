@@ -21,6 +21,11 @@
 #include "HighPrecisionTime/stat.hpp"
 #include "Encoder/encoder_device.hpp"
 #include "Keyboard/keyboard_device.hpp"
+#include "WatchDog/watchdog.hpp"
+#include "Led/led_device.hpp"
+#include "ElectricRelay/electric_relay_device.hpp"
+#include "line_calis.hpp"
+#include <cmath>
 
 #ifdef __cplusplus
 extern "C" {
@@ -92,8 +97,6 @@ void HAL_ADC_ConvCpltCallback(ADC_HandleTypeDef *hadc)
     if (hadc->Instance == ADC1) {
         Adc1.ConvCpltCallback();
         kCoreTempearture = kTemperatureFilter.Step(GetCoreTemperature());
-    } else if (hadc->Instance == ADC2) {
-        Adc2.ConvCpltCallback();
     } else if (hadc->Instance == ADC3) {
         Adc3.ConvCpltCallback();
     }
@@ -105,19 +108,24 @@ void LcdFmc_DmaXferCpltCallback(DMA_HandleTypeDef *_hdma)
     LCD.DmaXferCpltCallback();
 }
 
-uint32_t kIAdsDrdyDuration;
+WatchDog kCurrentWatchDog([](void *) {
+    kER_GridConnector.Set(ER_State::Close);
+    kER_LoadConnector.Set(ER_State::Close);
+    kER_BridgeA.Set(ER_State::Close);
+    kER_BridgeB.Set(ER_State::Close);
+    KeyboardLed.SetColor(5, 0, 0);
+},
+                          10);
 
 void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin)
 {
-    static TimeMeter time_meter(&kIAdsDrdyDuration);
     switch (GPIO_Pin) {
         case VDrdy_Pin:
             VAds.DRDY_Callback();
             break;
         case IDrdy_Pin:
-            time_meter.StartMeasure();
             IAds.DRDY_Callback();
-            time_meter.EndMeasure();
+            kCurrentWatchDog.Exam(std::abs(kLC_B_Ads_Current.Calc(IAds.GetVoltage(0))) < 2.0f);
             break;
         case Key_EncoderA_Pin:
             KeyboardEncoder.ExtiCallback();
@@ -141,26 +149,3 @@ void HAL_SPI_TxRxCpltCallback(SPI_HandleTypeDef *hspi)
 }
 
 extern std::atomic<bool> kUserAppPrint;
-
-void common_btn_evt_cb(flex_button_t *btn)
-{
-    auto key   = (Keys)btn->id;
-    auto event = (flex_button_event_t)btn->event;
-
-    if (key == Keys::k8 && event == FLEX_BTN_PRESS_DOWN) {
-        if (VAds.GetConvQueueState() == false) {
-            VAds.StartConvQueue();
-        }
-        kUserAppPrint = true;
-
-    } else if (key == Keys::k9 && event == FLEX_BTN_PRESS_DOWN) {
-        kUserAppPrint = false;
-        VAds.StopConvQueue();
-        auto ads_reg = VAds.ReadAllRegs();
-        os_printf("ADCON: %x\n", ads_reg.ADCON);
-        os_printf("DRATE: %x\n", ads_reg.DRATE);
-        os_printf("IO: %x\n", ads_reg.IO);
-        os_printf("MUX: %x\n", ads_reg.MUX);
-        os_printf("STATUS: %x\n", ads_reg.STATUS);
-    }
-}

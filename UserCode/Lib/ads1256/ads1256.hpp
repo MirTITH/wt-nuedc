@@ -129,7 +129,7 @@ public: // Public functions
 
     void ReInit();
 
-    void Reset();
+    void Reset(uint32_t timeout_us = std::numeric_limits<uint32_t>::max());
 
     bool IsDataReady() const
     {
@@ -229,6 +229,10 @@ public: // Public functions
 
     float GetVoltage(uint8_t index) const
     {
+        if (conv_queue_.size() <= index) {
+            return 0;
+        }
+
         return Data2Voltage(conv_queue_.at(index).data);
     }
 

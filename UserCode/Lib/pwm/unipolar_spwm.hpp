@@ -54,6 +54,15 @@ public:
         SetChannelDuty(spwm_channels_[1], 1 - duty);
     }
 
+    /**
+     *
+     * @param sine_value [-1, 1]
+     */
+    void SetSineValue(float sine_value)
+    {
+        SetDuty(sine_value / 2.0f + 0.5f);
+    }
+
 private:
     std::array<SpwmChannel_t, 2> spwm_channels_;
     void SetChannelDuty(const SpwmChannel_t &channel, float duty)

@@ -1,4 +1,5 @@
 #include "main_page.hpp"
+#include "screeen_console.h"
 #include "FreeRTOS.h"
 #include "task.h"
 #include "ads1256/ads1256_device.hpp"
@@ -23,7 +24,7 @@ lv_obj_t *kTextAreaConsole;
 
 static lv_coord_t kContentWidth;
 
-void lv_app::ScreenConsole_AddText(const char *txt)
+void ScreenConsole_AddText(const char *txt)
 {
     if (kTextAreaConsole != nullptr) {
         LvglLock();
@@ -73,7 +74,7 @@ static void MainPage_Thread(void *)
     LvglLock();
     LvSimpleTextField tf_temperature(kMainTab, "内核温度", kContentWidth / 2);
     LvTextField tf_drdy(kMainTab, "VAds,IAds", kContentWidth, 70, LvglTTF_GetFont());
-    LvSimpleTextField tf_adc_rate(kMainTab, "ADC123速率");
+    LvSimpleTextField tf_adc_rate(kMainTab, "ADC1,3速率");
     LvTextField tf_fast_tim(kMainTab, "FastTim", kContentWidth / 2, 70, LvglTTF_GetFont());
     LvTextField tf_main_uart(kMainTab, "UART发送速率", kContentWidth / 2);
     LvglUnlock();
@@ -84,7 +85,6 @@ static void MainPage_Thread(void *)
     CounterFreqMeter iads_sample_rate_meter(&IAds.data_sample_count_);
 
     CounterFreqMeter adc_interrupt_meter1(&Adc1.conv_cplt_count);
-    CounterFreqMeter adc_interrupt_meter2(&Adc2.conv_cplt_count);
     CounterFreqMeter adc_interrupt_meter3(&Adc3.conv_cplt_count);
 
     CounterFreqMeter fast_tim_meter(&kFastTimCallbackCount);
@@ -108,9 +108,8 @@ static void MainPage_Thread(void *)
                               IAds.ads_err_count_);
 
         // ADC
-        lv_label_set_text_fmt(tf_adc_rate.GetMsgLabel(), "%lu,%lu,%lu",
+        lv_label_set_text_fmt(tf_adc_rate.GetMsgLabel(), "%lu,%lu",
                               adc_interrupt_meter1.MeasureFreq(),
-                              adc_interrupt_meter2.MeasureFreq(),
                               adc_interrupt_meter3.MeasureFreq());
 
         // FastTim
@@ -130,12 +129,13 @@ static void MainPage_Thread(void *)
     }
 }
 
-void lv_app::MainPage_Init()
+void MainPage_Init()
 {
     LvglLock();
     /*Create a Tab view object*/
     auto tabview = lv_tabview_create(lv_scr_act(), LV_DIR_TOP, 40);
     lv_obj_set_height(tabview, 440); // 除去底部 monitor
+    // lv_obj_set_style_text_font(tabview, LvglTTF_GetFont(), 0);
 
     kMainTab    = lv_tabview_add_tab(tabview, "信息");
     kConsoleTab = lv_tabview_add_tab(tabview, "终端");
@@ -143,6 +143,7 @@ void lv_app::MainPage_Init()
     lv_obj_set_style_pad_hor(kConsoleTab, 0, 0);
     lv_obj_set_style_pad_ver(kConsoleTab, 0, 0);
     kTextAreaConsole = lv_textarea_create(kConsoleTab);
+    lv_obj_set_style_text_font(kTextAreaConsole, LvglTTF_GetSmallFont(), 0);
     lv_obj_set_size(kTextAreaConsole, lv_pct(100), lv_pct(100));
     lv_textarea_set_placeholder_text(kTextAreaConsole, "Empty here");
 
@@ -156,6 +157,10 @@ void lv_app::MainPage_Init()
     lv_obj_set_flex_align(kMainTab, LV_FLEX_ALIGN_SPACE_EVENLY, LV_FLEX_ALIGN_CENTER, LV_FLEX_ALIGN_START);
     lv_obj_update_layout(kMainTab);
     kContentWidth = lv_obj_get_content_width(kMainTab);
+
+    // 切换到显示终端
+    lv_obj_scroll_to_view_recursive(kTextAreaConsole, LV_ANIM_OFF);
+
     LvglUnlock();
 
     xTaskCreate(MainPage_ThreadFastLoop, "main_page_fast", 1024 * 2, nullptr, PriorityBelowNormal, nullptr);

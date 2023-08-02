@@ -51,7 +51,7 @@ static void LvglThreadEntry(void *argument)
 
     // 初始化 lv_app
     lv_app::LvApp_Init();
-    lv_app::MainPage_Init();
+    MainPage_Init();
 
     LvglThreadStartSem.unlock(); // 线程初始化完毕，解锁信号量
 
@@ -68,7 +68,7 @@ static void LvglThreadEntry(void *argument)
 
 void StartLvglThread()
 {
-    xTaskCreate(LvglThreadEntry, "lvgl_thread", 1024 * 2, nullptr, PriorityBelowNormal, nullptr);
+    xTaskCreate(LvglThreadEntry, "lvgl_thread", 1024 * 3, nullptr, PriorityBelowNormal, nullptr);
 
     LvglThreadStartSem.lock(); // 等待 lvgl_thread 启动完毕
 }

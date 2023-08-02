@@ -39,11 +39,12 @@ void Ads1256::DRDY_Callback()
                 break;
             case 1:
                 data_sample_count_++;
-                if (is_in_rdatac_mode_) {
-                    ReadDataContinousToQueueDma(0);
-                } else {
-                    ReadDataToQueueDma(0);
-                }
+                ReadDataContinousToQueueDma(0);
+                // if (is_in_rdatac_mode_) {
+                //     ReadDataContinousToQueueDma(0);
+                // } else {
+                //     ReadDataToQueueDma(0);
+                // }
                 break;
 
             default:
@@ -172,7 +173,7 @@ void Ads1256::ReInit()
     // SelfCalibrateOffsetGain();
 }
 
-void Ads1256::Reset()
+void Ads1256::Reset(uint32_t timeout_us)
 {
     if (IsInPowerDownMode()) {
         ExitPowerDownMode();
@@ -185,11 +186,11 @@ void Ads1256::Reset()
         vTaskDelay(2);
         HAL_GPIO_WritePin(n_reset_port_, n_reset_pin_, GPIO_PIN_SET);
     } else {
-        WaitForNextDataReady(); // 实测必须在 DataReady 时才能发送 RESET 命令
+        WaitForNextDataReady(timeout_us); // 实测必须在 DataReady 时才能发送 RESET 命令
         WriteCmdCs(ADS1256_CMD_RESET);
     }
 
-    WaitForNextDataReady();
+    WaitForNextDataReady(timeout_us);
 }
 
 bool Ads1256::WaitForDataReady(uint32_t timeout_us) const
@@ -555,7 +556,7 @@ bool Ads1256::CheckForPresent()
 {
     assert(GetConvQueueState() == false); // 转换队列启动时不要读写 ADS
 
-    WaitForNextDataReady(1000 * 1000);
+    WaitForNextDataReady(100 * 1000);
     auto status_reg = ReadReg(ADS1256_STATUS);
 
     if ((status_reg & 0xF0) != (kADS1256_ID << 4)) {

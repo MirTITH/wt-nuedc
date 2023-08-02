@@ -9,7 +9,9 @@
 
 extern KeyboardClass Keyboard;
 
-static uint16_t button_matrix_;
+static uint16_t button_matrix_state_;
+// 矩阵键盘
+static flex_button_t buttonMatrix[16];
 
 static uint8_t common_btn_read(void *arg)
 {
@@ -25,22 +27,22 @@ void UpdateButtonMatrix()
         result |= Keyboard.ReadData() << i;
     }
 
-    button_matrix_ = result;
+    button_matrix_state_ = result;
 }
 
-__weak void common_btn_evt_cb(flex_button_t *btn)
+void SetButtonCallback(Keys key, void (*callback_func)(flex_button_t *))
 {
-    (void)btn;
+    buttonMatrix[(int)key].cb = reinterpret_cast<void (*)(void *)>(callback_func);
 }
+
+extern void ButtonCallbackRegister();
 
 void FlexibleButton_Init()
 {
-    // 矩阵键盘
-    static flex_button_t buttonMatrix[16];
     for (int i = 0; i < 16; i++) {
         buttonMatrix[i].id                     = i;
         buttonMatrix[i].usr_button_read        = common_btn_read;
-        buttonMatrix[i].cb                     = reinterpret_cast<void (*)(void *)>(common_btn_evt_cb);
+        buttonMatrix[i].cb                     = nullptr;
         buttonMatrix[i].pressed_logic_level    = 1;
         buttonMatrix[i].short_press_start_tick = FLEX_MS_TO_SCAN_CNT(500);
         buttonMatrix[i].long_press_start_tick  = FLEX_MS_TO_SCAN_CNT(1000);
@@ -48,12 +50,14 @@ void FlexibleButton_Init()
         flex_button_register(&buttonMatrix[i]);
     }
 
+    ButtonCallbackRegister();
+
     // 旋钮的键
     static flex_button_t buttonKnob;
 
     buttonKnob.id                     = 16;
     buttonKnob.usr_button_read        = common_btn_read;
-    buttonKnob.cb                     = reinterpret_cast<void (*)(void *)>(common_btn_evt_cb);
+    buttonKnob.cb                     = nullptr;
     buttonKnob.pressed_logic_level    = 1;
     buttonKnob.short_press_start_tick = FLEX_MS_TO_SCAN_CNT(500);
     buttonKnob.long_press_start_tick  = FLEX_MS_TO_SCAN_CNT(1000);
@@ -70,7 +74,7 @@ void FlexibleButton_Scan()
 uint8_t Keyboard_Read(Keys key)
 {
     if ((int)key < 16) {
-        return (button_matrix_ >> (int)key) & 1;
+        return (button_matrix_state_ >> (int)key) & 1;
     } else {
         return Keyboard.ReadKey(key);
     }
@@ -92,5 +96,5 @@ void KeyboardScanner_Init()
 void KeyboardScannerStart()
 {
     KeyboardScanner_Init();
-    xTaskCreate(KeyboardScannerEntry, "kb_scanner", 256, nullptr, PriorityNormal, nullptr);
+    xTaskCreate(KeyboardScannerEntry, "kb_scanner", 1024, nullptr, PriorityNormal, nullptr);
 }
