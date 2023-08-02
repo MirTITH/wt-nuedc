@@ -21,6 +21,8 @@
 #include "HighPrecisionTime/stat.hpp"
 #include "Encoder/encoder_device.hpp"
 #include "Keyboard/keyboard_device.hpp"
+#include "WatchDog/watchdog.hpp"
+#include "Led/led_device.hpp"
 
 #ifdef __cplusplus
 extern "C" {
