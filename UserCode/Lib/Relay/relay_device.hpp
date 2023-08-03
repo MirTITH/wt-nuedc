@@ -9,4 +9,6 @@ extern ElectricRelay BridgeB;       // On: B 桥母线继电器、驱动芯片�
 extern ElectricRelay LoadConnector; // On: 接通负载
 extern ElectricRelay GridConnector; // On: 并网
 
+void CloseAllRelay();
+
 } // namespace relay

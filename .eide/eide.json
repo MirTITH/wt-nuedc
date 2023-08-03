@@ -36,7 +36,8 @@
         "ThirdParty/lvgl/fonts/ttf_font.s",
         "UserCode/Test/UnitTests",
         "UserCode/Test/test_template.cpp",
-        "UserCode/Test/OldTests"
+        "UserCode/Test/OldTests",
+        "UserCode/Lib/usercode_vc"
       ],
       "toolchain": "GCC",
       "compileConfig": {

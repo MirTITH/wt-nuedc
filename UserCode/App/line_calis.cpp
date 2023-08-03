@@ -1,4 +1,4 @@
 #include "line_calis.hpp"
 
-// y = 4.7898327605292200 x + 0.0003700653449598
-control_system::LineCali<float> kLC_B_Ads_Current(4.7898327605292200, 0.0003700653449598);
+control_system::LineCali<float> kLineCali_B_IAds{4.7898327605292200, 0.0003700653449598};
+control_system::LineCali<float> kLineCali_B_VAds{1, 0};

@@ -16,6 +16,7 @@
 #include "Encoder/encoder_device.hpp"
 #include "Keyboard/keyboard_device.hpp"
 #include "user_app.hpp"
+#include "ads1256/ads1256_device.hpp"
 
 using namespace std;
 
@@ -41,11 +42,9 @@ void StartDefaultTask(void const *argument)
 
     HAL_TIM_Base_Start_IT(&htim6);
 
-    // vector control
-    // task_vc_start();
-    // task_pll_start();
+    InitAds();
 
-    StartTestThread();
+    // StartTestThread();
 
     StartUserApp();
 
