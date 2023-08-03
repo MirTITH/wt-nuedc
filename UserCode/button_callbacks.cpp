@@ -2,6 +2,7 @@
 #include "Relay/relay_device.hpp"
 #include "lv_app/screeen_console.h"
 #include "pwm/spwm_device.hpp"
+#include "states.hpp"
 
 static void ButtonCallback_K0(flex_button_t *btn)
 {
@@ -50,9 +51,11 @@ static void ButtonCallback_K3(flex_button_t *btn)
 static void ButtonCallback_K9(flex_button_t *btn)
 {
     if (btn->event == FLEX_BTN_PRESS_CLICK) {
+        kAppState.SwitchTo(AppState_t::Stop);
         kSpwm.StopPwm();
         ScreenConsole_AddText("kSpwm.StopPwm\n");
     } else if (btn->event == FLEX_BTN_PRESS_SHORT_START) {
+        kAppState.SwitchTo(AppState_t::ActiveInv);
         kSpwm.StartPwm();
         ScreenConsole_AddText("kSpwm.StartPwm\n");
     }

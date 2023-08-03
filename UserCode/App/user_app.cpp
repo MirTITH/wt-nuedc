@@ -28,13 +28,15 @@ static void UserAppEntry(void *argument)
 
     while (true) {
         // ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
-        vTaskDelay(1000);
+        // vTaskDelay(1000);
 
-        // if (kUserAppPrint) {
-        //     JFStream << kVAdsCaliResult << kVAdsFilterResult << EndJFStream;
-        //     vTaskDelay(1);
-        // }
+        if (kUserAppPrint) {
+            JFStream << kIAdsCaliResult << kVAdsCaliResult << EndJFStream;
+            vTaskDelay(1);
+        }
     }
+
+    vTaskDelete(nullptr);
 }
 
 void StartUserApp()
