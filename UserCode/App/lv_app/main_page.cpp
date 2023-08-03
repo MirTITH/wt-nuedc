@@ -20,8 +20,8 @@
 
 using namespace std;
 
-static const lv_color_t kAColor = lv_color_make(97, 92, 8);
-static const lv_color_t kBColor = lv_color_make(6, 53, 57);
+static const lv_color_t kAColor = lv_color_make(39, 122, 240);
+static const lv_color_t kBColor = lv_color_make(193, 24, 217);
 
 static lv_obj_t *kMainTab;
 static lv_obj_t *kConsoleTab;
@@ -74,11 +74,11 @@ static void MainPage_Thread(void *)
     switch (kWhoAmI) {
         case BoardSelector::A:
             tf_states.SetTitle("A板状态");
-            tf_states.SetTextColor(lv_color_make(125, 108, 65));
+            tf_states.SetTextColor(kAColor);
             break;
         case BoardSelector::B:
             tf_states.SetTitle("B板状态");
-            tf_states.SetTextColor(lv_color_make(95, 73, 156));
+            tf_states.SetTextColor(kBColor);
             break;
         default:
             tf_states.SetTitle("我不知道我是谁！");

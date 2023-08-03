@@ -15,14 +15,14 @@ static control_system::IController<float> kIcontroller{{0.1, 1.0f / 5000.0f}, {0
 
 void StateActiveInv_Loop()
 {
-    kAcReference = (KeyboardEncoder.Count() - kStartEncoderCount) / 50.0f;
+    kAcReference = (KeyboardEncoder.Count() - kStartEncoderCount) / 100.0f;
 
     kAcOutPll.Step(kVAdsCaliResult);
-    auto i_output  = kIcontroller.Step(kAcReference - kAcOutPll.d_);
+    auto i_output = kIcontroller.Step(kAcReference - kAcOutPll.d_);
     auto sin_value = i_output * kSine.Step();
     kSpwm.SetSineValue(sin_value);
 
-    JFStream << i_output << kVAdsCaliResult << kIAdsCaliResult << EndJFStream;
+    JFStream << sin_value << kVAdsCaliResult << kIAdsCaliResult << EndJFStream;
 }
 
 void StateActiveInv_OnEnter()
@@ -33,8 +33,15 @@ void StateActiveInv_OnEnter()
     // kIcontroller.SetStateValue(0.2);
 
     kSpwm.StartPwm();
-    relay::BridgeB.Set(Relay_State::On);
-    relay::LoadConnector.Set(Relay_State::On);
+    switch (kWhoAmI) {
+        case BoardSelector::A:
+            relay::BridgeA.Set(Relay_State::On);
+            relay::LoadConnector.Set(Relay_State::On);
+            break;
+        case BoardSelector::B:
+            relay::BridgeB.Set(Relay_State::On);
+            break;
+    }
 }
 
 void StateActiveInv_OnExit()

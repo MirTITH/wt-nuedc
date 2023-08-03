@@ -23,11 +23,11 @@ Ads1256 IAds(&hspi2,
 
 static Butter_LP_5_50_20dB_5000Hz<double> kIAdsFilter;
 std::atomic<float> kIAdsFilterResult = 0;
-std::atomic<float> kIAdsCaliResult = 0;
+std::atomic<float> kIAdsCaliResult   = 0;
 
 static Butter_LP_5_50_20dB_5000Hz<double> kVAdsFilter;
 std::atomic<float> kVAdsFilterResult = 0;
-std::atomic<float> kVAdsCaliResult = 0;
+std::atomic<float> kVAdsCaliResult   = 0;
 
 WatchDog kIAdsWatchDog([](void *) {
     kAppState.SwitchTo(AppState_t::Stop);
@@ -83,7 +83,7 @@ void InitAds()
     VAds.SetConvQueueCpltCallback([&](Ads1256 *) {
         auto cali_result = kLineCali_VAds.Calc(VAds.GetVoltage(0));
         kVAdsCaliResult  = cali_result;
-        kVAdsWatchDog.Exam(std::abs(cali_result) < 40.0f);
+        kVAdsWatchDog.Exam(std::abs(cali_result) < 15.0f); // 电压看门狗
         kVAdsFilterResult = kVAdsFilter.Step(cali_result);
     });
 
@@ -91,7 +91,7 @@ void InitAds()
     IAds.SetConvQueueCpltCallback([&](Ads1256 *) {
         auto cali_result = kLineCali_IAds.Calc(IAds.GetVoltage(0));
         kIAdsCaliResult  = cali_result;
-        kIAdsWatchDog.Exam(std::abs(cali_result) < 3.0f);
+        kIAdsWatchDog.Exam(std::abs(cali_result) < 1.0f); // 电流看门狗
         kIAdsFilterResult = kIAdsFilter.Step(cali_result);
     });
 }

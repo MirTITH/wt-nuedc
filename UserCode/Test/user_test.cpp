@@ -54,11 +54,11 @@ void TestThread(void *argument)
     //     kMod = value;
     // }
 
-    while (true) {
-        JFStream << kIAdsCaliResult << kIAdsFilterResult << EndJFStream;
-        // JFStream << kVAdsCaliResult << kVAdsFilterResult << EndJFStream;
-        vTaskDelay(1);
-    }
+    // while (true) {
+    //     JFStream << kIAdsCaliResult << kIAdsFilterResult << EndJFStream;
+    //     // JFStream << kVAdsCaliResult << kVAdsFilterResult << EndJFStream;
+    //     vTaskDelay(1);
+    // }
 
     vTaskDelete(nullptr);
 }
