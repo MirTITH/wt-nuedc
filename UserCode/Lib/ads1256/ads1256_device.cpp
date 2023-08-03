@@ -22,7 +22,7 @@ static Butter_LP_5_50_20dB_5000Hz<float> kIAdsFilter;
 std::atomic<float> kIAdsFilterResult = 0;
 std::atomic<float> kIAdsCaliResult   = 0;
 
-static Butter_LP_5_50_20dB_5000Hz<float> kVAdsFilter;
+static Butter_LP_5_50_20dB_5000Hz<double> kVAdsFilter;
 std::atomic<float> kVAdsFilterResult = 0;
 std::atomic<float> kVAdsCaliResult   = 0;
 
@@ -32,7 +32,7 @@ WatchDog kIAdsWatchDog([](void *) {
     relay::BridgeA.Set(Relay_State::Close);
     relay::BridgeB.Set(Relay_State::Close);
     os_printf("kIAdsWatchDog! Current: %f\n", kIAdsCaliResult.load());
-    KeyboardLed.SetColor(5, 0, 0);
+    KeyboardLed.SetColor(10, 0, 10);
 },
                        10);
 
@@ -61,7 +61,7 @@ void InitAds()
     }
 
     // IAds
-    IAds.SetConvQueueCpltCallback([&](Ads1256 *ads) {
+    IAds.SetConvQueueCpltCallback([&](Ads1256 *) {
         auto cali_result = kLineCali_B_IAds.Calc(IAds.GetVoltage(0));
         kIAdsCaliResult  = cali_result;
         kIAdsWatchDog.Exam(std::abs(cali_result) < 1.0f);

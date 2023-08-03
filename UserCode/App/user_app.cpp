@@ -31,7 +31,7 @@ static void UserAppEntry(void *argument)
         vTaskDelay(1000);
 
         // if (kUserAppPrint) {
-        //     JFStream << kIAdsCaliResult << kVAdsCaliResult << EndJFStream;
+        //     JFStream << kVAdsCaliResult << kVAdsFilterResult << EndJFStream;
         //     vTaskDelay(1);
         // }
     }
