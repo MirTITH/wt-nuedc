@@ -44,13 +44,13 @@ void TestThread(void *argument)
     // TestDelayModule();
     // TestPrController();
 
-    extern std::atomic<float> kMod;
+    // extern std::atomic<float> kMod;
 
-    float value = kMod;
-    while (true) {
-        scanf("%f", &value);
-        kMod = value;
-    }
+    // float value = kMod;
+    // while (true) {
+    //     scanf("%f", &value);
+    //     kMod = value;
+    // }
 
     vTaskDelete(nullptr);
 }

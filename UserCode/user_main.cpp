@@ -15,7 +15,6 @@
 #include "Adc/adc_class_device.hpp"
 #include "Encoder/encoder_device.hpp"
 #include "Keyboard/keyboard_device.hpp"
-#include "user_app.hpp"
 #include "ads1256/ads1256_device.hpp"
 
 using namespace std;
@@ -44,9 +43,7 @@ void StartDefaultTask(void const *argument)
 
     InitAds();
 
-    StartTestThread();
-
-    StartUserApp();
+    // StartTestThread();
 
     vTaskDelete(nullptr); // 删除当前线程
 }

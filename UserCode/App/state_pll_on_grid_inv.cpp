@@ -1,11 +1,11 @@
-void StatePllOnGridInv_OnEnter(){
+void StateOnGridInv_OnEnter(){
 
 }
 
-void StatePllOnGridInv_OnExit(){
+void StateOnGridInv_OnExit(){
 
 }
 
-void StatePllOnGridInv_Loop(){
+void StateOnGridInv_Loop(){
 
 }

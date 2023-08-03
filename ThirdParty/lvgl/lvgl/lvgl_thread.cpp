@@ -43,7 +43,7 @@ static void LvglThreadEntry(void *argument)
     /* 屏幕亮度滑条 */
     lv_obj_t *slider = lv_slider_create(lv_layer_top());
     lv_obj_set_width(slider, lv_pct(80));
-    lv_obj_align(slider, LV_ALIGN_BOTTOM_MID, 0, -30);
+    lv_obj_align(slider, LV_ALIGN_BOTTOM_MID, 0, -40);
     // lv_obj_set_style_opa(slider, 50, 0);
     lv_slider_set_range(slider, 0, 100);
     lv_slider_set_value(slider, 50, LV_ANIM_ON);

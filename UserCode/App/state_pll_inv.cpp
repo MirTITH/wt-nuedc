@@ -1,11 +1,11 @@
 
-void StatePllInv_OnEnter()
+void StatePassiveInv_OnEnter()
 {
 }
 
-void StatePllInv_OnExit()
+void StatePassiveInv_OnExit()
 {
 }
-void StatePllInv_Loop()
+void StatePassiveInv_Loop()
 {
 }

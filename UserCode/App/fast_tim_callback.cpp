@@ -15,8 +15,8 @@ uint32_t kFastTimCallbackCount = 0;
 void FastTimCallback()
 {
     extern void StateStop_Loop();
-    extern void StatePllOnGridInv_Loop();
-    extern void StatePllInv_Loop();
+    extern void StateOnGridInv_Loop();
+    extern void StatePassiveInv_Loop();
     extern void StateActiveInv_Loop();
 
     // 频率和时间统计
@@ -30,11 +30,11 @@ void FastTimCallback()
             StateActiveInv_Loop();
 
             break;
-        case AppState_t::PllInv:
-            StatePllInv_Loop();
+        case AppState_t::PassiveInv:
+            StatePassiveInv_Loop();
             break;
-        case AppState_t::PllOnGridInv:
-            StatePllOnGridInv_Loop();
+        case AppState_t::OnGridInv:
+            StateOnGridInv_Loop();
             break;
 
         default:

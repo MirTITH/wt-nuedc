@@ -16,6 +16,7 @@
 #include "HighPrecisionTime/stat.hpp"
 #include "Encoder/encoder_device.hpp"
 #include "fast_tim_callback.hpp"
+#include "states.hpp"
 
 using namespace std;
 
@@ -40,8 +41,7 @@ static void MainPage_ThreadFastLoop(void *)
 
     LvglLock();
     LvSimpleTextField tf_kmod(kMainTab, "正弦幅值", kContentWidth * 2 / 3);
-    LvSimpleTextField tf_touch_screen(kMainTab, "触摸点数", kContentWidth / 3);
-    LvSimpleTextField tf_encoder(kMainTab, "Enc,Sw", kContentWidth / 2);
+    // LvSimpleTextField tf_encoder(kMainTab, "Enc,Sw", kContentWidth / 2);
     LvglUnlock();
 
     uint32_t PreviousWakeTime = xTaskGetTickCount();
@@ -50,13 +50,10 @@ static void MainPage_ThreadFastLoop(void *)
         LvglLock();
         lv_label_set_text_fmt(tf_kmod.GetMsgLabel(), "%f", kMod.load());
 
-        // TouchScreen
-        lv_label_set_text_fmt(tf_touch_screen.GetMsgLabel(), "%u", TouchScreen.NumberOfTouchPoint());
-
         // tf_encoder
-        lv_label_set_text_fmt(tf_encoder.GetMsgLabel(), "%ld,%d,%d", KeyboardEncoder.Count(),
-                              Keyboard_Read(Keys::kSwitch),
-                              Keyboard_Read(Keys::kKnobBtn));
+        // lv_label_set_text_fmt(tf_encoder.GetMsgLabel(), "%ld,%d,%d", KeyboardEncoder.Count(),
+        //                       Keyboard_Read(Keys::kSwitch),
+        //                       Keyboard_Read(Keys::kKnobBtn));
 
         LvglUnlock();
         vTaskDelayUntil(&PreviousWakeTime, period);
@@ -68,7 +65,7 @@ static void MainPage_Thread(void *)
     const uint32_t period = 1000;
 
     LvglLock();
-    LvSimpleTextField tf_temperature(kMainTab, "内核温度", kContentWidth / 2);
+    LvTextField tf_states(kMainTab, "状态", kContentWidth);
     LvTextField tf_drdy(kMainTab, "VAds,IAds", kContentWidth, 70, LvglTTF_GetFont());
     LvSimpleTextField tf_adc_rate(kMainTab, "ADC1,3速率");
     LvTextField tf_fast_tim(kMainTab, "FastTim", kContentWidth / 2, 70, LvglTTF_GetFont());
@@ -116,9 +113,24 @@ static void MainPage_Thread(void *)
         // MainUart
         lv_label_set_text_fmt(tf_main_uart.GetMsgLabel(), "%lu", main_uart_meter.MeasureFreq());
 
-        // Tempearture
-        extern float kCoreTempearture;
-        lv_label_set_text_fmt(tf_temperature.GetMsgLabel(), "%.3f", kCoreTempearture);
+        // 状态
+        switch (kAppState.GetState()) {
+            case AppState_t::Stop:
+                tf_states.SetMsg("停止模式");
+                break;
+            case AppState_t::ActiveInv:
+                tf_states.SetMsg("主动逆变");
+                break;
+            case AppState_t::PassiveInv:
+                tf_states.SetMsg("被动逆变");
+                break;
+            case AppState_t::OnGridInv:
+                tf_states.SetMsg("并网逆变");
+                break;
+            default:
+                tf_states.SetMsg("未知模式");
+                break;
+        }
 
         LvglUnlock();
         vTaskDelayUntil(&PreviousWakeTime, period);

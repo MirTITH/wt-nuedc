@@ -8,17 +8,17 @@ extern void StateStop_OnExit();
 extern void StateActiveInv_OnEnter();
 extern void StateActiveInv_OnExit();
 
-extern void StatePllInv_OnEnter();
-extern void StatePllInv_OnExit();
+extern void StatePassiveInv_OnEnter();
+extern void StatePassiveInv_OnExit();
 
-extern void StatePllOnGridInv_OnEnter();
-extern void StatePllOnGridInv_OnExit();
+extern void StateOnGridInv_OnEnter();
+extern void StateOnGridInv_OnExit();
 
 enum class AppState_t {
     Stop,        // 停止模式，所有继电器关闭，PWM 关闭
     ActiveInv,   // 主动逆变
-    PllInv,      // 锁相逆变
-    PllOnGridInv // 并网逆变
+    PassiveInv,      // 被动逆变
+    OnGridInv // 并网逆变
 };
 
 class AppStateClass
@@ -35,11 +35,11 @@ private:
             case AppState_t::ActiveInv:
                 StateActiveInv_OnExit();
                 break;
-            case AppState_t::PllInv:
-                StatePllInv_OnExit();
+            case AppState_t::PassiveInv:
+                StatePassiveInv_OnExit();
                 break;
-            case AppState_t::PllOnGridInv:
-                StatePllOnGridInv_OnExit();
+            case AppState_t::OnGridInv:
+                StateOnGridInv_OnExit();
                 break;
         }
         state_ = AppState_t::Stop;
@@ -54,11 +54,11 @@ private:
             case AppState_t::ActiveInv:
                 StateActiveInv_OnEnter();
                 break;
-            case AppState_t::PllInv:
-                StatePllInv_OnEnter();
+            case AppState_t::PassiveInv:
+                StatePassiveInv_OnEnter();
                 break;
-            case AppState_t::PllOnGridInv:
-                StatePllOnGridInv_OnEnter();
+            case AppState_t::OnGridInv:
+                StateOnGridInv_OnEnter();
                 break;
         }
         state_ = state_to_enter;
@@ -70,6 +70,9 @@ public:
         if (new_state == AppState_t::Stop) {
             ExitState(state_);
             EnterState(new_state);
+        } else if (new_state == AppState_t::OnGridInv) {
+#warning "to do"
+            state_ = new_state;
         } else if (state_ == AppState_t::Stop) {
             ExitState(state_);
             EnterState(new_state);
