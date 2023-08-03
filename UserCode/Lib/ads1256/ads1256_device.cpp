@@ -7,6 +7,7 @@
 #include "freertos_io/os_printf.h"
 #include "FreeRTOS.h"
 #include "task.h"
+#include "states.hpp"
 
 Ads1256 VAds(&hspi3,
              VDrdy_GPIO_Port, VDrdy_Pin,
@@ -22,21 +23,21 @@ Ads1256 IAds(&hspi2,
 
 // static Butter_LP_5_50_20dB_5000Hz<double> kIAdsFilter;
 // std::atomic<float> kIAdsFilterResult = 0;
-std::atomic<float> kIAdsCaliResult   = 0;
+std::atomic<float> kIAdsCaliResult = 0;
 
 // static Butter_LP_5_50_20dB_5000Hz<double> kVAdsFilter;
 // std::atomic<float> kVAdsFilterResult = 0;
-std::atomic<float> kVAdsCaliResult   = 0;
+std::atomic<float> kVAdsCaliResult = 0;
 
 WatchDog kIAdsWatchDog([](void *) {
-    relay::CloseAllRelay();
+    kAppState.SwitchTo(AppState_t::Stop);
     os_printf("kIAdsWatchDog! Current: %f\n", kIAdsCaliResult.load());
     KeyboardLed.SetColor(10, 10, 0);
 },
                        10);
 
 WatchDog kVAdsWatchDog([](void *) {
-    relay::CloseAllRelay();
+    kAppState.SwitchTo(AppState_t::Stop);
     os_printf("kVAdsWatchDog! Volt: %f\n", kVAdsCaliResult.load());
     KeyboardLed.SetColor(10, 0, 10);
 },
@@ -79,10 +80,10 @@ void InitAds()
     vTaskDelay(100);
 
     // VAds Callback
-    VAds.SetConvQueueCpltCallback([&](Ads1256 *ads) {
+    VAds.SetConvQueueCpltCallback([&](Ads1256 *) {
         auto cali_result = kLineCali_B_VAds.Calc(VAds.GetVoltage(0));
         kVAdsCaliResult  = cali_result;
-        kVAdsWatchDog.Exam(std::abs(cali_result) < 20.0f);
+        kVAdsWatchDog.Exam(std::abs(cali_result) < 40.0f);
         // kVAdsFilterResult = kVAdsFilter.Step(cali_result);
     });
 
@@ -90,7 +91,7 @@ void InitAds()
     IAds.SetConvQueueCpltCallback([&](Ads1256 *) {
         auto cali_result = kLineCali_B_IAds.Calc(IAds.GetVoltage(0));
         kIAdsCaliResult  = cali_result;
-        kIAdsWatchDog.Exam(std::abs(cali_result) < 1.0f);
+        kIAdsWatchDog.Exam(std::abs(cali_result) < 3.0f);
         // kIAdsFilterResult = kIAdsFilter.Step(cali_result);
     });
 }

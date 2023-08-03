@@ -71,7 +71,7 @@ public:
             ExitState(state_);
             EnterState(new_state);
         } else if (new_state == AppState_t::OnGridInv) {
-#warning "to do"
+#warning "to do OnGridInv"
             state_ = new_state;
         } else if (state_ == AppState_t::Stop) {
             ExitState(state_);

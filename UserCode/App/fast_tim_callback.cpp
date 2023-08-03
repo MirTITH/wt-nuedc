@@ -28,7 +28,6 @@ void FastTimCallback()
             break;
         case AppState_t::ActiveInv:
             StateActiveInv_Loop();
-
             break;
         case AppState_t::PassiveInv:
             StatePassiveInv_Loop();

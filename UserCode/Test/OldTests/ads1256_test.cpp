@@ -7,20 +7,6 @@
 #include "freertos_io/os_printf.h"
 #include "control_system/pll.hpp"
 
-control_system::Pll<float> kPll(1.0 / 3750.0);
-
-void AdsPrintEntry(void *)
-{
-    while (true) {
-        for (auto &voltage : VAds.GetVoltage()) {
-            os_printf("%9f, ", voltage);
-        }
-
-        os_printf("%f, %f, %f\n", kPll.omega_, kPll.d_, kPll.phase_);
-        vTaskDelay(1);
-    }
-}
-
 void Ads1256Test()
 {
     os_printf("==== Start %s ====\n", __func__);
@@ -90,7 +76,7 @@ void Ads1256Test()
     xTaskCreate(AdsPrintEntry, "ads_print", 512, nullptr, PriorityNormal, &ads_print_task_handle);
 
     // 设置转换队列完成后的回调函数
-    VAds.SetConvQueueCpltCallback([](Ads1256 *ads) { kPll.Step(ads->GetVoltage(0)); });
+    // VAds.SetConvQueueCpltCallback([](Ads1256 *ads) {});
 
     // os_printf(">>>> 转换队列设为只有一个元素，会自动使用连续读取\n");
     VAds.SetConvQueue({0x0f});

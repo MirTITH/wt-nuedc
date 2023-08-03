@@ -14,9 +14,9 @@
 #include <cmath>
 #include "Keyboard/keyboard_device.hpp"
 #include "HighPrecisionTime/stat.hpp"
-#include "Encoder/encoder_device.hpp"
 #include "fast_tim_callback.hpp"
 #include "states.hpp"
+#include "common_objs.hpp"
 
 using namespace std;
 
@@ -40,7 +40,7 @@ static void MainPage_ThreadFastLoop(void *)
     const uint32_t period = 100;
 
     LvglLock();
-    LvSimpleTextField tf_kmod(kMainTab, "正弦幅值", kContentWidth * 2 / 3);
+    LvSimpleTextField tf_kmod(kMainTab, "期望正弦幅值", kContentWidth * 2 / 3);
     // LvSimpleTextField tf_encoder(kMainTab, "Enc,Sw", kContentWidth / 2);
     LvglUnlock();
 
@@ -48,7 +48,8 @@ static void MainPage_ThreadFastLoop(void *)
     while (1) {
         // tf_kmod
         LvglLock();
-        lv_label_set_text_fmt(tf_kmod.GetMsgLabel(), "%f", kMod.load());
+        extern std::atomic<float> kAcReference;
+        lv_label_set_text_fmt(tf_kmod.GetMsgLabel(), "%f", kAcReference.load());
 
         // tf_encoder
         // lv_label_set_text_fmt(tf_encoder.GetMsgLabel(), "%ld,%d,%d", KeyboardEncoder.Count(),

@@ -18,7 +18,7 @@
 namespace control_system
 {
 template <typename T>
-class Pll : public DiscreteControllerBase<T>
+class Pll
 {
 private:
     constexpr static T PI_ = M_PI;
@@ -120,7 +120,7 @@ public:
      * @param input 输入
      * @return  omega
      */
-    T Step(T input) override
+    void Step(T input)
     {
         auto alpha = Gd.Step(input);
         auto beta  = Gq.Step(input);
@@ -144,15 +144,13 @@ public:
         } else {
             phase_ = integrate_result;
         }
-
-        return omega_;
     }
 
     /**
      * @brief 重置控制器内部状态
      *
      */
-    void ResetState() override
+    void ResetState()
     {
         Gq.ResetState();
         Gd.ResetState();

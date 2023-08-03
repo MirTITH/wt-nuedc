@@ -16,12 +16,14 @@
 #include "Encoder/encoder_device.hpp"
 #include "Keyboard/keyboard_device.hpp"
 #include "ads1256/ads1256_device.hpp"
+#include "Led/led_device.hpp"
 
 using namespace std;
 
 void StartDefaultTask(void const *argument)
 {
     (void)argument;
+    KeyboardLed.Power(true);
 
     // 时间库初始化，需要最先 init
     HPT_Init();
@@ -39,7 +41,7 @@ void StartDefaultTask(void const *argument)
     Adc1.Init();
     Adc1.StartDma();
 
-    HAL_TIM_Base_Start_IT(&htim6);
+    HAL_TIM_Base_Start_IT(&htim6); // FastTim Callback
 
     InitAds();
 
