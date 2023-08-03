@@ -7,7 +7,10 @@
 extern Ads1256 VAds;
 extern Ads1256 IAds;
 
+extern std::atomic<float> kIAdsCaliResult;
 extern std::atomic<float> kIAdsFilterResult;
+
+extern std::atomic<float> kVAdsCaliResult;
 extern std::atomic<float> kVAdsFilterResult;
 
 void InitAds();

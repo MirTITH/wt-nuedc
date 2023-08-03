@@ -3,6 +3,9 @@
 #include "FreeRTOS.h"
 #include "task.h"
 #include "FreeRtosSys/thread_priority_def.h"
+#include "fast_tim_callback.hpp"
+#include <cstdio>
+#include <atomic>
 
 // Test includes
 // #include "test_template.cpp"
@@ -40,6 +43,14 @@ void TestThread(void *argument)
     // TestPwmRec();
     // TestDelayModule();
     // TestPrController();
+
+    extern std::atomic<float> kMod;
+
+    float value = kMod;
+    while (true) {
+        scanf("%f", &value);
+        kMod = value;
+    }
 
     vTaskDelete(nullptr);
 }

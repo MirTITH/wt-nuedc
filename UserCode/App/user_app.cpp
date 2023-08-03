@@ -28,12 +28,12 @@ static void UserAppEntry(void *argument)
 
     while (true) {
         // ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
-        vTaskDelay(1);
+        vTaskDelay(1000);
 
-        if (kUserAppPrint) {
-            // JFStream << volt << average << filter_result << butt_    duration << EndJFStream;
-            JFStream << kIAdsFilterResult << kVAdsFilterResult << EndJFStream;
-        }
+        // if (kUserAppPrint) {
+        //     JFStream << kIAdsCaliResult << kVAdsCaliResult << EndJFStream;
+        //     vTaskDelay(1);
+        // }
     }
 }
 

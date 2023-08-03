@@ -44,7 +44,7 @@ void StartDefaultTask(void const *argument)
 
     InitAds();
 
-    // StartTestThread();
+    StartTestThread();
 
     StartUserApp();
 
