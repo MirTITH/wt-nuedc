@@ -229,10 +229,6 @@ public: // Public functions
 
     float GetVoltage(uint8_t index) const
     {
-        if (conv_queue_.size() <= index) {
-            return 0;
-        }
-
         return Data2Voltage(conv_queue_.at(index).data);
     }
 

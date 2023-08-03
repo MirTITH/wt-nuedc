@@ -23,7 +23,7 @@
 #include "Keyboard/keyboard_device.hpp"
 #include "WatchDog/watchdog.hpp"
 #include "Led/led_device.hpp"
-#include "ElectricRelay/electric_relay_device.hpp"
+#include "Relay/relay_device.hpp"
 #include "line_calis.hpp"
 #include <cmath>
 
@@ -108,15 +108,6 @@ void LcdFmc_DmaXferCpltCallback(DMA_HandleTypeDef *_hdma)
     LCD.DmaXferCpltCallback();
 }
 
-WatchDog kCurrentWatchDog([](void *) {
-    kER_GridConnector.Set(ER_State::Close);
-    kER_LoadConnector.Set(ER_State::Close);
-    kER_BridgeA.Set(ER_State::Close);
-    kER_BridgeB.Set(ER_State::Close);
-    KeyboardLed.SetColor(5, 0, 0);
-},
-                          10);
-
 void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin)
 {
     switch (GPIO_Pin) {
@@ -125,7 +116,6 @@ void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin)
             break;
         case IDrdy_Pin:
             IAds.DRDY_Callback();
-            kCurrentWatchDog.Exam(std::abs(kLC_B_Ads_Current.Calc(IAds.GetVoltage(0))) < 2.0f);
             break;
         case Key_EncoderA_Pin:
             KeyboardEncoder.ExtiCallback();

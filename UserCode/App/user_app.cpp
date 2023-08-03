@@ -12,10 +12,21 @@
 #include "lv_app/main_page.hpp"
 #include "lv_app/screeen_console.h"
 #include "line_calis.hpp"
+#include "WatchDog/watchdog.hpp"
+#include "Relay/relay_device.hpp"
 
 std::atomic<bool> kUserAppPrint = true;
 
 static TaskHandle_t UserAppEntry_handle;
+
+WatchDog kCurrentWatchDog([](void *) {
+    relay::GridConnector.Set(Relay_State::Close);
+    relay::LoadConnector.Set(Relay_State::Close);
+    relay::BridgeA.Set(Relay_State::Close);
+    relay::BridgeB.Set(Relay_State::Close);
+    KeyboardLed.SetColor(5, 0, 0);
+},
+                          10);
 
 static void UserAppEntry(void *argument)
 {
@@ -68,6 +79,7 @@ static void UserAppEntry(void *argument)
     // });
 
     IAds.SetConvQueueCpltCallback([&](Ads1256 *ads) {
+        kCurrentWatchDog.Exam(std::abs(kLC_B_Ads_Current.Calc(IAds.GetVoltage(0))) < 2.0f);
         butter_result = butt.Step(kLC_B_Ads_Current.Calc(ads->GetVoltage(0)));
     });
 
