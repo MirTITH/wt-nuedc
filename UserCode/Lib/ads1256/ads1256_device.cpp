@@ -21,12 +21,12 @@ Ads1256 IAds(&hspi2,
              ISync_GPIO_Port, ISync_Pin,
              IAds_nCs_GPIO_Port, IAds_nCs_Pin);
 
-// static Butter_LP_5_50_20dB_5000Hz<double> kIAdsFilter;
-// std::atomic<float> kIAdsFilterResult = 0;
+static Butter_LP_5_50_20dB_5000Hz<double> kIAdsFilter;
+std::atomic<float> kIAdsFilterResult = 0;
 std::atomic<float> kIAdsCaliResult = 0;
 
-// static Butter_LP_5_50_20dB_5000Hz<double> kVAdsFilter;
-// std::atomic<float> kVAdsFilterResult = 0;
+static Butter_LP_5_50_20dB_5000Hz<double> kVAdsFilter;
+std::atomic<float> kVAdsFilterResult = 0;
 std::atomic<float> kVAdsCaliResult = 0;
 
 WatchDog kIAdsWatchDog([](void *) {
@@ -81,17 +81,17 @@ void InitAds()
 
     // VAds Callback
     VAds.SetConvQueueCpltCallback([&](Ads1256 *) {
-        auto cali_result = kLineCali_B_VAds.Calc(VAds.GetVoltage(0));
+        auto cali_result = kLineCali_VAds.Calc(VAds.GetVoltage(0));
         kVAdsCaliResult  = cali_result;
         kVAdsWatchDog.Exam(std::abs(cali_result) < 40.0f);
-        // kVAdsFilterResult = kVAdsFilter.Step(cali_result);
+        kVAdsFilterResult = kVAdsFilter.Step(cali_result);
     });
 
     // IAds Callback
     IAds.SetConvQueueCpltCallback([&](Ads1256 *) {
-        auto cali_result = kLineCali_B_IAds.Calc(IAds.GetVoltage(0));
+        auto cali_result = kLineCali_IAds.Calc(IAds.GetVoltage(0));
         kIAdsCaliResult  = cali_result;
         kIAdsWatchDog.Exam(std::abs(cali_result) < 3.0f);
-        // kIAdsFilterResult = kIAdsFilter.Step(cali_result);
+        kIAdsFilterResult = kIAdsFilter.Step(cali_result);
     });
 }

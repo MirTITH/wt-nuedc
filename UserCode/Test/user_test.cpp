@@ -6,6 +6,8 @@
 #include "fast_tim_callback.hpp"
 #include <cstdio>
 #include <atomic>
+#include "Vofa/just_float.hpp"
+#include "ads1256/ads1256_device.hpp"
 
 // Test includes
 // #include "test_template.cpp"
@@ -51,6 +53,12 @@ void TestThread(void *argument)
     //     scanf("%f", &value);
     //     kMod = value;
     // }
+
+    while (true) {
+        JFStream << kIAdsCaliResult << kIAdsFilterResult << EndJFStream;
+        // JFStream << kVAdsCaliResult << kVAdsFilterResult << EndJFStream;
+        vTaskDelay(1);
+    }
 
     vTaskDelete(nullptr);
 }

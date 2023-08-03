@@ -70,6 +70,12 @@ public:
         lv_label_set_text(label_msg_, text.c_str());
     }
 
+    void SetTextColor(lv_color_t color)
+    {
+        lv_obj_set_style_text_color(label_msg_, color, 0);
+        lv_obj_set_style_text_color(label_title_, color, 0);
+    }
+
     lv_obj_t *GetMsgLabel() const
     {
         return label_msg_;

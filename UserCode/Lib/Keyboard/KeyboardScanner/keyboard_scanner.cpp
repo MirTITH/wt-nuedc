@@ -96,5 +96,7 @@ void KeyboardScanner_Init()
 void KeyboardScannerStart()
 {
     KeyboardScanner_Init();
+    FlexibleButton_Scan(); // 先扫描一次，保证 KeyboardScannerStart 后立即更新键盘状态
+
     xTaskCreate(KeyboardScannerEntry, "kb_scanner", 1024, nullptr, PriorityNormal, nullptr);
 }

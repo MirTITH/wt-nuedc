@@ -20,6 +20,9 @@
 
 using namespace std;
 
+static const lv_color_t kAColor = lv_color_make(97, 92, 8);
+static const lv_color_t kBColor = lv_color_make(6, 53, 57);
+
 static lv_obj_t *kMainTab;
 static lv_obj_t *kConsoleTab;
 lv_obj_t *kTextAreaConsole;
@@ -66,9 +69,24 @@ static void MainPage_Thread(void *)
     const uint32_t period = 1000;
 
     LvglLock();
-    LvTextField tf_states(kMainTab, "状态", kContentWidth);
-    LvTextField tf_drdy(kMainTab, "VAds,IAds", kContentWidth, 70, LvglTTF_GetFont());
-    LvSimpleTextField tf_adc_rate(kMainTab, "ADC1,3速率");
+    LvTextField tf_states(kMainTab, "Untitled", kContentWidth);
+
+    switch (kWhoAmI) {
+        case BoardSelector::A:
+            tf_states.SetTitle("A板状态");
+            tf_states.SetTextColor(lv_color_make(125, 108, 65));
+            break;
+        case BoardSelector::B:
+            tf_states.SetTitle("B板状态");
+            tf_states.SetTextColor(lv_color_make(95, 73, 156));
+            break;
+        default:
+            tf_states.SetTitle("我不知道我是谁！");
+            break;
+    }
+
+    LvTextField tf_drdy(kMainTab, "VAds,IAds", kContentWidth / 2, 70, LvglTTF_GetFont());
+    LvTextField tf_adc_rate(kMainTab, "ADC1,3速率", kContentWidth / 2, 70, LvglTTF_GetFont());
     LvTextField tf_fast_tim(kMainTab, "FastTim", kContentWidth / 2, 70, LvglTTF_GetFont());
     LvTextField tf_main_uart(kMainTab, "UART发送速率", kContentWidth / 2);
     LvglUnlock();
@@ -91,15 +109,13 @@ static void MainPage_Thread(void *)
         LvglLock();
         // ADS1256
         lv_label_set_text_fmt(tf_drdy.GetMsgLabel(),
-                              "drdy:%lu,%lu|采样:%lu,%lu\nbusy:%lu, %lu | err:%lu, %lu",
-                              vads_drdy_meter.MeasureFreq(),
-                              iads_drdy_meter.MeasureFreq(),
+                              "采样:%lu,%lu\nbusy:%lu, %lu",
+                              //   vads_drdy_meter.MeasureFreq(),
+                              //   iads_drdy_meter.MeasureFreq(),
                               vads_sample_rate_meter.MeasureFreq(),
                               iads_sample_rate_meter.MeasureFreq(),
                               VAds.dma_busy_count_,
-                              IAds.dma_busy_count_,
-                              VAds.ads_err_count_,
-                              IAds.ads_err_count_);
+                              IAds.dma_busy_count_);
 
         // ADC
         lv_label_set_text_fmt(tf_adc_rate.GetMsgLabel(), "%lu,%lu",
@@ -155,6 +171,21 @@ void MainPage_Init()
     lv_obj_set_style_text_font(kTextAreaConsole, LvglTTF_GetSmallFont(), 0);
     lv_obj_set_size(kTextAreaConsole, lv_pct(100), lv_pct(100));
     lv_textarea_set_placeholder_text(kTextAreaConsole, "Empty here");
+
+    switch (kWhoAmI) {
+        case BoardSelector::A:
+            lv_obj_set_style_text_color(kTextAreaConsole, kAColor, 0);
+            ScreenConsole_AddText("I am A board!\n");
+            break;
+        case BoardSelector::B:
+            lv_obj_set_style_text_color(kTextAreaConsole, kBColor, 0);
+            ScreenConsole_AddText("I am B board!\n");
+            break;
+        default:
+            lv_obj_set_style_text_color(kTextAreaConsole, lv_color_make(200, 0, 0), 0);
+            ScreenConsole_AddText("I don't known who I am!\n");
+            break;
+    }
 
     lv_obj_set_style_border_side(kMainTab, LV_BORDER_SIDE_NONE, 0);
     // lv_obj_set_size(kMainTab, lv_pct(100), 440); // 除去底部 monitor
