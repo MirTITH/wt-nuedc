@@ -40,16 +40,20 @@ void StartDefaultTask(void const *argument)
 
     switch (kWhoAmI) {
         case BoardSelector::A:
-            kLineCali_IAds.k_ = 4.7898327605292200;
-            kLineCali_IAds.b_ = 0.0003700653449598;
-            kLineCali_VAds.k_ = 31.6282631438288000;
-            kLineCali_VAds.b_ = -0.0113041469861519;
+            kLineCali_IAds.k_    = 4.7898327605292200;
+            kLineCali_IAds.b_    = 0.0003700653449598;
+            kLineCali_VAds.k_    = 31.6282631438288000;
+            kLineCali_VAds.b_    = -0.0113041469861519;
+            kLineCali_GridAdc.k_ = 49.7318049981908000;
+            kLineCali_GridAdc.b_ = 0.2220309448129640;
             break;
         case BoardSelector::B:
-            kLineCali_IAds.k_ = 4.8500909335328100;
-            kLineCali_IAds.b_ = 0.0004955869787681;
-            kLineCali_VAds.k_ = 31.6595871611746000;
-            kLineCali_VAds.b_ = -0.1223529377663620;
+            kLineCali_IAds.k_    = 4.8500909335328100;
+            kLineCali_IAds.b_    = 0.0004955869787681;
+            kLineCali_VAds.k_    = 31.6595871611746000;
+            kLineCali_VAds.b_    = -0.1223529377663620;
+            kLineCali_GridAdc.k_ = 45.8800148031247000;
+            kLineCali_GridAdc.b_ = -0.0314225827423855;
             break;
         default:
             break;

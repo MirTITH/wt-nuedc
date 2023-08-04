@@ -61,10 +61,13 @@ void TestThread(void *argument)
     //     vTaskDelay(1);
     // }
 
-    while (true) {
-        JFStream << kVAdsCaliResult << kVAdsFilterResult << EndJFStream;
-        vTaskDelay(1);
-    }
+
+
+    // while (true) {
+    
+    //     JFStream << kVAdsCaliResult << kVAdsFilterResult << EndJFStream;
+    //     vTaskDelay(1);
+    // }
 
     vTaskDelete(nullptr);
 }

@@ -42,7 +42,7 @@ WatchDog kIAdsWatchDog([](void *) {
 WatchDog kVAdsWatchDog([](void *) {
     KeyboardLed.SetColor(10, 0, 10);
     kAppState.SwitchTo(AppState_t::Stop);
-    std::string str = std::string("VAdsWatchDog! Current: ") + std::to_string(kVAdsCaliResult.load()).append("\n");
+    std::string str = std::string("VAdsWatchDog! Voltage: ") + std::to_string(kVAdsCaliResult.load()).append("\n");
     ScreenConsole_AddText(str.c_str());
 },
                        10);

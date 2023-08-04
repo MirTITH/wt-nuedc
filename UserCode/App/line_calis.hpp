@@ -2,3 +2,4 @@
 
 extern control_system::LineCali<float> kLineCali_IAds;
 extern control_system::LineCali<float> kLineCali_VAds;
+extern control_system::LineCali<float> kLineCali_GridAdc;

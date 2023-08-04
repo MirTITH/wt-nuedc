@@ -143,7 +143,7 @@ public:
 
     float GetDiffVoltage(size_t index_p, size_t index_n) const
     {
-        return static_cast<float>(GetData(index_p) - GetData(index_n)) / max_range_ * vref_;
+        return static_cast<float>((int16_t)GetData(index_p) - (int16_t)GetData(index_n)) / max_range_ * vref_;
     }
 
     std::vector<float> GetAllVoltage() const;

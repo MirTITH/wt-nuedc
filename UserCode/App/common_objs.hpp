@@ -7,6 +7,9 @@
 extern std::atomic<float> kMod;
 extern control_system::Pll<float> kAcOutPll;
 
+extern control_system::Pll<float> kGridPll;
+extern std::atomic<float> kGridVoltage;
+
 enum class BoardSelector {
     A,
     B
