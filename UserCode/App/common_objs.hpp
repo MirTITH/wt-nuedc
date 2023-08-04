@@ -15,7 +15,7 @@ extern control_system::Pll<float> kAcOutPll;
 
 extern control_system::Pll<float> kGridPll;
 extern std::atomic<float> kGridVoltage;
-// extern std::atomic<float> kGridFilterVoltage;
+extern std::atomic<float> kGridFilterVoltage;
 
 enum class BoardSelector {
     A,
