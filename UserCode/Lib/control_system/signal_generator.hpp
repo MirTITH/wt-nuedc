@@ -78,9 +78,9 @@ public:
      *
      * @return  输出
      */
-    T Step()
+    T Step(T delta_phase = 0)
     {
-        T result = sin_func(k * counter_ + initial_phase_);
+        T result = sin_func(k * counter_ + initial_phase_ + delta_phase);
         counter_++;
         if (counter_ >= reload_num_) {
             counter_ = 0;

@@ -23,6 +23,8 @@ void FastTimCallback()
     kGridVoltage   = grid_volt;
     kGridPll.Step(grid_volt);
 
+    kAcOutPll.Step(kVAdsCaliResult);
+
     extern void StateStop_Loop();
     extern void StateOnGridInv_Loop();
     extern void StatePassiveInv_Loop();

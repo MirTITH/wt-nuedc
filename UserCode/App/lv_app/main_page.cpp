@@ -19,6 +19,7 @@
 #include "common_objs.hpp"
 #include "freertos_lock/freertos_lock.hpp"
 #include <cstring>
+#include "DelayHolder/delay_holder.hpp"
 
 using namespace std;
 
@@ -125,7 +126,8 @@ static void MainPage_Thread(void *)
             break;
     }
 
-    LvTextField tf_kmod(kMainTab, "期望正弦幅值", kContentWidth);
+    LvTextField tf_kmod(kMainTab, "期望正弦幅值", kContentWidth * 2 / 3);
+    LvTextField tf_grid_status(kMainTab, "电网状态", kContentWidth / 3);
     LvTextField tf_drdy(kMainTab, "VAds,IAds", kContentWidth / 2, 70, LvglTTF_GetFont());
     LvTextField tf_adc_rate(kMainTab, "ADC1,3速率", kContentWidth / 2, 70, LvglTTF_GetFont());
     LvTextField tf_fast_tim(kMainTab, "FastTim", kContentWidth / 2, 70, LvglTTF_GetFont());
@@ -142,6 +144,8 @@ static void MainPage_Thread(void *)
 
     CounterFreqMeter fast_tim_meter(&kFastTimCallbackCount);
     CounterFreqMeter main_uart_meter(&MainUart.uart_device.total_tx_size_);
+
+    DelayHolder grid_checker(500);
 
     // char str_buffer[20];
     uint32_t loop_count       = 0;
@@ -170,6 +174,12 @@ static void MainPage_Thread(void *)
                 default:
                     tf_states.SetMsg("未知模式");
                     break;
+            }
+
+            if (grid_checker.Exam(std::abs(kGridPll.d_) > 5.0f)) {
+                tf_grid_status.SetMsg("连接");
+            } else {
+                tf_grid_status.SetMsg("断开");
             }
         }
 
