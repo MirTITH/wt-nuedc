@@ -5,3 +5,8 @@ control_system::Pll<float> kAcOutPll(1.0 / 5000.0); // 交流输出端的 PLL
 std::atomic<float> kMod;
 
 BoardSelector kWhoAmI;
+
+float GetGridVoltage()
+{
+    return Adc3.GetDiffVoltage(0, 1);
+}

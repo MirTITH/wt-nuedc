@@ -78,15 +78,10 @@ void MY_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
     }
 }
 
-#include "Filters/butterworth.hpp"
-float kCoreTempearture;
-
 void HAL_ADC_ConvCpltCallback(ADC_HandleTypeDef *hadc)
 {
-    static Butter_LP_5_50_20dB_5000Hz<float> kTemperatureFilter;
     if (hadc->Instance == ADC1) {
         Adc1.ConvCpltCallback();
-        kCoreTempearture = kTemperatureFilter.Step(GetCoreTemperature());
     } else if (hadc->Instance == ADC3) {
         Adc3.ConvCpltCallback();
     }

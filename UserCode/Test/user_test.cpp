@@ -8,6 +8,7 @@
 #include <atomic>
 #include "Vofa/just_float.hpp"
 #include "ads1256/ads1256_device.hpp"
+#include "Adc/adc_class_device.hpp"
 
 // Test includes
 // #include "test_template.cpp"
@@ -59,6 +60,11 @@ void TestThread(void *argument)
     //     // JFStream << kVAdsCaliResult << kVAdsFilterResult << EndJFStream;
     //     vTaskDelay(1);
     // }
+
+    while (true) {
+        JFStream << kVAdsCaliResult << kVAdsFilterResult << EndJFStream;
+        vTaskDelay(1);
+    }
 
     vTaskDelete(nullptr);
 }

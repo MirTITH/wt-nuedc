@@ -23,8 +23,8 @@ Ads1256 IAds(&hspi2,
              ISync_GPIO_Port, ISync_Pin,
              IAds_nCs_GPIO_Port, IAds_nCs_Pin);
 
-static Butter_LP_5_50_20dB_5000Hz<double> kIAdsFilter;
-std::atomic<float> kIAdsFilterResult = 0;
+// static Butter_LP_5_50_20dB_5000Hz<double> kIAdsFilter;
+// std::atomic<float> kIAdsFilterResult = 0;
 std::atomic<float> kIAdsCaliResult   = 0;
 
 static Butter_LP_5_50_20dB_5000Hz<double> kVAdsFilter;
@@ -96,6 +96,6 @@ void InitAds()
         auto cali_result = kLineCali_IAds.Calc(IAds.GetVoltage(0));
         kIAdsCaliResult  = cali_result;
         kIAdsWatchDog.Exam(std::abs(cali_result) < 1.0f); // 电流看门狗
-        kIAdsFilterResult = kIAdsFilter.Step(cali_result);
+        // kIAdsFilterResult = kIAdsFilter.Step(cali_result);
     });
 }

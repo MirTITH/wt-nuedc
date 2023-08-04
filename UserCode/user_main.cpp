@@ -42,14 +42,14 @@ void StartDefaultTask(void const *argument)
         case BoardSelector::A:
             kLineCali_IAds.k_ = 4.7898327605292200;
             kLineCali_IAds.b_ = 0.0003700653449598;
-            kLineCali_VAds.k_ = 32.1711898948523000;
-            kLineCali_VAds.b_ = -0.0107237299649505;
+            // kLineCali_VAds.k_ = 32.1711898948523000;
+            // kLineCali_VAds.b_ = -0.0107237299649505;
             break;
         case BoardSelector::B:
             kLineCali_IAds.k_ = 4.8500909335328100;
             kLineCali_IAds.b_ = 0.0004955869787681;
-            kLineCali_VAds.k_ = 31.9944947616540000;
-            kLineCali_VAds.b_ = -0.1190501940806670;
+            // kLineCali_VAds.k_ = 31.9944947616540000;
+            // kLineCali_VAds.b_ = -0.1190501940806670;
             break;
         default:
             break;
@@ -62,8 +62,10 @@ void StartDefaultTask(void const *argument)
     LvglTTF_Init();
     StartLvglThread();
 
-    Adc1.Init();
-    Adc1.StartDma();
+    // Adc1.Init();
+    // Adc1.StartDma();
+    Adc3.Init();
+    Adc3.StartDma();
 
     InitAds();
 
