@@ -17,67 +17,107 @@
 #include "fast_tim_callback.hpp"
 #include "states.hpp"
 #include "common_objs.hpp"
+#include "freertos_lock/freertos_lock.hpp"
+#include <cstring>
 
 using namespace std;
 
 static const lv_color_t kAColor = lv_color_make(39, 122, 240);
 static const lv_color_t kBColor = lv_color_make(193, 24, 217);
 
+/**
+ * @brief Tabs
+ *
+ */
 static lv_obj_t *kMainTab;
 static lv_obj_t *kConsoleTab;
-lv_obj_t *kTextAreaConsole;
-
+static lv_obj_t *kLvScreenConsole;
 static lv_coord_t kContentWidth;
+
+/**
+ * @brief ScreenConsole
+ *
+ */
+static constexpr size_t kSCREEN_CONSOLE_SIZE        = 512;
+static constexpr size_t kSCREEN_CONSOLE_DEL_SIZE    = kSCREEN_CONSOLE_SIZE / 4;
+static constexpr size_t kSCREEN_CONSOLE_BUFFER_SIZE = 128;
+static char kScreenConsoleBuffer[kSCREEN_CONSOLE_BUFFER_SIZE]; // 输入缓冲区
+static freertos_lock::BinarySemphr kScreenConsoleLock;
+static TaskHandle_t kScreenConsoleHandle;
 
 void ScreenConsole_AddText(const char *txt)
 {
-    if (kTextAreaConsole != nullptr) {
-        LvglLock();
-        lv_textarea_add_text(kTextAreaConsole, txt);
-        LvglUnlock();
+    if (kLvScreenConsole != nullptr && kScreenConsoleHandle != nullptr) {
+        if (InHandlerMode()) {
+            if (kScreenConsoleLock.lock_from_isr()) {
+                strncpy(kScreenConsoleBuffer, txt, sizeof(kScreenConsoleBuffer));
+
+                BaseType_t xHigherPriorityTaskWoken = pdFALSE;
+                vTaskNotifyGiveFromISR(kScreenConsoleHandle, &xHigherPriorityTaskWoken);
+                portYIELD_FROM_ISR(xHigherPriorityTaskWoken);
+            }
+        } else {
+            kScreenConsoleLock.lock_from_thread();
+
+            strncpy(kScreenConsoleBuffer, txt, sizeof(kScreenConsoleBuffer));
+
+            xTaskNotifyGive(kScreenConsoleHandle);
+        }
     }
 }
 
-static void MainPage_ThreadFastLoop(void *)
+static void ScreenConsole_Entry(void *)
 {
-    const uint32_t period = 100;
+    auto text_ptr = (char *)pvPortMalloc(kSCREEN_CONSOLE_SIZE);
+    assert(text_ptr != nullptr);
+    kScreenConsoleLock.unlock_from_thread();
+    size_t text_size = 0;
 
-    LvglLock();
-    LvSimpleTextField tf_kmod(kMainTab, "期望正弦幅值", kContentWidth * 2 / 3);
-    // LvSimpleTextField tf_encoder(kMainTab, "Enc,Sw", kContentWidth / 2);
-    LvglUnlock();
+    lv_label_set_text_static(kLvScreenConsole, text_ptr);
 
-    uint32_t PreviousWakeTime = xTaskGetTickCount();
-    while (1) {
-        // tf_kmod
+    while (true) {
+        ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
+
+        auto new_text_size = strnlen(kScreenConsoleBuffer, sizeof(kScreenConsoleBuffer) - 1);
+        if (new_text_size > kSCREEN_CONSOLE_SIZE - 1) {
+            new_text_size = kSCREEN_CONSOLE_SIZE - 1;
+        }
+
+        // 删除旧文本
+        if (new_text_size > kSCREEN_CONSOLE_SIZE - text_size - 1) {
+            size_t del_size = kSCREEN_CONSOLE_DEL_SIZE < text_size ? kSCREEN_CONSOLE_DEL_SIZE : text_size;
+            text_size -= del_size;
+            memmove(text_ptr, text_ptr + del_size, text_size);
+        }
+
+        memcpy(text_ptr + text_size, kScreenConsoleBuffer, new_text_size);
+        text_size += new_text_size;
+        *(text_ptr + text_size + 1) = '\0';
+
         LvglLock();
-        extern std::atomic<float> kAcReference;
-        lv_label_set_text_fmt(tf_kmod.GetMsgLabel(), "%f", kAcReference.load());
-
-        // tf_encoder
-        // lv_label_set_text_fmt(tf_encoder.GetMsgLabel(), "%ld,%d,%d", KeyboardEncoder.Count(),
-        //                       Keyboard_Read(Keys::kSwitch),
-        //                       Keyboard_Read(Keys::kKnobBtn));
-
+        lv_label_set_text_static(kLvScreenConsole, nullptr);
         LvglUnlock();
-        vTaskDelayUntil(&PreviousWakeTime, period);
+
+        kScreenConsoleLock.unlock_from_thread();
     }
 }
 
 static void MainPage_Thread(void *)
 {
-    const uint32_t period = 1000;
+    const uint32_t period = 100;
 
     LvglLock();
+    // 任务状态和板子信息
     LvTextField tf_states(kMainTab, "Untitled", kContentWidth);
+    lv_obj_set_style_text_align(tf_states.GetMsgLabel(), LV_TEXT_ALIGN_CENTER, 0);
 
     switch (kWhoAmI) {
         case BoardSelector::A:
-            tf_states.SetTitle("A板状态");
+            tf_states.SetTitle("A 板");
             tf_states.SetTextColor(kAColor);
             break;
         case BoardSelector::B:
-            tf_states.SetTitle("B板状态");
+            tf_states.SetTitle("B 板");
             tf_states.SetTextColor(kBColor);
             break;
         default:
@@ -85,6 +125,7 @@ static void MainPage_Thread(void *)
             break;
     }
 
+    LvTextField tf_kmod(kMainTab, "期望正弦幅值", kContentWidth);
     LvTextField tf_drdy(kMainTab, "VAds,IAds", kContentWidth / 2, 70, LvglTTF_GetFont());
     LvTextField tf_adc_rate(kMainTab, "ADC1,3速率", kContentWidth / 2, 70, LvglTTF_GetFont());
     LvTextField tf_fast_tim(kMainTab, "FastTim", kContentWidth / 2, 70, LvglTTF_GetFont());
@@ -103,53 +144,62 @@ static void MainPage_Thread(void *)
     CounterFreqMeter main_uart_meter(&MainUart.uart_device.total_tx_size_);
 
     // char str_buffer[20];
-
+    uint32_t loop_count       = 0;
     uint32_t PreviousWakeTime = xTaskGetTickCount();
-    while (1) {
+    while (true) {
         LvglLock();
-        // ADS1256
-        lv_label_set_text_fmt(tf_drdy.GetMsgLabel(),
-                              "采样:%lu,%lu\nbusy:%lu, %lu",
-                              //   vads_drdy_meter.MeasureFreq(),
-                              //   iads_drdy_meter.MeasureFreq(),
-                              vads_sample_rate_meter.MeasureFreq(),
-                              iads_sample_rate_meter.MeasureFreq(),
-                              VAds.dma_busy_count_,
-                              IAds.dma_busy_count_);
 
-        // ADC
-        lv_label_set_text_fmt(tf_adc_rate.GetMsgLabel(), "%lu,%lu",
-                              adc_interrupt_meter1.MeasureFreq(),
-                              adc_interrupt_meter3.MeasureFreq());
+        extern std::atomic<float> kAcReference;
+        lv_label_set_text_fmt(tf_kmod.GetMsgLabel(), "%f", kAcReference.load());
 
-        // FastTim
-        lv_label_set_text_fmt(tf_fast_tim.GetMsgLabel(),
-                              "%lu Hz\n%lu us",
-                              fast_tim_meter.MeasureFreq(), kFastTimCallbackDuration);
+        if (loop_count % 5 == 0) {
+            // 状态
+            switch (kAppState.GetState()) {
+                case AppState_t::Stop:
+                    tf_states.SetMsg("停止模式");
+                    break;
+                case AppState_t::ActiveInv:
+                    tf_states.SetMsg("主动逆变");
+                    break;
+                case AppState_t::PassiveInv:
+                    tf_states.SetMsg("被动逆变");
+                    break;
+                case AppState_t::OnGridInv:
+                    tf_states.SetMsg("并网逆变");
+                    break;
+                default:
+                    tf_states.SetMsg("未知模式");
+                    break;
+            }
+        }
 
-        // MainUart
-        lv_label_set_text_fmt(tf_main_uart.GetMsgLabel(), "%lu", main_uart_meter.MeasureFreq());
+        if (loop_count % 10 == 0) {
+            // ADS1256
+            lv_label_set_text_fmt(tf_drdy.GetMsgLabel(),
+                                  "采样:%lu,%lu\nbusy:%lu, %lu",
+                                  //   vads_drdy_meter.MeasureFreq(),
+                                  //   iads_drdy_meter.MeasureFreq(),
+                                  vads_sample_rate_meter.MeasureFreq(),
+                                  iads_sample_rate_meter.MeasureFreq(),
+                                  VAds.dma_busy_count_,
+                                  IAds.dma_busy_count_);
 
-        // 状态
-        switch (kAppState.GetState()) {
-            case AppState_t::Stop:
-                tf_states.SetMsg("停止模式");
-                break;
-            case AppState_t::ActiveInv:
-                tf_states.SetMsg("主动逆变");
-                break;
-            case AppState_t::PassiveInv:
-                tf_states.SetMsg("被动逆变");
-                break;
-            case AppState_t::OnGridInv:
-                tf_states.SetMsg("并网逆变");
-                break;
-            default:
-                tf_states.SetMsg("未知模式");
-                break;
+            // ADC
+            lv_label_set_text_fmt(tf_adc_rate.GetMsgLabel(), "%lu,%lu",
+                                  adc_interrupt_meter1.MeasureFreq(),
+                                  adc_interrupt_meter3.MeasureFreq());
+
+            // FastTim
+            lv_label_set_text_fmt(tf_fast_tim.GetMsgLabel(),
+                                  "%lu Hz\n%lu us",
+                                  fast_tim_meter.MeasureFreq(), kFastTimCallbackDuration);
+
+            // MainUart
+            lv_label_set_text_fmt(tf_main_uart.GetMsgLabel(), "%lu", main_uart_meter.MeasureFreq());
         }
 
         LvglUnlock();
+        loop_count++;
         vTaskDelayUntil(&PreviousWakeTime, period);
     }
 }
@@ -167,22 +217,21 @@ void MainPage_Init()
 
     lv_obj_set_style_pad_hor(kConsoleTab, 0, 0);
     lv_obj_set_style_pad_ver(kConsoleTab, 0, 0);
-    kTextAreaConsole = lv_textarea_create(kConsoleTab);
-    lv_obj_set_style_text_font(kTextAreaConsole, LvglTTF_GetSmallFont(), 0);
-    lv_obj_set_size(kTextAreaConsole, lv_pct(100), lv_pct(100));
-    lv_textarea_set_placeholder_text(kTextAreaConsole, "Empty here");
+    kLvScreenConsole = lv_label_create(kConsoleTab);
+    lv_obj_set_style_text_font(kLvScreenConsole, LvglTTF_GetSmallFont(), 0);
+    lv_obj_set_width(kLvScreenConsole, lv_pct(100));
 
     switch (kWhoAmI) {
         case BoardSelector::A:
-            lv_obj_set_style_text_color(kTextAreaConsole, kAColor, 0);
+            lv_obj_set_style_text_color(kLvScreenConsole, kAColor, 0);
             ScreenConsole_AddText("I am A board!\n");
             break;
         case BoardSelector::B:
-            lv_obj_set_style_text_color(kTextAreaConsole, kBColor, 0);
+            lv_obj_set_style_text_color(kLvScreenConsole, kBColor, 0);
             ScreenConsole_AddText("I am B board!\n");
             break;
         default:
-            lv_obj_set_style_text_color(kTextAreaConsole, lv_color_make(200, 0, 0), 0);
+            lv_obj_set_style_text_color(kLvScreenConsole, lv_color_make(200, 0, 0), 0);
             ScreenConsole_AddText("I don't known who I am!\n");
             break;
     }
@@ -199,11 +248,10 @@ void MainPage_Init()
     kContentWidth = lv_obj_get_content_width(kMainTab);
 
     // 切换到显示终端
-    lv_obj_scroll_to_view_recursive(kTextAreaConsole, LV_ANIM_OFF);
+    lv_obj_scroll_to_view_recursive(kLvScreenConsole, LV_ANIM_OFF);
 
     LvglUnlock();
 
-    xTaskCreate(MainPage_ThreadFastLoop, "main_page_fast", 1024 * 2, nullptr, PriorityBelowNormal, nullptr);
-    vTaskDelay(100);
+    xTaskCreate(ScreenConsole_Entry, "ScreenConsole", 1024 * 2, nullptr, PriorityBelowNormal, &kScreenConsoleHandle);
     xTaskCreate(MainPage_Thread, "main_page", 1024 * 2, nullptr, PriorityBelowNormal, nullptr);
 }

@@ -16,7 +16,7 @@ LV_FONT_DECLARE(FALLBACK_SMALL_FONT)
 
 static lv_ft_info_t kTtfInfo      = {};
 static lv_ft_info_t kTtfInfoLarge = {};
-static lv_ft_info_t kTtfInfoSmall = {};
+// static lv_ft_info_t kTtfInfoSmall = {};
 
 void LvglTTF_Init()
 {
@@ -62,9 +62,9 @@ lv_font_t *LvglTTF_GetLargeFont()
 
 lv_font_t *LvglTTF_GetSmallFont()
 {
-    if (kTtfInfoSmall.font != NULL) {
-        return kTtfInfoSmall.font;
-    }
+    // if (kTtfInfoSmall.font != NULL) {
+    //     return kTtfInfoSmall.font;
+    // }
 
     return (lv_font_t *)&FALLBACK_SMALL_FONT;
 }

@@ -5,9 +5,11 @@
 #include "WatchDog/watchdog.hpp"
 #include "line_calis.hpp"
 #include "freertos_io/os_printf.h"
+#include "freertos_io/uart_device.hpp"
 #include "FreeRTOS.h"
 #include "task.h"
 #include "states.hpp"
+#include <string>
 
 Ads1256 VAds(&hspi3,
              VDrdy_GPIO_Port, VDrdy_Pin,
@@ -30,16 +32,18 @@ std::atomic<float> kVAdsFilterResult = 0;
 std::atomic<float> kVAdsCaliResult   = 0;
 
 WatchDog kIAdsWatchDog([](void *) {
-    kAppState.SwitchTo(AppState_t::Stop);
-    os_printf("kIAdsWatchDog! Current: %f\n", kIAdsCaliResult.load());
     KeyboardLed.SetColor(10, 10, 0);
+    kAppState.SwitchTo(AppState_t::Stop);
+    std::string str = std::string("IAdsWatchDog! Current: ") + std::to_string(kIAdsCaliResult.load()).append("\n");
+    ScreenConsole_AddText(str.c_str());
 },
                        10);
 
 WatchDog kVAdsWatchDog([](void *) {
-    kAppState.SwitchTo(AppState_t::Stop);
-    os_printf("kVAdsWatchDog! Volt: %f\n", kVAdsCaliResult.load());
     KeyboardLed.SetColor(10, 0, 10);
+    kAppState.SwitchTo(AppState_t::Stop);
+    std::string str = std::string("VAdsWatchDog! Current: ") + std::to_string(kVAdsCaliResult.load()).append("\n");
+    ScreenConsole_AddText(str.c_str());
 },
                        10);
 

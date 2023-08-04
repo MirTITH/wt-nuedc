@@ -62,7 +62,7 @@ static void LvglThreadEntry(void *argument)
         lv_timer_handler();
         LvglUnlock();
 
-        vTaskDelayUntil(&PreviousWakeTime, 5);
+        vTaskDelayUntil(&PreviousWakeTime, 10);
     }
 }
 
