@@ -24,6 +24,8 @@ using namespace std;
 void StartDefaultTask(void const *argument)
 {
     (void)argument;
+    vTaskDelay(100);
+
     KeyboardLed.Power(true);
 
     // 时间库初始化，需要最先 init
