@@ -30,6 +30,7 @@
 #include <sys/time.h>
 #include <sys/times.h>
 #include "main.h"
+#include "states.hpp"
 
 /* Variables */
 extern int __io_putchar(int ch) __attribute__((weak));
@@ -62,6 +63,7 @@ void _exit(int status)
     _kill(status, -1);
     perror("_exit called. errno");
     __disable_irq();
+    EmergencyStop();
     while (1) {} /* Make sure we hang here */
 }
 

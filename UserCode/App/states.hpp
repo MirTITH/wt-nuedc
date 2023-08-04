@@ -1,6 +1,26 @@
 #pragma once
 
-#include <atomic>
+/**
+ * @brief 给 C 调用的
+ *
+ */
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+void EmergencyStop();
+
+#ifdef __cplusplus
+}
+#endif
+
+/**
+ * @brief 给 c++ 调用的
+ *
+ */
+
+#ifdef __cplusplus
 
 extern void StateStop_OnEnter();
 extern void StateStop_OnExit();
@@ -14,11 +34,13 @@ extern void StatePassiveInv_OnExit();
 extern void StateOnGridInv_OnEnter();
 extern void StateOnGridInv_OnExit();
 
+#include <atomic>
+
 enum class AppState_t {
-    Stop,        // 停止模式，所有继电器关闭，PWM 关闭
-    ActiveInv,   // 主动逆变
-    PassiveInv,      // 被动逆变
-    OnGridInv // 并网逆变
+    Stop,       // 停止模式，所有继电器关闭，PWM 关闭
+    ActiveInv,  // 主动逆变
+    PassiveInv, // 被动逆变
+    OnGridInv   // 并网逆变
 };
 
 class AppStateClass
@@ -86,3 +108,5 @@ public:
 };
 
 extern AppStateClass kAppState;
+
+#endif
