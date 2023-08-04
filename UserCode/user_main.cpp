@@ -44,8 +44,8 @@ void StartDefaultTask(void const *argument)
             kLineCali_IAds.b_    = 0.0003700653449598;
             kLineCali_VAds.k_    = 31.6282631438288000;
             kLineCali_VAds.b_    = -0.0113041469861519;
-            kLineCali_GridAdc.k_ = 49.7318049981908000;
-            kLineCali_GridAdc.b_ = 0.2220309448129640;
+            kLineCali_GridAdc.k_ = 45.8281954878915000;
+            kLineCali_GridAdc.b_ = 0.0556660499452342;
             break;
         case BoardSelector::B:
             kLineCali_IAds.k_    = 4.8500909335328100;
