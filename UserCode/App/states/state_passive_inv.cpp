@@ -4,12 +4,14 @@ static control_system::IController<float> kPassiveIcontroller{{0.1, 1.0f / 5000.
 
 void StatePassiveInv_Loop()
 {
-    float amtitude = 2;
-    auto controller_output  = kPassiveIcontroller.Step(amtitude - kAcOutPll.d_);
+    float amtitude         = 1;
+    auto controller_output = kPassiveIcontroller.Step(amtitude - kAcOutPll.d_);
 
     auto wave_value = controller_output * std::cos(kAcOutPll.phase_);
 
     kSpwm.SetSineValue(wave_value);
+
+    JFStream << kVAdsCaliResult << kIAdsCaliResult << EndJFStream;
 }
 
 void StatePassiveInv_OnEnter()

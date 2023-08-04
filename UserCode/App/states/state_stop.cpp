@@ -19,5 +19,5 @@ void StateStop_OnExit()
 void StateStop_Loop()
 {
     // JFStream << kGridVoltage << kGridPll.d_ << kGridPll.phase_ << kGridPll.omega_ << EndJFStream;
-    JFStream << kVAdsCaliResult << kAcOutPll.phase_ << kAcOutPll.d_ << EndJFStream;
+    JFStream << kVAdsCaliResult << kIAdsCaliResult << EndJFStream;
 }

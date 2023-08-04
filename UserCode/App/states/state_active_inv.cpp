@@ -15,15 +15,16 @@ static control_system::IController<float> kIcontroller{{0.1, 1.0f / 5000.0f}, {0
 
 void StateActiveInv_Loop()
 {
-    kAcReference = 2 + (KeyboardEncoder.Count() - kStartEncoderCount) / 400.0f;
+    kAcReference = 1 + (KeyboardEncoder.Count() - kStartEncoderCount) / 400.0f;
 
     auto controller_output = kIcontroller.Step(kAcReference - kAcOutPll.d_);
 
-    auto wave_value = controller_output * kSine.Step();
+    auto wave_value = controller_output * kSine.Step(); // 闭环
+    // auto wave_value = kAcReference * kSine.Step(); // 开环
 
     kSpwm.SetSineValue(wave_value);
 
-    JFStream << wave_value << controller_output << kVAdsCaliResult << kIAdsCaliResult << EndJFStream;
+    JFStream << kAcOutPll.d_ << controller_output << kVAdsCaliResult << kIAdsCaliResult << EndJFStream;
 }
 
 void StateActiveInv_OnEnter()

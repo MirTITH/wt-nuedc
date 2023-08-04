@@ -7,6 +7,7 @@
 #include "ads1256/ads1256_device.hpp"
 #include "Relay/relay_device.hpp"
 #include "pwm/spwm_device.hpp"
+#include "Vofa/just_float.hpp"
 
 extern std::atomic<float> kMod;
 extern control_system::Pll<float> kAcOutPll;
