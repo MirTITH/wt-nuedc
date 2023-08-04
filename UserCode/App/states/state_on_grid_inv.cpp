@@ -1,17 +1,27 @@
 #include "common_objs.hpp"
+#include "states.hpp"
+#include "control_system/pr_controller.hpp"
+#include "DelayHolder/delay_holder.hpp"
 
+static control_system::PRController<float> kPrController(1.0 / 5000.0);
+static control_system::IController<float> kCorrectionPhaseController{{0.3, 1.0f / 5000.0f}, {-M_PI / 2, M_PI / 2}};
 static control_system::IController<float> kIcontroller{{0.1, 1.0f / 5000.0f}, {0.0f, 1.0f}};
-static control_system::IController<float> kDeltaPhaseController{{0.3, 1.0f / 5000.0f}, {-M_PI / 2, M_PI / 2}};
-
+static DelayHolder kConnectStateHolder(1000);
 static int32_t kStartEncoderCount;
+
+bool kIsAbleToConnect  = false; // 是否满足并网条件
+bool kIsAllowToConnect = false; // 用户是否允许并网
 
 void StateOnGridInv_OnEnter()
 {
-    kIcontroller.ResetState();
-
     kStartEncoderCount = KeyboardEncoder.Count();
 
+    kIsAbleToConnect = false;
+    kPrController.ResetState();
+    kCorrectionPhaseController.ResetState();
+    kIcontroller.ResetState();
     kSpwm.StartPwm();
+
     switch (kWhoAmI) {
         case BoardSelector::A:
             relay::BridgeA.Set(Relay_State::On);
@@ -47,16 +57,27 @@ float LoopSimplify(float value, float cycle = 2 * M_PI)
 
 void StateOnGridInv_Loop()
 {
-    // kDeltaPhase 大概为 0.48
-    // kDeltaPhase = (KeyboardEncoder.Count() - kStartEncoderCount) / 400.0f;
+    if (kIsAbleToConnect == false || kIsAllowToConnect == false) {
+        float kErrPhase        = LoopSimplify(kGridPll.phase_ - kAcOutPll.phase_);
+        float kCorrectionPhase = kCorrectionPhaseController.Step(kErrPhase);
 
-    float kDeltaPhase      = kDeltaPhaseController.Step(LoopSimplify(kGridPll.phase_ - kAcOutPll.phase_));
-    auto controller_output = kIcontroller.Step(kGridPll.d_ - kAcOutPll.d_); // 电压幅值闭环
-    // auto controller_output = kIcontroller.Step(10 - kAcOutPll.d_); // 电压幅值开环
-    auto wave_value = controller_output * std::cos(kGridPll.phase_ + kDeltaPhase);
-    kSpwm.SetSineValue(wave_value);
+        auto controller_output = kIcontroller.Step(kGridPll.d_ - kAcOutPll.d_); // 电压幅值闭环
+        // auto controller_output = kIcontroller.Step(10 - kAcOutPll.d_); // 电压幅值开环
 
-    JFStream << kGridVoltage << kVAdsCaliResult << kGridPll.phase_ << kAcOutPll.phase_ << EndJFStream;
+        auto wave_value = controller_output * std::cos(kGridPll.phase_ + kCorrectionPhase);
+        kSpwm.SetSineValue(wave_value);
+        if (kConnectStateHolder.Exam(std::abs(kGridPll.d_ - kAcOutPll.d_) < 1.0f && std::abs(kErrPhase) < 0.1)) {
+            kIsAbleToConnect = true;
+        }
+    } else {
+        float i_amtitude_ref = (KeyboardEncoder.Count() - kStartEncoderCount) * std::sqrt(2.0f) / 400.0f;
+        kAcIrefWatcher       = i_amtitude_ref;
+        auto err             = i_amtitude_ref * std::cos(kGridPll.phase_) - kIAdsCaliResult;
+        auto wave_value      = kPrController.Step(err);
+        kSpwm.SetSineValue(wave_value);
+    }
+
+    JFStream << kGridVoltage << kGridPll.phase_ << kVAdsCaliResult << kAcOutPll.phase_ << EndJFStream;
 }
 
 void StateOnGridInv_OnExit()

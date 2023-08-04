@@ -10,6 +10,8 @@ void StateStop_OnEnter()
 {
     relay::CloseAllRelay();
     kSpwm.StopPwm();
+    kAcIrefWatcher = 0;
+    kAcVrefWatcher = 0;
 }
 
 void StateStop_OnExit()

@@ -93,7 +93,6 @@ public:
             ExitState(state_);
             EnterState(new_state);
         } else if (new_state == AppState_t::OnGridInv) {
-#warning "to do OnGridInv"
             ExitState(state_);
             EnterState(new_state);
         } else if (state_ == AppState_t::Stop) {

@@ -33,12 +33,12 @@ static void LvglThreadEntry(void *argument)
 {
     (void)argument;
 
-    // 创建一个会动的东西，用于判断单片机是否卡住
-    lv_obj_t *spinner = lv_spinner_create(lv_layer_top(), 1000, 60);
-    lv_obj_set_size(spinner, 30, 30);
-    lv_obj_set_style_arc_width(spinner, 3, LV_PART_MAIN);
-    lv_obj_set_style_arc_width(spinner, 3, LV_PART_INDICATOR);
-    lv_obj_align(spinner, LV_ALIGN_BOTTOM_RIGHT, -70, 0);
+    // // 创建一个会动的东西，用于判断单片机是否卡住
+    // lv_obj_t *spinner = lv_spinner_create(lv_layer_top(), 1000, 60);
+    // lv_obj_set_size(spinner, 30, 30);
+    // lv_obj_set_style_arc_width(spinner, 3, LV_PART_MAIN);
+    // lv_obj_set_style_arc_width(spinner, 3, LV_PART_INDICATOR);
+    // lv_obj_align(spinner, LV_ALIGN_BOTTOM_RIGHT, -70, 0);
 
     /* 屏幕亮度滑条 */
     lv_obj_t *slider = lv_slider_create(lv_layer_top());

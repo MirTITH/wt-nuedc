@@ -15,6 +15,10 @@ control_system::Pll<float> kGridPll(1.0 / 5000.0, 2 * 50 * M_PI, 1, 1, 1); // �
 
 std::atomic<float> kGridVoltage;
 
+// 期望值
+std::atomic<float> kAcVrefWatcher;
+std::atomic<float> kAcIrefWatcher;
+
 float GetGridVoltage()
 {
     // auto volt          = kLineCali_GridAdc.Calc((Adc1.GetData(0) - Adc2.GetData(0)) * 3.3f / (1 << 12));

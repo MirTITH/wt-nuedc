@@ -3,6 +3,7 @@
 #include "lv_app/screeen_console.h"
 #include "pwm/spwm_device.hpp"
 #include "states.hpp"
+#include "common_objs.hpp"
 
 static void ButtonCallback_K0(flex_button_t *btn)
 {
@@ -76,6 +77,15 @@ static void ButtonCallback_K7(flex_button_t *btn)
     }
 }
 
+static void ButtonCallback_K8(flex_button_t *btn)
+{
+    if (btn->event == FLEX_BTN_PRESS_CLICK) {
+        kIsAllowToConnect = false;
+    } else if (btn->event == FLEX_BTN_PRESS_SHORT_START) {
+        kIsAllowToConnect = true;
+    }
+}
+
 static void ButtonCallback_K9(flex_button_t *btn)
 {
     if (btn->event == FLEX_BTN_PRESS_CLICK) {
@@ -99,5 +109,6 @@ void ButtonCallbackRegister()
     SetButtonCallback(Keys::k5, ButtonCallback_K5);
     SetButtonCallback(Keys::k6, ButtonCallback_K6);
     SetButtonCallback(Keys::k7, ButtonCallback_K7);
+    SetButtonCallback(Keys::k8, ButtonCallback_K8);
     SetButtonCallback(Keys::k9, ButtonCallback_K9);
 }

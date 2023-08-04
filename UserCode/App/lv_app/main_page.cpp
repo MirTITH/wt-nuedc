@@ -126,10 +126,12 @@ static void MainPage_Thread(void *)
             break;
     }
 
-    LvTextField tf_kmod(kMainTab, "期望正弦幅值", kContentWidth * 2 / 3);
-    LvTextField tf_grid_status(kMainTab, "电网状态", kContentWidth / 3);
+    LvTextField tf_vref(kMainTab, "期望电压有效值", kContentWidth / 2);
+    LvTextField tf_iref(kMainTab, "期望电流有效值", kContentWidth / 2);
+    LvTextField tf_grid_status(kMainTab, "电网电压有效值", kContentWidth / 2, 70, LvglTTF_GetFont());
+    LvTextField tf_is_able_to_connect(kMainTab, "是否能并网", kContentWidth / 2, 70, LvglTTF_GetFont());
     LvTextField tf_drdy(kMainTab, "VAds,IAds", kContentWidth / 2, 70, LvglTTF_GetFont());
-    LvTextField tf_adc_rate(kMainTab, "ADC1,2速率", kContentWidth / 2, 70, LvglTTF_GetFont());
+    // LvTextField tf_adc_rate(kMainTab, "ADC1,2速率", kContentWidth / 2, 70, LvglTTF_GetFont());
     LvTextField tf_fast_tim(kMainTab, "FastTim", kContentWidth / 2, 70, LvglTTF_GetFont());
     LvTextField tf_main_uart(kMainTab, "UART发送速率", kContentWidth / 2);
     LvglUnlock();
@@ -147,14 +149,31 @@ static void MainPage_Thread(void *)
 
     DelayHolder grid_checker(500);
 
+    std::string str;
+
     // char str_buffer[20];
     uint32_t loop_count       = 0;
     uint32_t PreviousWakeTime = xTaskGetTickCount();
     while (true) {
         LvglLock();
 
-        extern std::atomic<float> kAcReference;
-        lv_label_set_text_fmt(tf_kmod.GetMsgLabel(), "%f", kAcReference.load());
+        lv_label_set_text_fmt(tf_vref.GetMsgLabel(), "%.3f", kAcVrefWatcher.load() / std::sqrt(2.0f));
+        lv_label_set_text_fmt(tf_iref.GetMsgLabel(), "%.3f", kAcIrefWatcher.load() / std::sqrt(2.0f));
+
+        extern bool kIsAbleToConnect;
+        str.clear();
+        if (kIsAbleToConnect) {
+            str.append("能并网\n");
+        } else {
+            str.append("不能并网\n");
+        }
+
+        if (kIsAllowToConnect) {
+            str.append("用户许可并网");
+        } else {
+            str.append("用户不许可并网");
+        }
+        tf_is_able_to_connect.SetMsg(str);
 
         if (loop_count % 5 == 0) {
             // 状态
@@ -176,11 +195,12 @@ static void MainPage_Thread(void *)
                     break;
             }
 
-            if (grid_checker.Exam(std::abs(kGridPll.d_) > 5.0f)) {
-                tf_grid_status.SetMsg("连接");
-            } else {
-                tf_grid_status.SetMsg("断开");
-            }
+            lv_label_set_text_fmt(tf_grid_status.GetMsgLabel(), "%.2f V", kGridPll.d_ / std::sqrt(2.0f));
+            // if (grid_checker.Exam(std::abs(kGridPll.d_) > 5.0f)) {
+            //     lv_label_set_text_fmt(tf_grid_status.GetMsgLabel(), "连接：%.1f V", kGridPll.d_ / std::sqrt(2.0f));
+            // } else {
+            //     lv_label_set_text_fmt(tf_grid_status.GetMsgLabel(), "断开：%.1f V", kGridPll.d_ / std::sqrt(2.0f));
+            // }
         }
 
         if (loop_count % 10 == 0) {
@@ -195,9 +215,9 @@ static void MainPage_Thread(void *)
                                   IAds.dma_busy_count_);
 
             // ADC
-            lv_label_set_text_fmt(tf_adc_rate.GetMsgLabel(), "%lu,%lu",
-                                  adc_interrupt_meter1.MeasureFreq(),
-                                  adc_interrupt_meter2.MeasureFreq());
+            // lv_label_set_text_fmt(tf_adc_rate.GetMsgLabel(), "%lu,%lu",
+            //                       adc_interrupt_meter1.MeasureFreq(),
+            //                       adc_interrupt_meter2.MeasureFreq());
 
             // FastTim
             lv_label_set_text_fmt(tf_fast_tim.GetMsgLabel(),
@@ -258,7 +278,7 @@ void MainPage_Init()
     kContentWidth = lv_obj_get_content_width(kMainTab);
 
     // 切换到显示终端
-    lv_obj_scroll_to_view_recursive(kLvScreenConsole, LV_ANIM_OFF);
+    // lv_obj_scroll_to_view_recursive(kLvScreenConsole, LV_ANIM_OFF);
 
     LvglUnlock();
 

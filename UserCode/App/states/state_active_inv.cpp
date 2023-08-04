@@ -10,17 +10,17 @@
 
 static control_system::SineGenerator<float> kSine(50 * 2 * M_PI, 1.0 / 5000.0);
 static int32_t kStartEncoderCount;
-std::atomic<float> kAcReference;
 static control_system::IController<float> kIcontroller{{0.1, 1.0f / 5000.0f}, {0.0f, 1.0f}};
 
 void StateActiveInv_Loop()
 {
-    kAcReference = 0 + (KeyboardEncoder.Count() - kStartEncoderCount) / 100.0f;
+    float v_amtitude_ref = (0 + (KeyboardEncoder.Count() - kStartEncoderCount) / 100.0f) * std::sqrt(2.0f);
+    kAcVrefWatcher       = v_amtitude_ref;
 
-    auto controller_output = kIcontroller.Step(kAcReference - kAcOutPll.d_);
+    auto controller_output = kIcontroller.Step(v_amtitude_ref - kAcOutPll.d_);
 
     auto wave_value = controller_output * kSine.Step(); // 闭环
-    // auto wave_value = kAcReference * kSine.Step(); // 开环
+    // auto wave_value =  v_amtitude_ref* kSine.Step(); // 开环
 
     kSpwm.SetSineValue(wave_value);
 

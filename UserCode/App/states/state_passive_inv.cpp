@@ -1,13 +1,13 @@
 #include "common_objs.hpp"
 #include "control_system/pr_controller.hpp"
-// static control_system::IController<float> kPassiveIcontroller{{0.1, 1.0f / 5000.0f}, {0.0f, 1.0f}};
+
 static control_system::PRController<float> kPrController(1.0 / 5000.0);
 static int32_t kStartEncoderCount;
 
 void StatePassiveInv_Loop()
 {
-
-    float i_amtitude_ref = (KeyboardEncoder.Count() - kStartEncoderCount) / 400.0f;
+    float i_amtitude_ref = (KeyboardEncoder.Count() - kStartEncoderCount) * std::sqrt(2.0f) / 400.0f;
+    kAcIrefWatcher       = i_amtitude_ref;
     auto err             = i_amtitude_ref * std::cos(kAcOutPll.phase_) - kIAdsCaliResult;
     auto wave_value      = kPrController.Step(err);
     kSpwm.SetSineValue(wave_value);
