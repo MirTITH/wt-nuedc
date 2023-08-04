@@ -1,24 +1,25 @@
 #include "common_objs.hpp"
-
-static control_system::IController<float> kPassiveIcontroller{{0.1, 1.0f / 5000.0f}, {0.0f, 1.0f}};
+#include "control_system/pr_controller.hpp"
+// static control_system::IController<float> kPassiveIcontroller{{0.1, 1.0f / 5000.0f}, {0.0f, 1.0f}};
+static control_system::PRController<float> kPrController(1.0 / 5000.0);
+static int32_t kStartEncoderCount;
 
 void StatePassiveInv_Loop()
 {
-    float amtitude         = 1;
-    auto controller_output = kPassiveIcontroller.Step(amtitude - kAcOutPll.d_);
 
-    auto wave_value = controller_output * std::cos(kAcOutPll.phase_);
-
+    float i_amtitude_ref = (KeyboardEncoder.Count() - kStartEncoderCount) / 400.0f;
+    auto err             = i_amtitude_ref * std::cos(kAcOutPll.phase_) - kIAdsCaliResult;
+    auto wave_value      = kPrController.Step(err);
     kSpwm.SetSineValue(wave_value);
 
-    JFStream << kVAdsCaliResult << kIAdsCaliResult << EndJFStream;
+    JFStream << kVAdsCaliResult << kIAdsCaliResult << i_amtitude_ref << wave_value << EndJFStream;
 }
 
 void StatePassiveInv_OnEnter()
 {
-    kPassiveIcontroller.ResetState();
-    kPassiveIcontroller.SetStateValue(0.21);
-    StatePassiveInv_Loop();
+    kStartEncoderCount = KeyboardEncoder.Count();
+
+    kPrController.ResetState();
     kSpwm.StartPwm();
 
     switch (kWhoAmI) {

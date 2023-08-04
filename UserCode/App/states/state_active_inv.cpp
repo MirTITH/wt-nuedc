@@ -15,7 +15,7 @@ static control_system::IController<float> kIcontroller{{0.1, 1.0f / 5000.0f}, {0
 
 void StateActiveInv_Loop()
 {
-    kAcReference = 1 + (KeyboardEncoder.Count() - kStartEncoderCount) / 400.0f;
+    kAcReference = 0 + (KeyboardEncoder.Count() - kStartEncoderCount) / 100.0f;
 
     auto controller_output = kIcontroller.Step(kAcReference - kAcOutPll.d_);
 
@@ -25,8 +25,7 @@ void StateActiveInv_Loop()
     kSpwm.SetSineValue(wave_value);
 
     // JFStream << kAcOutPll.d_ << controller_output << kVAdsCaliResult << kIAdsCaliResult << EndJFStream;
-    // JFStream << kGridVoltage << kVAdsCaliResult << EndJFStream;
-    JFStream << Adc1.GetAllVoltage() << Adc2.GetAllVoltage() << kGridVoltage << EndJFStream;
+    JFStream << kVAdsCaliResult << kIAdsCaliResult << EndJFStream;
     // JFStream << kGridVoltage << EndJFStream;
 }
 
