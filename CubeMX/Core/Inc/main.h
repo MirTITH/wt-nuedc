@@ -92,6 +92,10 @@ void Error_Handler(void);
 #define Key_LedB_GPIO_Port GPIOD
 #define Key_EncoderBtn_Pin GPIO_PIN_13
 #define Key_EncoderBtn_GPIO_Port GPIOD
+#define TestPin2_Pin GPIO_PIN_8
+#define TestPin2_GPIO_Port GPIOC
+#define TestPin1_Pin GPIO_PIN_9
+#define TestPin1_GPIO_Port GPIOC
 #define LcdBacklight_Pin GPIO_PIN_8
 #define LcdBacklight_GPIO_Port GPIOA
 #define VDrdy_Pin GPIO_PIN_15

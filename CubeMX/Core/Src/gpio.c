@@ -56,7 +56,7 @@ void MX_GPIO_Init(void)
   HAL_GPIO_WritePin(GPIOE, Key_Addr2_Pin|Key_Addr3_Pin|Tp_Rst_Pin, GPIO_PIN_RESET);
 
   /*Configure GPIO pin Output Level */
-  HAL_GPIO_WritePin(GPIOC, Key_Addr1_Pin|Key_Addr0_Pin, GPIO_PIN_RESET);
+  HAL_GPIO_WritePin(GPIOC, Key_Addr1_Pin|Key_Addr0_Pin|TestPin2_Pin|TestPin1_Pin, GPIO_PIN_RESET);
 
   /*Configure GPIO pin Output Level */
   HAL_GPIO_WritePin(GPIOA, ElectricRelay_GridConnector_Pin|ElectricRelay_LoadConnector_Pin|ElectricRelay_BridgeB_Pin|ElectricRelay_BridgeA_Pin, GPIO_PIN_RESET);
@@ -74,8 +74,8 @@ void MX_GPIO_Init(void)
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
   HAL_GPIO_Init(GPIOE, &GPIO_InitStruct);
 
-  /*Configure GPIO pins : PCPin PCPin */
-  GPIO_InitStruct.Pin = Key_Addr1_Pin|Key_Addr0_Pin;
+  /*Configure GPIO pins : PCPin PCPin PCPin PCPin */
+  GPIO_InitStruct.Pin = Key_Addr1_Pin|Key_Addr0_Pin|TestPin2_Pin|TestPin1_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;

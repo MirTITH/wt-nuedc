@@ -8,8 +8,9 @@
 #include "Relay/relay_device.hpp"
 #include "pwm/spwm_device.hpp"
 #include "Vofa/just_float.hpp"
+#include "Keyboard/keyboard_device.hpp"
+#include "Encoder/encoder_device.hpp"
 
-extern std::atomic<float> kMod;
 extern control_system::Pll<float> kAcOutPll;
 
 extern control_system::Pll<float> kGridPll;

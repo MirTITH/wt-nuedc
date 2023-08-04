@@ -13,6 +13,16 @@
 uint32_t kFastTimCallbackDuration;
 uint32_t kFastTimCallbackCount = 0;
 
+void SquareOutput(float phase)
+{
+    if (phase > M_PI / 2 && phase < 3 * M_PI / 2) {
+        HAL_GPIO_WritePin(TestPin1_GPIO_Port, TestPin1_Pin, GPIO_PIN_RESET);
+    } else {
+
+        HAL_GPIO_WritePin(TestPin1_GPIO_Port, TestPin1_Pin, GPIO_PIN_SET);
+    }
+}
+
 void FastTimCallback()
 {
     // 频率和时间统计
@@ -24,6 +34,7 @@ void FastTimCallback()
     kGridPll.Step(grid_volt);
 
     kAcOutPll.Step(kVAdsCaliResult);
+    SquareOutput(kAcOutPll.phase_);
 
     extern void StateStop_Loop();
     extern void StateOnGridInv_Loop();

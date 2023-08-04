@@ -24,7 +24,10 @@ void StateActiveInv_Loop()
 
     kSpwm.SetSineValue(wave_value);
 
-    JFStream << kAcOutPll.d_ << controller_output << kVAdsCaliResult << kIAdsCaliResult << EndJFStream;
+    // JFStream << kAcOutPll.d_ << controller_output << kVAdsCaliResult << kIAdsCaliResult << EndJFStream;
+    // JFStream << kGridVoltage << kVAdsCaliResult << EndJFStream;
+    JFStream << Adc3.GetAllVoltage() << EndJFStream;
+    // JFStream << kGridVoltage << EndJFStream;
 }
 
 void StateActiveInv_OnEnter()
