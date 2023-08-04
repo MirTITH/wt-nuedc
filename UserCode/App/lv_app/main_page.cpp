@@ -129,7 +129,7 @@ static void MainPage_Thread(void *)
     LvTextField tf_kmod(kMainTab, "期望正弦幅值", kContentWidth * 2 / 3);
     LvTextField tf_grid_status(kMainTab, "电网状态", kContentWidth / 3);
     LvTextField tf_drdy(kMainTab, "VAds,IAds", kContentWidth / 2, 70, LvglTTF_GetFont());
-    LvTextField tf_adc_rate(kMainTab, "ADC1,3速率", kContentWidth / 2, 70, LvglTTF_GetFont());
+    LvTextField tf_adc_rate(kMainTab, "ADC1,2速率", kContentWidth / 2, 70, LvglTTF_GetFont());
     LvTextField tf_fast_tim(kMainTab, "FastTim", kContentWidth / 2, 70, LvglTTF_GetFont());
     LvTextField tf_main_uart(kMainTab, "UART发送速率", kContentWidth / 2);
     LvglUnlock();
@@ -140,7 +140,7 @@ static void MainPage_Thread(void *)
     CounterFreqMeter iads_sample_rate_meter(&IAds.data_sample_count_);
 
     CounterFreqMeter adc_interrupt_meter1(&Adc1.conv_cplt_count);
-    CounterFreqMeter adc_interrupt_meter3(&Adc3.conv_cplt_count);
+    CounterFreqMeter adc_interrupt_meter2(&Adc2.conv_cplt_count);
 
     CounterFreqMeter fast_tim_meter(&kFastTimCallbackCount);
     CounterFreqMeter main_uart_meter(&MainUart.uart_device.total_tx_size_);
@@ -197,7 +197,7 @@ static void MainPage_Thread(void *)
             // ADC
             lv_label_set_text_fmt(tf_adc_rate.GetMsgLabel(), "%lu,%lu",
                                   adc_interrupt_meter1.MeasureFreq(),
-                                  adc_interrupt_meter3.MeasureFreq());
+                                  adc_interrupt_meter2.MeasureFreq());
 
             // FastTim
             lv_label_set_text_fmt(tf_fast_tim.GetMsgLabel(),

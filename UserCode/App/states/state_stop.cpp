@@ -20,5 +20,5 @@ void StateStop_Loop()
 {
     // JFStream << kGridVoltage << kGridPll.d_ << kGridPll.phase_ << kGridPll.omega_ << EndJFStream;
     // JFStream << kGridVoltage << EndJFStream;
-    JFStream << Adc3.GetAllVoltage() << EndJFStream;
+    JFStream << Adc1.GetAllVoltage() << Adc2.GetAllVoltage() << kGridVoltage << EndJFStream;
 }

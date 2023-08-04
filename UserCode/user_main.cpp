@@ -68,14 +68,14 @@ void StartDefaultTask(void const *argument)
     LvglTTF_Init();
     StartLvglThread();
 
-    // Adc1.Init();
-    // Adc1.StartDma();
-    Adc3.Init();
-    Adc3.StartDma();
+    Adc1.Init();
+    Adc1.StartDma();
+    Adc2.Init();
+    Adc2.StartDma();
 
     InitAds();
 
-    HAL_TIM_Base_Start_IT(&htim6); // FastTim Callback
+    HAL_TIM_Base_Start_IT(&htim2); // FastTim Callback
 
     StartTestThread();
 

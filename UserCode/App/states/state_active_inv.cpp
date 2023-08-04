@@ -26,7 +26,7 @@ void StateActiveInv_Loop()
 
     // JFStream << kAcOutPll.d_ << controller_output << kVAdsCaliResult << kIAdsCaliResult << EndJFStream;
     // JFStream << kGridVoltage << kVAdsCaliResult << EndJFStream;
-    JFStream << Adc3.GetAllVoltage() << EndJFStream;
+    JFStream << Adc1.GetAllVoltage() << Adc2.GetAllVoltage() << kGridVoltage << EndJFStream;
     // JFStream << kGridVoltage << EndJFStream;
 }
 

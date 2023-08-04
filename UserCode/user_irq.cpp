@@ -73,7 +73,7 @@ void HAL_UARTEx_RxEventCallback(UART_HandleTypeDef *huart, uint16_t Size)
 
 void MY_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
 {
-    if (htim->Instance == TIM6) {
+    if (htim->Instance == TIM2) {
         FastTimCallback();
     }
 }
@@ -82,8 +82,8 @@ void HAL_ADC_ConvCpltCallback(ADC_HandleTypeDef *hadc)
 {
     if (hadc->Instance == ADC1) {
         Adc1.ConvCpltCallback();
-    } else if (hadc->Instance == ADC3) {
-        Adc3.ConvCpltCallback();
+    } else if (hadc->Instance == ADC2) {
+        Adc2.ConvCpltCallback();
     }
 }
 
