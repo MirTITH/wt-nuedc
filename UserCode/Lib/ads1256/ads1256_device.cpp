@@ -13,19 +13,19 @@
 
 Ads1256 VAds(&hspi3,
              VDrdy_GPIO_Port, VDrdy_Pin,
-             VAds_nReset_GPIO_Port, VAds_nReset_Pin,
+             nullptr, 0,
              VSync_GPIO_Port, VSync_Pin,
              VAds_nCs_GPIO_Port, VAds_nCs_Pin);
 
 Ads1256 IAds(&hspi2,
              IDrdy_GPIO_Port, IDrdy_Pin,
-             nullptr, IAds_nReset_Pin,
+             nullptr, 0,
              ISync_GPIO_Port, ISync_Pin,
              IAds_nCs_GPIO_Port, IAds_nCs_Pin);
 
 // static Butter_LP_5_50_20dB_5000Hz<double> kIAdsFilter;
 // std::atomic<float> kIAdsFilterResult = 0;
-std::atomic<float> kIAdsCaliResult   = 0;
+std::atomic<float> kIAdsCaliResult = 0;
 
 static Butter_LP_5_50_20dB_5000Hz<double> kVAdsFilter;
 std::atomic<float> kVAdsFilterResult = 0;
