@@ -17,13 +17,13 @@ void StateActiveInv_Loop()
 {
     kAcReference = 2 + (KeyboardEncoder.Count() - kStartEncoderCount) / 400.0f;
 
-    auto i_output = kIcontroller.Step(kAcReference - kAcOutPll.d_);
+    auto controller_output = kIcontroller.Step(kAcReference - kAcOutPll.d_);
 
-    auto wave_value = i_output * kSine.Step();
+    auto wave_value = controller_output * kSine.Step();
 
     kSpwm.SetSineValue(wave_value);
 
-    JFStream << wave_value << i_output << kVAdsCaliResult << kIAdsCaliResult << EndJFStream;
+    JFStream << wave_value << controller_output << kVAdsCaliResult << kIAdsCaliResult << EndJFStream;
 }
 
 void StateActiveInv_OnEnter()
