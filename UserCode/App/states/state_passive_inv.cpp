@@ -12,7 +12,7 @@ void StatePassiveInv_Loop()
     auto wave_value      = kPrController.Step(err);
     kSpwm.SetSineValue(wave_value);
 
-    JFStream << kVAdsCaliResult << kIAdsCaliResult << EndJFStream;
+    JFStream << kVAdsCaliResult << kIAdsCaliResult << wave_value << err << EndJFStream;
 }
 
 void StatePassiveInv_OnEnter()
