@@ -38,17 +38,17 @@ void PllTest()
     os_printf("==== End %s ====\n", __func__);
 }
 
-void PllTestInIsr()
-{
-    os_printf("==== Start %s ====\n", __func__);
-    HAL_TIM_Base_Start_IT(&htim3);
+// void PllTestInIsr()
+// {
+//     os_printf("==== Start %s ====\n", __func__);
+//     HAL_TIM_Base_Start_IT(&htim3);
 
-    while (true) {
-        os_printf("%f,%f,%f,%f,%f,%lu\n", pll.d_, pll.q_, pll.omega_ / (2 * M_PI), pll.phase_, TimPllInput, TimDuration);
+//     while (true) {
+//         os_printf("%f,%f,%f,%f,%f,%lu\n", pll.d_, pll.q_, pll.omega_ / (2 * M_PI), pll.phase_, TimPllInput, TimDuration);
 
-        vTaskDelay(1);
-    }
+//         vTaskDelay(1);
+//     }
 
-    os_printf("==== End %s ====\n", __func__);
-}
+//     os_printf("==== End %s ====\n", __func__);
+// }
 

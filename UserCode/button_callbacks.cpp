@@ -93,7 +93,7 @@ static void ButtonCallback_K9(flex_button_t *btn)
         kSpwm.StopPwm();
         ScreenConsole_AddText("kSpwm.StopPwm\n");
     } else if (btn->event == FLEX_BTN_PRESS_SHORT_START) {
-        kAppState.SwitchTo(AppState_t::ActiveInv);
+        kSpwm.SetSineValue(0);
         kSpwm.StartPwm();
         ScreenConsole_AddText("kSpwm.StartPwm\n");
     }

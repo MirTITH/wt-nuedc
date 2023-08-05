@@ -14,8 +14,8 @@ static control_system::IController<float> kIcontroller{{0.1, 1.0f / 5000.0f}, {0
 
 void StateActiveInv_Loop()
 {
-    float v_amtitude_ref = (0 + (KeyboardEncoder.Count() - kStartEncoderCount) / 100.0f) * std::sqrt(2.0f); // 闭环时为期望电压幅值
-    // float v_amtitude_ref = 0 + (KeyboardEncoder.Count() - kStartEncoderCount) / 400.0f; // 开环时为调制比
+    float v_amtitude_ref = (24 + (KeyboardEncoder.Count() - kStartEncoderCount) / 400.0f) * std::sqrt(2.0f); // 闭环时为期望电压幅值
+    // float v_amtitude_ref = (KeyboardEncoder.Count() - kStartEncoderCount) / 400.0f; // 开环时为调制比
     kAcVrefWatcher = v_amtitude_ref;
 
     auto controller_output = kIcontroller.Step(v_amtitude_ref - kAcOutPll.d_);

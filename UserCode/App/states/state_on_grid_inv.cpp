@@ -5,21 +5,22 @@
 #include "Led/led_device.hpp"
 #include "lv_app/screeen_console.h"
 
-static control_system::PRController<float> kPrController(1.0 / 5000.0);
-static control_system::IController<float> kCorrectionPhaseController{{0.3, 1.0f / 5000.0f}, {-M_PI / 2, M_PI / 2}};
-static control_system::IController<float> kIcontroller{{0.1, 1.0f / 5000.0f}, {0.0f, 1.0f}};
-static DelayHolder kConnectStateHolder(1000);
-static int32_t kStartEncoderCount;
-
-bool kIsAbleToConnect  = false; // 是否满足并网条件
-bool kIsAllowToConnect = false; // 用户是否允许并网
-
 enum class OnGridState {
     NotReady,
     Ready
 };
 
+static control_system::PRController<float> kPrController(1.0 / 5000.0);
+static control_system::IController<float> kCorrectionPhaseController{{0.3, 1.0f / 5000.0f}, {-M_PI / 2, M_PI / 2}};
+static control_system::IController<float> kIcontroller{{0.2, 1.0f / 5000.0f}, {0.0f, 1.0f}};
+static DelayHolder kConnectStateHolder(1000);
+static int32_t kStartEncoderCount;
 OnGridState kOnGridState;
+static float kCollectionPhase    = 0;
+static float kPreConnectAmtitude = 0;
+
+bool kIsAbleToConnect  = false; // 是否满足并网条件
+bool kIsAllowToConnect = false; // 用户是否允许并网
 
 void StateOnGridInv_OnEnter()
 {
@@ -29,6 +30,8 @@ void StateOnGridInv_OnEnter()
     kPrController.ResetState();
     kCorrectionPhaseController.ResetState();
     kIcontroller.ResetState();
+    kCollectionPhase    = 0;
+    kPreConnectAmtitude = 0;
 
     kIcontroller.SetStateValue(kActiveInv_ControllerOutputWatcher);
 
@@ -75,15 +78,16 @@ void StateOnGridInv_Loop()
         float kErrPhase            = LoopSimplify(kGridPll.phase_ - kAcOutPll.phase_);
         kOnGridInv_ErrPhaseWatcher = kErrPhase;
 
-        float kCorrectionPhase = kCorrectionPhaseController.Step(kErrPhase);
-        auto controller_output = kIcontroller.Step(kGridPll.d_ - kAcOutPll.d_); // 电压幅值闭环
-        // auto controller_output = kIcontroller.Step(10 - kAcOutPll.d_); // 电压幅值开环
+        kCollectionPhase    = kCorrectionPhaseController.Step(kErrPhase);
+        kPreConnectAmtitude = kIcontroller.Step(kGridPll.d_ - kAcOutPll.d_); // 电压幅值闭环
 
-        auto wave_value = controller_output * std::cos(kGridPll.phase_ + kCorrectionPhase);
+        auto wave_value = kPreConnectAmtitude * std::cos(kGridPll.phase_ + kCollectionPhase);
         kSpwm.SetSineValue(wave_value);
 
+        JFStream << kVAdsCaliResult << kIAdsCaliResult << wave_value << 0 << EndJFStream;
+
         // 检查条件
-        if (kConnectStateHolder.Exam(std::abs(kGridPll.d_ - kAcOutPll.d_) < 1.0f && std::abs(kErrPhase) < 0.1)) {
+        if (kConnectStateHolder.Exam(std::abs(kGridPll.d_ - kAcOutPll.d_) < 2.0f && std::abs(kErrPhase) < 0.1)) {
             kIsAbleToConnect = true;
 
             // 切换模式
@@ -100,16 +104,19 @@ void StateOnGridInv_Loop()
         float i_amtitude_ref = (KeyboardEncoder.Count() - kStartEncoderCount) * std::sqrt(2.0f) / 400.0f;
         kAcIrefWatcher       = i_amtitude_ref;
         auto err             = i_amtitude_ref * std::cos(kGridPll.phase_) - kIAdsCaliResult;
-        auto wave_value      = kPrController.Step(err);
+        auto pr_output       = kPrController.Step(err);
+        auto wave_value      = pr_output + kPreConnectAmtitude * std::cos(kGridPll.phase_ + kCollectionPhase);
+
+        if (wave_value > 1.0f) wave_value = 1.0f;
+        if (wave_value < -1.0f) wave_value = -1.0f;
         kSpwm.SetSineValue(wave_value);
 
+        JFStream << kVAdsCaliResult << kIAdsCaliResult << wave_value << pr_output << EndJFStream;
         KeyboardLed.SetColor(0, 1, 1, 0.1);
     } else {
         ScreenConsole_AddText("StateOnGridInv_Loop Err State!\n");
         kAppState.SwitchTo(AppState_t::Stop);
     }
-
-    JFStream << kVAdsCaliResult << kIAdsCaliResult << kAcOutPll.phase_ << kGridVoltage << kGridPll.phase_ << EndJFStream;
 }
 
 void StateOnGridInv_OnExit()
