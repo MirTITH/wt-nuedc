@@ -79,7 +79,8 @@ void StateOnGridInv_Loop()
         kOnGridInv_ErrPhaseWatcher = kErrPhase;
 
         kCollectionPhase    = kCorrectionPhaseController.Step(kErrPhase);
-        kPreConnectAmtitude = kIcontroller.Step(kGridPll.d_ - kAcOutPll.d_); // 电压幅值闭环
+        auto exp_volt       = kGridPll.d_ / 2.0f;                         // 降压并网
+        kPreConnectAmtitude = kIcontroller.Step(exp_volt - kAcOutPll.d_); // 电压幅值闭环
 
         auto wave_value = kPreConnectAmtitude * std::cos(kGridPll.phase_ + kCollectionPhase);
         kSpwm.SetSineValue(wave_value);
@@ -87,7 +88,7 @@ void StateOnGridInv_Loop()
         JFStream << kVAdsCaliResult << kIAdsCaliResult << wave_value << 0 << EndJFStream;
 
         // 检查条件
-        if (kConnectStateHolder.Exam(std::abs(kGridPll.d_ - kAcOutPll.d_) < 2.0f && std::abs(kErrPhase) < 0.1)) {
+        if (kConnectStateHolder.Exam(std::abs(exp_volt - kAcOutPll.d_) < 2.0f && std::abs(kErrPhase) < 0.1)) {
             kIsAbleToConnect = true;
 
             // 切换模式
