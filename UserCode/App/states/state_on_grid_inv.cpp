@@ -68,6 +68,9 @@ void StateOnGridInv_Loop()
         kSpwm.SetSineValue(wave_value);
         if (kConnectStateHolder.Exam(std::abs(kGridPll.d_ - kAcOutPll.d_) < 1.0f && std::abs(kErrPhase) < 0.1)) {
             kIsAbleToConnect = true;
+            // if (kIsAllowToConnect) { 
+            //     relay::GridConnector.Set(Relay_State::On);
+            // }
         }
     } else {
         float i_amtitude_ref = (KeyboardEncoder.Count() - kStartEncoderCount) * std::sqrt(2.0f) / 400.0f;

@@ -163,9 +163,9 @@ static void MainPage_Thread(void *)
         extern bool kIsAbleToConnect;
         str.clear();
         if (kIsAbleToConnect) {
-            str.append("能并网\n");
+            str.append("满足并网条件\n");
         } else {
-            str.append("不能并网\n");
+            str.append("不满足并网条件\n");
         }
 
         if (kIsAllowToConnect) {

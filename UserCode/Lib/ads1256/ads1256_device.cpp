@@ -87,7 +87,7 @@ void InitAds()
     VAds.SetConvQueueCpltCallback([&](Ads1256 *) {
         auto cali_result = kLineCali_VAds.Calc(VAds.GetVoltage(0));
         kVAdsCaliResult  = cali_result;
-        kVAdsWatchDog.Exam(std::abs(cali_result) < 35.0f); // 电压看门狗
+        kVAdsWatchDog.Exam(std::abs(cali_result) < 50.0f); // 电压看门狗
         kVAdsFilterResult = kVAdsFilter.Step(cali_result);
     });
 
@@ -95,7 +95,7 @@ void InitAds()
     IAds.SetConvQueueCpltCallback([&](Ads1256 *) {
         auto cali_result = kLineCali_IAds.Calc(IAds.GetVoltage(0));
         kIAdsCaliResult  = cali_result;
-        kIAdsWatchDog.Exam(std::abs(cali_result) < 1.5f); // 电流看门狗
+        kIAdsWatchDog.Exam(std::abs(cali_result) < 3.0f); // 电流看门狗
         // kIAdsFilterResult = kIAdsFilter.Step(cali_result);
     });
 }

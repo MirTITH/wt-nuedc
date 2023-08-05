@@ -14,13 +14,14 @@ static control_system::IController<float> kIcontroller{{0.1, 1.0f / 5000.0f}, {0
 
 void StateActiveInv_Loop()
 {
-    float v_amtitude_ref = (0 + (KeyboardEncoder.Count() - kStartEncoderCount) / 100.0f) * std::sqrt(2.0f);
-    kAcVrefWatcher       = v_amtitude_ref;
+    float v_amtitude_ref = (0 + (KeyboardEncoder.Count() - kStartEncoderCount) / 100.0f) * std::sqrt(2.0f); // 闭环时为期望电压幅值
+    // float v_amtitude_ref = 0 + (KeyboardEncoder.Count() - kStartEncoderCount) / 400.0f; // 开环时为调制比
+    kAcVrefWatcher = v_amtitude_ref;
 
     auto controller_output = kIcontroller.Step(v_amtitude_ref - kAcOutPll.d_);
 
     auto wave_value = controller_output * kSine.Step(); // 闭环
-    // auto wave_value =  v_amtitude_ref* kSine.Step(); // 开环
+    // auto wave_value = v_amtitude_ref * kSine.Step(); // 开环
 
     kSpwm.SetSineValue(wave_value);
 
