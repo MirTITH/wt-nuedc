@@ -19,6 +19,8 @@ extern std::atomic<float> kGridFilterVoltage;
 
 extern std::atomic<float> kAcVrefWatcher;
 extern std::atomic<float> kAcIrefWatcher;
+extern std::atomic<float> kActiveInv_ControllerOutputWatcher;
+extern std::atomic<float> kOnGridInv_ErrPhaseWatcher;
 
 extern bool kIsAllowToConnect;
 

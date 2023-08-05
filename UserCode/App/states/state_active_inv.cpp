@@ -20,6 +20,8 @@ void StateActiveInv_Loop()
 
     auto controller_output = kIcontroller.Step(v_amtitude_ref - kAcOutPll.d_);
 
+    kActiveInv_ControllerOutputWatcher = controller_output;
+
     auto wave_value = controller_output * kSine.Step(); // 闭环
     // auto wave_value = v_amtitude_ref * kSine.Step(); // 开环
 

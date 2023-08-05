@@ -126,14 +126,14 @@ static void MainPage_Thread(void *)
             break;
     }
 
-    LvTextField tf_vref(kMainTab, "期望电压有效值", kContentWidth / 2);
-    LvTextField tf_iref(kMainTab, "期望电流有效值", kContentWidth / 2);
-    LvTextField tf_grid_status(kMainTab, "电网电压有效值", kContentWidth / 2, 70, LvglTTF_GetFont());
+    LvTextField tf_v_meter(kMainTab, "电压有效值", kContentWidth / 2, 70, LvglTTF_GetFont());
+    LvTextField tf_i_meter(kMainTab, "电流有效值", kContentWidth / 2, 70, LvglTTF_GetFont());
+    LvTextField tf_grid_status(kMainTab, "电网电压与相位差", kContentWidth / 2, 70, LvglTTF_GetFont());
     LvTextField tf_is_able_to_connect(kMainTab, "是否能并网", kContentWidth / 2, 70, LvglTTF_GetFont());
     LvTextField tf_drdy(kMainTab, "VAds,IAds", kContentWidth / 2, 70, LvglTTF_GetFont());
     // LvTextField tf_adc_rate(kMainTab, "ADC1,2速率", kContentWidth / 2, 70, LvglTTF_GetFont());
     LvTextField tf_fast_tim(kMainTab, "FastTim", kContentWidth / 2, 70, LvglTTF_GetFont());
-    LvTextField tf_main_uart(kMainTab, "UART发送速率", kContentWidth / 2);
+    LvSimpleTextField tf_main_uart(kMainTab, "UART发送速率");
     LvglUnlock();
 
     CounterFreqMeter vads_drdy_meter(&VAds.drdy_count_);
@@ -157,8 +157,8 @@ static void MainPage_Thread(void *)
     while (true) {
         LvglLock();
 
-        lv_label_set_text_fmt(tf_vref.GetMsgLabel(), "%.3f", kAcVrefWatcher.load() / std::sqrt(2.0f));
-        lv_label_set_text_fmt(tf_iref.GetMsgLabel(), "%.3f", kAcIrefWatcher.load() / std::sqrt(2.0f));
+        lv_label_set_text_fmt(tf_v_meter.GetMsgLabel(), "期望：%.3f\n实际：%.3f", kAcVrefWatcher.load() / std::sqrt(2.0f), kAcOutPll.d_ / std::sqrt(2.0f));
+        lv_label_set_text_fmt(tf_i_meter.GetMsgLabel(), "期望：%.3f", kAcIrefWatcher.load() / std::sqrt(2.0f));
 
         extern bool kIsAbleToConnect;
         str.clear();
@@ -169,9 +169,9 @@ static void MainPage_Thread(void *)
         }
 
         if (kIsAllowToConnect) {
-            str.append("用户许可并网");
+            str.append("许可并网");
         } else {
-            str.append("用户不许可并网");
+            str.append("不许可并网");
         }
         tf_is_able_to_connect.SetMsg(str);
 
@@ -195,7 +195,7 @@ static void MainPage_Thread(void *)
                     break;
             }
 
-            lv_label_set_text_fmt(tf_grid_status.GetMsgLabel(), "%.2f V", kGridPll.d_ / std::sqrt(2.0f));
+            lv_label_set_text_fmt(tf_grid_status.GetMsgLabel(), "%.2f V\n%.2f rad", kGridPll.d_ / std::sqrt(2.0f), kOnGridInv_ErrPhaseWatcher.load());
             // if (grid_checker.Exam(std::abs(kGridPll.d_) > 5.0f)) {
             //     lv_label_set_text_fmt(tf_grid_status.GetMsgLabel(), "连接：%.1f V", kGridPll.d_ / std::sqrt(2.0f));
             // } else {

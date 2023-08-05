@@ -87,7 +87,7 @@ void InitAds()
     VAds.SetConvQueueCpltCallback([&](Ads1256 *) {
         auto cali_result = kLineCali_VAds.Calc(VAds.GetVoltage(0));
         kVAdsCaliResult  = cali_result;
-        kVAdsWatchDog.Exam(std::abs(cali_result) < 50.0f); // 电压看门狗
+        kVAdsWatchDog.Exam(std::abs(cali_result) <100.0f); // 电压看门狗
         kVAdsFilterResult = kVAdsFilter.Step(cali_result);
     });
 

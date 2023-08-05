@@ -15,9 +15,11 @@ control_system::Pll<float> kGridPll(1.0 / 5000.0, 2 * 50 * M_PI, 1, 1, 1); // �
 
 std::atomic<float> kGridVoltage;
 
-// 期望值
+// 观察器
 std::atomic<float> kAcVrefWatcher;
 std::atomic<float> kAcIrefWatcher;
+std::atomic<float> kActiveInv_ControllerOutputWatcher = 0;
+std::atomic<float> kOnGridInv_ErrPhaseWatcher         = 0;
 
 float GetGridVoltage()
 {
