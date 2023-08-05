@@ -6,7 +6,11 @@ static int32_t kStartEncoderCount;
 
 void StatePassiveInv_Loop()
 {
-    float i_amtitude_ref = (KeyboardEncoder.Count() - kStartEncoderCount) * std::sqrt(2.0f) / 400.0f;
+    // if (Keyboard_Read(Keys::kKnobBtn)) {
+    //     kStartEncoderCount = KeyboardEncoder.Count();
+    // }
+
+    float i_amtitude_ref = (KeyboardEncoder.Count() - kStartEncoderCount) * std::sqrt(2.0f) / 200.0f;
     kAcIrefWatcher       = i_amtitude_ref;
     auto err             = i_amtitude_ref * std::cos(kAcOutPll.phase_) - kIAdsCaliResult;
     auto wave_value      = kPrController.Step(err);

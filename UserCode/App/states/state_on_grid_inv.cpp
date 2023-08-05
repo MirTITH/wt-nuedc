@@ -10,7 +10,7 @@ enum class OnGridState {
     Ready
 };
 
-static control_system::PRController<float> kPrController(1.0 / 5000.0);
+static control_system::PRController<float> kPrController(1.0 / 5000.0, 1, 10, 1);
 static control_system::IController<float> kCorrectionPhaseController{{0.3, 1.0f / 5000.0f}, {-M_PI / 2, M_PI / 2}};
 static control_system::IController<float> kIcontroller{{0.2, 1.0f / 5000.0f}, {0.0f, 1.0f}};
 static DelayHolder kConnectStateHolder(1000);
@@ -73,6 +73,10 @@ float LoopSimplify(float value, float cycle = 2 * M_PI)
     return mod_value;
 }
 
+static uint32_t kConnectStartMs;
+static uint32_t kDisconnectLoadDelayMs = 1000;
+static uint32_t kShortResisterDelayMs  = 2000;
+
 void StateOnGridInv_Loop()
 {
     if (kOnGridState == OnGridState::NotReady) {
@@ -97,6 +101,7 @@ void StateOnGridInv_Loop()
                 relay::GridConnector.Set(Relay_State::On);
                 kStartEncoderCount = KeyboardEncoder.Count();
                 kOnGridState       = OnGridState::Ready;
+                kConnectStartMs    = HAL_GetTick();
             }
         } else {
             kIsAbleToConnect = false;
@@ -105,15 +110,25 @@ void StateOnGridInv_Loop()
         float i_amtitude_ref = (KeyboardEncoder.Count() - kStartEncoderCount) * std::sqrt(2.0f) / 400.0f;
         kAcIrefWatcher       = i_amtitude_ref;
         auto err             = i_amtitude_ref * std::cos(kGridPll.phase_) - kIAdsCaliResult;
-        auto pr_output       = kPrController.Step(err);
-        auto wave_value      = pr_output + kPreConnectAmtitude * std::cos(kGridPll.phase_ + kCollectionPhase);
+        // auto pr_output       = kPrController.Step(err);
+        auto wave_value = kPrController.Step(err);
 
         if (wave_value > 1.0f) wave_value = 1.0f;
         if (wave_value < -1.0f) wave_value = -1.0f;
         kSpwm.SetSineValue(wave_value);
 
-        JFStream << kVAdsCaliResult << kIAdsCaliResult << wave_value << pr_output << EndJFStream;
+        JFStream << kVAdsCaliResult << kIAdsCaliResult << wave_value << EndJFStream;
         KeyboardLed.SetColor(0, 1, 1, 0.1);
+
+        if (HAL_GetTick() - kConnectStartMs > kDisconnectLoadDelayMs) {
+            relay::AllLoadConnector.Set(Relay_State::Close);
+        }
+
+        // 短路电阻
+        // if (HAL_GetTick() - kConnectStartMs > kShortResisterDelayMs) {
+        //     relay::GridResisterShorter.Set(Relay_State::Close);
+        // }
+
     } else {
         ScreenConsole_AddText("StateOnGridInv_Loop Err State!\n");
         kAppState.SwitchTo(AppState_t::Stop);

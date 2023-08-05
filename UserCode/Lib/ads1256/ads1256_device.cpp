@@ -95,7 +95,7 @@ void InitAds()
     IAds.SetConvQueueCpltCallback([&](Ads1256 *) {
         auto cali_result = kLineCali_IAds.Calc(IAds.GetVoltage(0));
         kIAdsCaliResult  = cali_result;
-        kIAdsWatchDog.Exam(std::abs(cali_result) < 3.0f); // 电流看门狗
+        kIAdsWatchDog.Exam(std::abs(cali_result) < 4.0f); // 电流看门狗
         // kIAdsFilterResult = kIAdsFilter.Step(cali_result);
     });
 }
