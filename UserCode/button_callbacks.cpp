@@ -110,6 +110,17 @@ static void ButtonCallback_KOk(flex_button_t *btn)
     }
 }
 
+static void ButtonCallback_kBackspace(flex_button_t *btn)
+{
+    if (btn->event == FLEX_BTN_PRESS_CLICK) {
+        relay::AllLoadConnector.Set(Relay_State::Close);
+        ScreenConsole_AddText("AllLoadConnector Close\n");
+    } else if (btn->event == FLEX_BTN_PRESS_SHORT_START) {
+        relay::AllLoadConnector.Set(Relay_State::On);
+        ScreenConsole_AddText("AllLoadConnector On\n");
+    }
+}
+
 void ButtonCallbackRegister()
 {
     SetButtonCallback(Keys::k0, ButtonCallback_K0);
@@ -123,4 +134,5 @@ void ButtonCallbackRegister()
     SetButtonCallback(Keys::k8, ButtonCallback_K8);
     SetButtonCallback(Keys::k9, ButtonCallback_K9);
     SetButtonCallback(Keys::kOk, ButtonCallback_KOk);
+    SetButtonCallback(Keys::kBackspace, ButtonCallback_kBackspace);
 }

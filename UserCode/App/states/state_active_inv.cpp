@@ -43,10 +43,11 @@ void StateActiveInv_OnEnter()
     switch (kWhoAmI) {
         case BoardSelector::A:
             relay::BridgeA.Set(Relay_State::On);
+            relay::AllLoadConnector.Set(Relay_State::On);
             relay::LoadConnector.Set(Relay_State::On);
             break;
         case BoardSelector::B:
-            relay::BridgeB.Set(Relay_State::On);
+            // relay::BridgeB.Set(Relay_State::On);
             break;
     }
 }

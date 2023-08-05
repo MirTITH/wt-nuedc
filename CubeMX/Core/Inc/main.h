@@ -67,8 +67,8 @@ void Error_Handler(void);
 #define Key_LedR_GPIO_Port GPIOE
 #define Key_Addr1_Pin GPIO_PIN_13
 #define Key_Addr1_GPIO_Port GPIOC
-#define ElectricRelay_GridConnector_Pin GPIO_PIN_0
-#define ElectricRelay_GridConnector_GPIO_Port GPIOA
+#define ElectricRelay_AllLoad_Pin GPIO_PIN_0
+#define ElectricRelay_AllLoad_GPIO_Port GPIOA
 #define ElectricRelay_LoadConnector_Pin GPIO_PIN_1
 #define ElectricRelay_LoadConnector_GPIO_Port GPIOA
 #define ElectricRelay_BridgeB_Pin GPIO_PIN_2
@@ -77,6 +77,8 @@ void Error_Handler(void);
 #define ElectricRelay_BridgeA_GPIO_Port GPIOA
 #define ElectricRelay_GridResisterShorter_Pin GPIO_PIN_6
 #define ElectricRelay_GridResisterShorter_GPIO_Port GPIOA
+#define ElectricRelay_GridConnector_Pin GPIO_PIN_7
+#define ElectricRelay_GridConnector_GPIO_Port GPIOA
 #define Key_Addr0_Pin GPIO_PIN_4
 #define Key_Addr0_GPIO_Port GPIOC
 #define Key_Data_Pin GPIO_PIN_5
